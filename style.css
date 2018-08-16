@@ -21,6 +21,19 @@ header {
   overflow: auto;
 }
 
+.sticky {
+  position: fixed;
+  background: #444444;
+  opacity: .8;
+  top: 0;
+  width: 100%;
+  transition: all .2s ease-in;
+}
+
+.sticky + .about-me {
+  padding-top: 102px;
+}
+
 .name {
   font-size: 4em;
   color: rgb(45, 172, 45);
@@ -32,6 +45,7 @@ header {
   list-style: none;
   margin: 0 auto;
   padding: 0;
+  
 }
 
 .navigation li {
@@ -114,12 +128,27 @@ header {
       flex-direction: row;
       width: 90%;
   }
+  .col--narrow {
+    margin-top: 1em;
+    clear: both;
+    padding: 0 2em 0 0;
+    text-align: left;
+  }
+}
+
+@media (min-width: 600px) {
+  .col--narrow {
+    margin-top: 1em;
+    clear: both;
+    padding: 0 2em 0 0;
+    text-align: left;
+  }
 }
 
 @media (max-width: 599px) {
   .content--wrap__about {
       flex-direction: column;
-      justify-items: center;
+      align-items: center;
       text-align: center;
       width: 90%;
   }
@@ -137,13 +166,11 @@ header {
   width: 90%;
   display: flex;
   margin: 0 auto;
+  justify-content: center;
 }
 
 .col--narrow {
   margin-top: 1em;
-  clear: both;
-  padding: 0 2em 0 0;
-  text-align: left;
 }
 
 .col--wide {
@@ -160,7 +187,7 @@ header {
 .social-icons li {
   text-decoration: none;
   display: inline-flex;
-  padding: 10px;
+  padding: 20px 10px 10px 0;
 }
 
 .social-icons a {
@@ -206,6 +233,8 @@ header {
   overflow: auto;
   color: white;
   background: url(https://res.cloudinary.com/travdevcloudserver/image/upload/v1532572418/wood_panel.jpg);
+  background-repeat: no-repeat;
+  background-size: cover; 
 }
 
 .footer {
