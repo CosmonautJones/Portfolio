@@ -7,15 +7,31 @@ body {
   text-align: center;
 }
 
+hr {
+  border: 2px solid black;
+  width: 15%
+}
+
+header {
+  position: absolute;
+  margin-top: 1.5em;
+  left: 0;
+  right: 0;
+  clear: both;
+  overflow: auto;
+}
+
 .name {
-  font-size: 5em;
+  font-size: 4em;
   color: rgb(45, 172, 45);
   font-weight: 900;
+  margin: 0;
 }
 
 .navigation ul {
   list-style: none;
   margin: 0 auto;
+  padding: 0;
 }
 
 .navigation li {
@@ -27,6 +43,179 @@ body {
   font-weight: bold;
   text-transform: uppercase;
   text-decoration: none;
-  padding: .5em;
+  padding: 0.5em;
   color: white;
+}
+
+.intro {
+  /* linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, .8)) */
+  background: url(https://res.cloudinary.com/travdevcloudserver/image/upload/v1532572418/wood_panel.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  padding: 10em 0;
+  color: white;
+}
+
+.intro__content {
+  margin-top: 5em;
+  overflow: auto;
+}
+
+.intro__content h1 {
+  margin-top: 10px;
+  font-size: 2.5em;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.intro__content span {
+  font-size: 0.5em;
+  font-weight: 400;
+  display: block;
+  margin-top: 10px;
+}
+
+.button {
+  padding: 0.5em 2em;
+  margin-top: 1em;
+  background: rgb(45, 172, 45);
+  color: white;
+  border-radius: 15px;
+  font-weight: 400;
+  border: 2px solid rgb(45, 172, 45);
+  text-transform: uppercase;
+  transition: all 0.2s ease-in;
+}
+
+.button:hover {
+  background: white;
+  border-radius: 10px;
+  color: rgb(45, 172, 45);
+  border: 2px solid whitesmoke;
+}
+
+.about-me {
+  padding: 5em 0;
+  overflow: auto;
+}
+
+.about-me h4 {
+  color: rgb(45, 172, 45);
+}
+
+.content--wrap {
+  width: 90%;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .content--wrap__about {
+      flex-direction: row;
+      width: 90%;
+  }
+}
+
+@media (max-width: 599px) {
+  .content--wrap__about {
+      flex-direction: column;
+      justify-items: center;
+      text-align: center;
+      width: 90%;
+  }
+  .col--narrow {
+    padding: 0;
+  }
+  .col--wide {
+    width: 70%;
+    text-align: center;
+    margin-top: 2em;
+  }
+}
+
+.content--wrap__about {
+  width: 90%;
+  display: flex;
+  margin: 0 auto;
+}
+
+.col--narrow {
+  margin-top: 1em;
+  clear: both;
+  padding: 0 2em 0 0;
+  text-align: left;
+}
+
+.col--wide {
+  width: 70%;
+  text-align: left;
+  margin-top: 2em;
+}
+
+.social-icons {
+  list-style: none;
+  padding: 0;
+}
+
+.social-icons li {
+  text-decoration: none;
+  display: inline-flex;
+  padding: 10px;
+}
+
+.social-icons a {
+  border: 2px solid #444444;
+  padding: 10px;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  color: #707070;
+  transition: all 0.2s ease-in;
+}
+
+
+.social-icons a:hover {
+  color: #18ba60;
+  border: 1px solid #18ba60;
+}
+
+#icon-linked:hover {
+  color:  #0077B5;
+  border: 2px solid #0077B5;
+  /* background: #ffc838; */
+}
+#icon-twitter:hover {
+  color:  #1da1f2;;
+  border: 2px solid #1da1f2;;
+  /* background: #ffc838; */
+}
+#icon-github:hover {
+  color:  #24292e;
+  border: 2px solid #24292e;
+  /* background: #ffc838; */
+}
+#icon-insta:hover {
+  color:  #fb3958;
+  border: 2px solid #fb3958;
+  /* background: #ffc838; */
+}
+
+.contact-me {
+  padding: 5em 0;
+  overflow: auto;
+  color: white;
+  background: url(https://res.cloudinary.com/travdevcloudserver/image/upload/v1532572418/wood_panel.jpg);
+}
+
+.footer {
+  background: black;
+  padding: 5em;
+  color: white;
+  overflow: auto;
+}
+
+.footer-hr {
+  border: 2px solid white;
+  width: 15%
 }
