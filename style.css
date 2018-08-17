@@ -161,10 +161,10 @@ header {
   transition: all 0.2s ease-in;
 }
 
-.social-icons a:hover {
+/* .social-icons a:hover {
   color: #18ba60;
   border: 1px solid #18ba60;
-}
+} */
 
 #icon-linked:hover {
   color: #0077b5;
@@ -254,5 +254,26 @@ header {
     color: rgb(45, 172, 45);
     font-weight: 900;
     margin: 0;
+  }
+
+  #icon-linked {
+    color: #0077b5;
+    border: 2px solid #0077b5;
+    /* background: #ffc838; */
+  }
+  #icon-twitter {
+    color: #1da1f2;
+    border: 2px solid #1da1f2;
+    /* background: #ffc838; */
+  }
+  #icon-github {
+    color: #24292e;
+    border: 2px solid #24292e;
+    /* background: #ffc838; */
+  }
+  #icon-insta {
+    color: #fb3958;
+    border: 2px solid #fb3958;
+    /* background: #ffc838; */
   }
 }
