@@ -28,6 +28,7 @@ header {
   top: 0;
   width: 100%;
   transition: all 0.2s ease-in;
+  text-shadow: #24292e;
 }
 
 .sticky + .about-me {
@@ -35,9 +36,11 @@ header {
 }
 
 .name {
-  font-size: 4em;
-  color: rgb(45, 172, 45);
+  font-size: 8em;
+  font-family: 'Josefin Sans', sans-serif;
+  color: #ffffff;
   font-weight: 900;
+  text-shadow: 4px 4px 0px #646464, 7px 7px 0px rgba(0, 0, 0, 1);
   margin: 0;
 }
 
@@ -61,8 +64,8 @@ header {
 }
 
 .intro {
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url(https://images.unsplash.com/photo-1500964757637-c85e8a162699?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=05cc20d5b0bde7ae0d12f916c11aa18e&auto=format&fit=crop&w=1378&q=80);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.3)),
+    url(https://images.unsplash.com/photo-1528827352060-35c8861f19f4?ixlib=rb-0.3.5&s=457d96eb0a8dce5363c3800b5ff9d296&auto=format&fit=crop&w=1350&q=80);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -228,6 +231,12 @@ header {
     padding: 0 2em 0 0;
     text-align: left;
   }
+  .name {
+    font-size: 5em;
+    color: #ffffff;
+    font-weight: 900;
+    margin: 0;
+  }
 }
 
 @media (max-width: 599px) {
@@ -251,7 +260,7 @@ header {
   }
   .name {
     font-size: 3em;
-    color: rgb(45, 172, 45);
+    color: #ffffff;
     font-weight: 900;
     margin: 0;
   }
