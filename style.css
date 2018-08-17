@@ -160,7 +160,8 @@ header {
 }
 
 .about-me h4 {
-  color: rgb(45, 172, 45);
+  color: #86888A;
+  text-transform: uppercase;
 }
 
 .content--wrap {
