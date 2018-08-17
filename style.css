@@ -7,9 +7,19 @@ body {
   text-align: center;
 }
 
+body > div {
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
+  -webkit-overflow-scrolling: touch;
+}
+
 hr {
   border: 2px solid black;
   width: 15%;
+}
+
+p {
+  font-size: 1.3em;
 }
 
 header {
@@ -303,3 +313,5 @@ header {
     /* background: #ffc838; */
   }
 }
+
+
