@@ -40,7 +40,7 @@ header {
   font-family: 'Josefin Sans', sans-serif;
   color: #ffffff;
   font-weight: 900;
-  text-shadow: 4px 4px 0px #646464, 7px 7px 0px rgba(0, 0, 0, 1);
+  /* text-shadow: 4px 4px 0px #646464, 7px 7px 0px rgba(0, 0, 0, 1); */
   margin: 0;
 }
 
@@ -259,7 +259,7 @@ header {
     margin: 0.5em;
   }
   .name {
-    font-size: 3em;
+    font-size: 3.8em;
     color: #ffffff;
     font-weight: 900;
     margin: 0;
