@@ -248,6 +248,7 @@ header {
     font-weight: 900;
     margin: 0;
   }
+  
 }
 
 @media (max-width: 599px) {
@@ -267,7 +268,7 @@ header {
   }
   .navigation li {
     display: inline-block;
-    margin: 0.5em;
+    margin: 1px;
   }
   .name {
     font-size: 3.8em;
