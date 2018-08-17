@@ -27,7 +27,7 @@ header {
   opacity: 0.8;
   top: 0;
   width: 100%;
-  transition: all 0.2s ease-in;
+  transition: all 0.8s ease-in-out;
   text-shadow: #24292e;
 }
 
@@ -190,6 +190,12 @@ header {
   /* background: #ffc838; */
 }
 
+#icon-resume:hover {
+  color: rgb(45, 172, 45);
+  border: 2px solid rgb(45, 172, 45);
+  /* background: #ffc838; */
+}
+
 .contact-me {
   padding: 5em 0;
   overflow: auto;
@@ -209,6 +215,11 @@ header {
 .footer-hr {
   border: 2px solid white;
   width: 15%;
+}
+
+.name-hr {
+  border: 2px solid white;
+  width: 25%;
 }
 
 @media (min-width: 900px) {
@@ -283,6 +294,11 @@ header {
   #icon-insta {
     color: #fb3958;
     border: 2px solid #fb3958;
+    /* background: #ffc838; */
+  }
+  #icon-resume {
+    color: rgb(45, 172, 45);
+    border: 2px solid rgb(45, 172, 45);
     /* background: #ffc838; */
   }
 }

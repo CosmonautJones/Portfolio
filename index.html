@@ -23,7 +23,7 @@
     <nav class="navigation" id="navStick">
       <ul>
         <li>
-          <a href="#">Home</a>
+          <a href="#home">Home</a>
         </li>
         <li>
           <a href="#about-me">About</a>
@@ -32,15 +32,16 @@
           <a href="#portfolio">Portfolio</a>
         </li>
         <li>
-          <a href="#">Contact Me</a>
+          <a href="#contact">Contact Me</a>
         </li>
       </ul>
     </nav>
   </header>
 
   <!-- Intro -->
-  <section class="intro">
+  <section id="home" class="intro">
       <h1 class="name">Travis Jones</h1>
+      <hr class="name-hr">
     <!-- <div class="headshot">
       <img src="http://res.cloudinary.com/travdevcloudserver/image/upload/v1532569950/imageedit_2_2250564798.gif" alt="image" width="300px">
     </div> -->
@@ -56,7 +57,7 @@
   </section>
 
   <!-- About Me -->
-  <section class="about-me">
+  <section id="about-me" class="about-me">
     <h1>Who am I?</h1>
     <h4>I am an awesome web developer</h4>
     <div class="content--wrap__about">
@@ -76,23 +77,28 @@
         <nav>
           <ul class="social-icons">
             <li>
-              <a id="icon-linked" href="#">
+              <a id="icon-linked" href="https://www.linkedin.com/in/travis-john-jones/">
                 <i class="fab fa-linkedin fa-2x"></i>
               </a>
             </li>
             <li>
-              <a id="icon-github" href="#">
+              <a id="icon-github" href="https://github.com/CosmonautJones">
                 <i class="fab fa-github-square fa-2x"></i>
               </a>
             </li>
             <li>
-              <a id="icon-twitter" href="#">
+              <a id="icon-twitter" href="https://twitter.com/TravisJohnJones">
                 <i class="fab fa-twitter-square fa-2x"></i>
               </a>
             </li>
             <li>
-              <a id="icon-insta" href="#">
+              <a id="icon-insta" href="https://www.instagram.com/tj_jones/">
                 <i class="fab fa-instagram fa-2x"></i>
+              </a>
+            </li>
+            <li>
+              <a id="icon-resume" href="https://resume.creddle.io/resume/d75alm1cznd">
+                <i class="far fa-file fa-2x"></i>
               </a>
             </li>
           </ul>
@@ -102,11 +108,14 @@
   </section>
 
   <!-- Experience -->
-  <section class="portfolio">
+  <section id="portfolio" class="portfolio">
     <div>
       <h1>Skillset</h1>
       <hr>
     </div>
+
+
+    
     <!-- Experience 1 -->
     <div>
       <h2>JavaScript</h2>
@@ -122,7 +131,7 @@
   </section>
 
   <!-- Contact Me -->
-  <section class="contact-me">
+  <section id="contact" class="contact-me">
     <div class="content--wrap">
       <h1>Contact Me</h1>
       <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi voluptate fuga officiis totam sed illo maxime odio dignissimos veritatis. Architecto nulla error dolore sequi tempora aperiam aliquid officiis repudiandae possimus?</p>

@@ -1,8 +1,27 @@
-let els = document.querySelectorAll('nav li a');
-let links = document.querySelectorAll('a');
-
-for (let i = 0; i < links.length; i++) {
-  console.log(links[i]);
+var els = document.querySelectorAll('nav li a');
+var links = document.getElementsByTagName('a');
+for (var i = 0; i < links.length; i++) {
+    var link = links[i];
+    if (location.pathname.replace(/^\//, '') == link.pathname.replace(/^\//, '') &&
+        location.hostname == link.hostname && link.hash.replace(/#/, '')) {
+        link.addEventListener('click', function(e) {
+            //remove all active elements
+            for (var i = 0; i < els.length; i++) {
+                els[i].classList.remove('active');
+            }
+            var targetId = this.hash,
+                targetAnchor = '[name=' + this.hash.slice(1) + ']';
+            var target = targetId.length ? targetId : targetAnchor.length ? targetAnchor : false;
+            this.classList.add('active');
+            //find top coordinate of the element
+            window.scroll({
+                top: document.querySelector(target).offsetTop, // could be negative value
+                left: 0,
+                behavior: 'smooth'
+            });
+            e.preventDefault();
+        });
+    }
 }
 
 // When the user scrolls the page, execute myFunction
