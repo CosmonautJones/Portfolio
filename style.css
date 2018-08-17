@@ -268,7 +268,7 @@ header {
   }
   .navigation li {
     display: inline-block;
-    margin: 1px;
+    margin: .7em;
   }
   .name {
     font-size: 3.8em;
