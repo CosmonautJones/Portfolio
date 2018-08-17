@@ -13,6 +13,10 @@ body > div {
   -webkit-overflow-scrolling: touch;
 }
 
+a {
+  text-decoration: none;
+}
+
 hr {
   border: 2px solid black;
   width: 15%;
@@ -274,6 +278,17 @@ header {
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
+}
+
+.project-button {
+  display: flex;
+  justify-content: space-around;
+}
+
+.prooject-link {
+  margin: 0 10px 0 10px;
+  background: #444444;
+  color: #707070;
 }
 
 
