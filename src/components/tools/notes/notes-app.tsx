@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createNote, updateNote, deleteNote } from "@/actions/notes";
 import { NoteEditor } from "@/components/tools/notes/note-editor";
 import { NoteCard } from "@/components/tools/notes/note-card";
@@ -14,18 +15,25 @@ export default function NotesApp() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState(false);
-  const supabase = createClient();
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+
+  function getSupabase() {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  }
 
   useEffect(() => {
     async function fetchNotes() {
-      const { data } = await supabase
+      const { data } = await getSupabase()
         .from("notes")
         .select("*")
         .order("updated_at", { ascending: false });
       if (data) setNotes(data as Note[]);
     }
     fetchNotes();
-  }, [supabase]);
+  }, []);
 
   async function handleCreate(formData: FormData) {
     const result = await createNote(formData);
@@ -36,7 +44,7 @@ export default function NotesApp() {
     setCreating(false);
     toast.success("Note created");
     // Refetch
-    const { data } = await supabase.from("notes").select("*").order("updated_at", { ascending: false });
+    const { data } = await getSupabase().from("notes").select("*").order("updated_at", { ascending: false });
     if (data) setNotes(data as Note[]);
   }
 
@@ -48,7 +56,7 @@ export default function NotesApp() {
     }
     setEditing(null);
     toast.success("Note updated");
-    const { data } = await supabase.from("notes").select("*").order("updated_at", { ascending: false });
+    const { data } = await getSupabase().from("notes").select("*").order("updated_at", { ascending: false });
     if (data) setNotes(data as Note[]);
   }
 
