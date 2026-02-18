@@ -3,7 +3,7 @@ import type { Project } from "@/lib/types";
 export const SITE_CONFIG = {
   name: "Travis Jones",
   title: "Software Developer",
-  tagline: "I love building cool stuff",
+  tagline: "Building software that makes an impact.",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",

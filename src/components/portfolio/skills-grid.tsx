@@ -1,17 +1,15 @@
-import { Badge } from "@/components/ui/badge";
 import { SKILLS } from "@/lib/constants";
 
 export function SkillsGrid() {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-2.5">
       {SKILLS.map((skill) => (
-        <Badge
+        <span
           key={skill}
-          variant="secondary"
-          className="border border-border/50 bg-gradient-to-br from-muted to-muted/50 px-4 py-2 text-sm transition-colors hover:from-violet-100 hover:to-indigo-100 hover:text-violet-700 dark:hover:from-violet-500/15 dark:hover:to-indigo-500/15 dark:hover:text-violet-300"
+          className="rounded-full border border-border/50 bg-secondary/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:bg-secondary hover:text-foreground"
         >
           {skill}
-        </Badge>
+        </span>
       ))}
     </div>
   );
