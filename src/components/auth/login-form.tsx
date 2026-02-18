@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, Sparkles } from "lucide-react";
 
 export function LoginForm() {
   const [pending, setPending] = useState(false);
@@ -28,9 +28,11 @@ export function LoginForm() {
 
   if (sent) {
     return (
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border-border/50 shadow-xl shadow-violet-500/5">
         <CardHeader className="text-center">
-          <Mail className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-500/20 dark:to-indigo-500/20">
+            <Mail className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+          </div>
           <CardTitle>Check your email</CardTitle>
           <CardDescription>
             We sent you a magic link. Click it to sign in.
@@ -41,9 +43,12 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border-border/50 shadow-xl shadow-violet-500/5">
       <CardHeader>
-        <CardTitle>Sign In</CardTitle>
+        <div className="mb-2 flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-violet-500" />
+          <CardTitle>Sign In</CardTitle>
+        </div>
         <CardDescription>Enter your email to receive a magic link.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -56,10 +61,11 @@ export function LoginForm() {
               type="email"
               placeholder="you@example.com"
               required
+              className="border-border/50 focus-visible:ring-violet-500/50"
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:brightness-110 dark:from-violet-500 dark:to-indigo-500" disabled={pending}>
             {pending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
