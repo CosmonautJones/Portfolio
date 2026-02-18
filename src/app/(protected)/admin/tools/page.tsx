@@ -4,6 +4,7 @@ import { ToolFormDialog } from "@/components/admin/tool-form-dialog";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin — Tools" };
 
 export default async function AdminToolsPage() {

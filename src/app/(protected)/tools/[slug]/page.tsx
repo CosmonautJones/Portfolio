@@ -4,6 +4,8 @@ import { ToolRenderer } from "@/components/tools/tool-renderer";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 interface ToolPageProps {
   params: Promise<{ slug: string }>;
 }
