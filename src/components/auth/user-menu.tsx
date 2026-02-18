@@ -17,9 +17,9 @@ import type { User } from "@supabase/supabase-js";
 
 export function UserMenu() {
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
 
     const {
@@ -29,7 +29,7 @@ export function UserMenu() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, []);
 
   if (!user) {
     return (
