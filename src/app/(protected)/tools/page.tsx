@@ -3,6 +3,7 @@ import { ToolCard } from "@/components/tools/tool-card";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Tools" };
 
 export default async function ToolsPage() {
