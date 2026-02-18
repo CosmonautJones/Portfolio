@@ -1,51 +1,68 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/constants";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-4 text-center">
-      {/* Background glow blobs */}
+    <section className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-6 text-center">
+      {/* Ambient glow — large, soft, slow-moving */}
       <div
-        className="hero-glow -left-32 -top-32 h-[500px] w-[500px] bg-violet-500/20 dark:bg-violet-500/10"
-        style={{ animation: "pulse-glow 8s ease-in-out infinite" }}
+        className="hero-glow -left-40 -top-40 h-[600px] w-[600px] bg-violet-500/15 dark:bg-violet-500/[0.07]"
+        style={{ animation: "pulse-glow 10s ease-in-out infinite" }}
       />
       <div
-        className="hero-glow -bottom-32 -right-32 h-[400px] w-[400px] bg-cyan-500/20 dark:bg-cyan-500/10"
-        style={{ animation: "pulse-glow 8s ease-in-out infinite 4s" }}
+        className="hero-glow -bottom-40 -right-40 h-[500px] w-[500px] bg-indigo-500/15 dark:bg-indigo-500/[0.06]"
+        style={{ animation: "pulse-glow 10s ease-in-out infinite 5s" }}
       />
       <div
-        className="hero-glow left-1/2 top-1/3 h-[300px] w-[300px] -translate-x-1/2 bg-indigo-500/15 dark:bg-indigo-500/8"
-        style={{ animation: "float 10s ease-in-out infinite" }}
+        className="hero-glow left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2 bg-cyan-400/10 dark:bg-cyan-400/[0.04]"
+        style={{ animation: "float 12s ease-in-out infinite" }}
       />
 
       {/* Content */}
-      <div className="relative z-10">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground backdrop-blur-sm">
-          <Sparkles className="h-3.5 w-3.5" />
+      <div className="relative z-10 max-w-4xl">
+        {/* Pill badge */}
+        <div className="animate-fade-up mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Software Developer
         </div>
 
-        <h1 className="gradient-text text-6xl font-extrabold tracking-tight sm:text-8xl">
+        {/* Main headline — massive, Apple-style */}
+        <h1 className="animate-fade-up delay-100 gradient-text text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight">
           {SITE_CONFIG.name}
         </h1>
 
-        <p className="mx-auto mt-6 max-w-lg text-lg text-muted-foreground sm:text-xl">
+        {/* Tagline */}
+        <p className="animate-fade-up delay-200 mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl">
           {SITE_CONFIG.tagline}
         </p>
 
-        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Button asChild size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:brightness-110 dark:from-violet-500 dark:to-indigo-500">
+        {/* CTA buttons */}
+        <div className="animate-fade-up delay-300 mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <Button
+            asChild
+            size="lg"
+            className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+          >
             <Link href="/work">
-              View My Work <ArrowRight className="ml-2 h-4 w-4" />
+              View My Work
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="lg" asChild className="backdrop-blur-sm">
+          <Button
+            variant="outline"
+            size="lg"
+            asChild
+            className="h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
+          >
             <Link href="/contact">Get in Touch</Link>
           </Button>
         </div>
       </div>
+
+      {/* Bottom fade — seamless transition to next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

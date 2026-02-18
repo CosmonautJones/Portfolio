@@ -5,9 +5,13 @@ export const metadata: Metadata = { title: "Contact" };
 
 export default function ContactPage() {
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-16">
-      <h1 className="gradient-text mb-8 inline-block text-4xl font-extrabold sm:text-5xl">Contact Me</h1>
-      <ContactSection />
+    <div className="container mx-auto max-w-2xl px-6 py-24 sm:py-32">
+      <h1 className="animate-fade-up gradient-text mb-8 inline-block text-4xl font-bold tracking-tight sm:text-5xl">
+        Get in Touch
+      </h1>
+      <div className="animate-fade-up delay-100">
+        <ContactSection />
+      </div>
     </div>
   );
 }

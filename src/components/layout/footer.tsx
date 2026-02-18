@@ -3,23 +3,28 @@ import { Github, Linkedin, Twitter } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="relative border-t py-8">
-      {/* Gradient accent line */}
-      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
-      <div className="container mx-auto flex flex-col items-center gap-4 px-4 md:flex-row md:justify-between">
-        <p className="text-sm text-muted-foreground">
+    <footer className="border-t border-border/40 py-8">
+      <div className="container mx-auto flex flex-col items-center gap-4 px-6 md:flex-row md:justify-between">
+        <p className="text-xs text-muted-foreground/60">
           &copy; {new Date().getFullYear()} {SITE_CONFIG.name}
         </p>
         <div className="flex gap-4">
-          <a href={SITE_CONFIG.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-400">
-            <Github className="h-5 w-5" />
-          </a>
-          <a href={SITE_CONFIG.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-400">
-            <Linkedin className="h-5 w-5" />
-          </a>
-          <a href={SITE_CONFIG.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-400">
-            <Twitter className="h-5 w-5" />
-          </a>
+          {[
+            { href: SITE_CONFIG.github, icon: Github, label: "GitHub" },
+            { href: SITE_CONFIG.linkedin, icon: Linkedin, label: "LinkedIn" },
+            { href: SITE_CONFIG.twitter, icon: Twitter, label: "Twitter" },
+          ].map(({ href, icon: Icon, label }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground/50 transition-colors duration-300 hover:text-foreground"
+              aria-label={label}
+            >
+              <Icon className="h-4 w-4" />
+            </a>
+          ))}
         </div>
       </div>
     </footer>
