@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
-});
-
 export const noteSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   content: z.string(),
