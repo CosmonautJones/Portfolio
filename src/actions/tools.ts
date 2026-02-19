@@ -5,6 +5,76 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { toolSchema } from "@/lib/validations";
 
+interface GitHubRepoData {
+  name: string;
+  slug: string;
+  description: string;
+  url: string;
+  tags: string;
+  homepage: string | null;
+}
+
+export async function importFromGitHub(
+  repoUrl: string
+): Promise<{ data?: GitHubRepoData; error?: string }> {
+  try {
+    await requireAdmin();
+
+    const match = repoUrl.match(
+      /github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)/
+    );
+    if (!match) {
+      return { error: "Invalid GitHub URL. Expected: github.com/owner/repo" };
+    }
+
+    const [, owner, repo] = match;
+    const cleanRepo = repo.replace(/\.git$/, "");
+
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github.v3+json",
+      "User-Agent": "Portfolio-Admin",
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${cleanRepo}`,
+      { headers }
+    );
+
+    if (!res.ok) {
+      if (res.status === 404) return { error: "Repository not found" };
+      if (res.status === 403) return { error: "GitHub API rate limit reached" };
+      return { error: `GitHub API error: ${res.status}` };
+    }
+
+    const data = await res.json();
+
+    const topics: string[] = data.topics ?? [];
+    if (data.language && !topics.includes(data.language.toLowerCase())) {
+      topics.unshift(data.language.toLowerCase());
+    }
+
+    const slug = cleanRepo.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    return {
+      data: {
+        name: cleanRepo
+          .replace(/[-_]+/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        slug,
+        description: data.description ?? "",
+        url: data.homepage || data.html_url,
+        tags: topics.join(", "),
+        homepage: data.homepage || null,
+      },
+    };
+  } catch {
+    return { error: "Failed to fetch repository data" };
+  }
+}
+
 async function requireAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
