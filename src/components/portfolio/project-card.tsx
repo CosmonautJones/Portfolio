@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,19 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card className="group flex flex-col overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:shadow-2xl hover:shadow-violet-500/[0.04] dark:hover:shadow-violet-500/[0.08]">
+      {project.image ? (
+        <div className="relative h-48 w-full overflow-hidden">
+          <Image
+            src={project.image}
+            alt={project.title}
+            width={400}
+            height={225}
+            className="w-full h-48 object-cover rounded-t-lg"
+          />
+        </div>
+      ) : (
+        <div className="h-48 w-full rounded-t-lg bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-fuchsia-500/20" />
+      )}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-lg font-semibold tracking-tight transition-colors duration-300 group-hover:text-foreground">

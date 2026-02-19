@@ -1,43 +1,150 @@
-import { Button } from "@/components/ui/button";
-import { SITE_CONFIG } from "@/lib/constants";
-import { Mail, Github, Linkedin, Twitter, ArrowUpRight } from "lucide-react";
+"use client";
 
-export function ContactSection() {
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { SITE_CONFIG } from "@/lib/constants";
+import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send } from "lucide-react";
+
+const contactSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
+
+export function ContactForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+  });
+
+  function onSubmit(data: ContactFormValues) {
+    const subject = encodeURIComponent(`Contact from ${data.name}`);
+    const body = encodeURIComponent(
+      `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`
+    );
+    const mailtoUrl = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
+
+    window.open(mailtoUrl, "_blank");
+
+    toast.success("Opening your email client!", {
+      description: "Your message details have been pre-filled.",
+    });
+
+    reset();
+  }
+
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
         Got any questions? Want to collaborate? Feel free to reach out.
       </p>
 
-      <Button
-        size="lg"
-        asChild
-        className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
-      >
-        <a href={`mailto:${SITE_CONFIG.email}`}>
-          <Mail className="mr-2 h-4 w-4" />
-          Email Me
-          <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-        </a>
-      </Button>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            id="name"
+            placeholder="Your name"
+            {...register("name")}
+            aria-invalid={!!errors.name}
+          />
+          {errors.name && (
+            <p className="text-sm text-destructive">{errors.name.message}</p>
+          )}
+        </div>
 
-      <div className="flex gap-3 pt-2">
-        {[
-          { href: SITE_CONFIG.github, icon: Github, label: "GitHub" },
-          { href: SITE_CONFIG.linkedin, icon: Linkedin, label: "LinkedIn" },
-          { href: SITE_CONFIG.twitter, icon: Twitter, label: "Twitter" },
-        ].map(({ href, icon: Icon, label }) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-300 hover:border-border hover:bg-secondary/80 hover:text-foreground"
-            aria-label={label}
-          >
-            <Icon className="h-[18px] w-[18px]" />
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            {...register("email")}
+            aria-invalid={!!errors.email}
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="message">Message</Label>
+          <Textarea
+            id="message"
+            placeholder="Your message..."
+            className="min-h-[120px]"
+            {...register("message")}
+            aria-invalid={!!errors.message}
+          />
+          {errors.message && (
+            <p className="text-sm text-destructive">{errors.message.message}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isSubmitting}
+          className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+        >
+          <Send className="mr-2 h-4 w-4" />
+          Send Message
+          <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+        </Button>
+      </form>
+
+      <div className="border-t border-border/50 pt-8">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Or reach out directly:
+        </p>
+        <Button
+          size="lg"
+          asChild
+          variant="outline"
+          className="h-12 rounded-full border-border/50 px-8 transition-all duration-300 hover:border-border hover:bg-secondary/80"
+        >
+          <a href={`mailto:${SITE_CONFIG.email}`}>
+            <Mail className="mr-2 h-4 w-4" />
+            {SITE_CONFIG.email}
+            <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </a>
-        ))}
+        </Button>
+
+        <div className="mt-6 flex gap-3">
+          {[
+            { href: SITE_CONFIG.github, icon: Github, label: "GitHub" },
+            { href: SITE_CONFIG.linkedin, icon: Linkedin, label: "LinkedIn" },
+            { href: SITE_CONFIG.twitter, icon: Twitter, label: "Twitter" },
+          ].map(({ href, icon: Icon, label }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-300 hover:border-border hover:bg-secondary/80 hover:text-foreground"
+              aria-label={label}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Tool } from "@/lib/types";
 import * as Icons from "lucide-react";
+import { Wrench } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+function isLucideIcon(name: string): name is keyof typeof Icons {
+  return name in Icons && typeof (Icons as Record<string, unknown>)[name] === "function";
+}
 
 interface ToolCardProps {
   tool: Tool;
@@ -11,7 +17,9 @@ interface ToolCardProps {
 export function ToolCard({ tool }: ToolCardProps) {
   // Dynamically get icon — fallback to Wrench
   const iconName = toPascalCase(tool.icon || "wrench");
-  const IconComponent = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] ?? Icons.Wrench;
+  const IconComponent: LucideIcon = isLucideIcon(iconName)
+    ? (Icons[iconName] as LucideIcon)
+    : Wrench;
 
   return (
     <Link href={`/tools/${tool.slug}`}>

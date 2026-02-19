@@ -5,7 +5,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as "magiclink" | "email" | null;
-  const redirectTo = searchParams.get("redirectTo") || "/tools";
+  const rawRedirectTo = searchParams.get("redirectTo") || "/tools";
+  const redirectTo =
+    rawRedirectTo.startsWith("/") && !rawRedirectTo.startsWith("//")
+      ? rawRedirectTo
+      : "/tools";
 
   if (token_hash && type) {
     const successRedirect = NextResponse.redirect(
