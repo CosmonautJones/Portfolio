@@ -15,7 +15,7 @@ export async function createNote(formData: FormData) {
       content: formData.get("content"),
     });
     if (!parsed.success) {
-      return { error: parsed.error.errors.map((e) => e.message).join(", ") };
+      return { error: parsed.error.issues.map((e) => e.message).join(", ") };
     }
 
     const { error } = await supabase.from("notes").insert({
@@ -43,7 +43,7 @@ export async function updateNote(noteId: string, formData: FormData) {
       content: formData.get("content"),
     });
     if (!parsed.success) {
-      return { error: parsed.error.errors.map((e) => e.message).join(", ") };
+      return { error: parsed.error.issues.map((e) => e.message).join(", ") };
     }
 
     const { error } = await supabase
