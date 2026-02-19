@@ -2,13 +2,14 @@ export interface Tool {
   id: string;
   slug: string;
   name: string;
-  type: "internal" | "external";
+  type: "internal" | "external" | "embedded";
   status: "enabled" | "disabled";
   url: string | null;
   description: string | null;
   tags: string[];
   icon: string | null;
   build_hook_url: string | null;
+  html_content: string | null;
   created_at: string;
 }
 

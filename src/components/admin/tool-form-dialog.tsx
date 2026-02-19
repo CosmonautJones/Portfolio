@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { createTool, updateTool, importFromGitHub } from "@/actions/tools";
+import {
+  createTool,
+  updateTool,
+  importFromGitHub,
+  fetchRepoHtml,
+} from "@/actions/tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Download } from "lucide-react";
+import { Loader2, Plus, Pencil, Download, Package } from "lucide-react";
 import type { Tool } from "@/lib/types";
 
 interface ToolFormDialogProps {
@@ -34,8 +39,25 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
   const [importing, setImporting] = useState(false);
   const [type, setType] = useState<string>(tool?.type ?? "internal");
   const [githubUrl, setGithubUrl] = useState("");
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const isEdit = !!tool;
+
+  function setFormInput(name: string, value: string) {
+    if (!formRef.current) return;
+    const el = formRef.current.querySelector<
+      HTMLInputElement | HTMLTextAreaElement
+    >(`[name="${name}"]`);
+    if (!el) return;
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      el instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype,
+      "value"
+    )?.set;
+    nativeSetter?.call(el, value);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
 
   async function handleImport() {
     if (!githubUrl.trim()) return;
@@ -49,38 +71,56 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
     }
 
     if (result.data && formRef.current) {
-      const form = formRef.current;
-      const setInput = (name: string, value: string) => {
-        const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-          `[name="${name}"]`
+      setFormInput("name", result.data.name);
+      setFormInput("slug", result.data.slug);
+      setFormInput("description", result.data.description);
+      setFormInput("tags", result.data.tags);
+
+      if (result.data.homepage) {
+        // Has a live URL — default to external
+        setFormInput("url", result.data.url);
+        setType("external");
+        toast.success("Imported from GitHub — review and save");
+      } else {
+        // No live URL — suggest embedding
+        setType("embedded");
+        toast.success(
+          'No live URL found — set to "Embedded". Click "Fetch Source" to pull in the code.'
         );
-        if (el) {
-          // Use native setter to trigger React's change tracking
-          const nativeSetter = Object.getOwnPropertyDescriptor(
-            name === "description"
-              ? HTMLTextAreaElement.prototype
-              : HTMLInputElement.prototype,
-            "value"
-          )?.set;
-          nativeSetter?.call(el, value);
-          el.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-      };
+      }
+    }
+  }
 
-      setInput("name", result.data.name);
-      setInput("slug", result.data.slug);
-      setInput("description", result.data.description);
-      setInput("tags", result.data.tags);
-      setInput("url", result.data.url);
-      setType("external");
+  async function handleFetchSource() {
+    if (!githubUrl.trim()) {
+      toast.error("Enter a GitHub URL first");
+      return;
+    }
+    setImporting(true);
+    const result = await fetchRepoHtml(githubUrl.trim());
+    setImporting(false);
 
-      toast.success("Imported from GitHub — review and save");
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+
+    if (result.html) {
+      setHtmlContent(result.html);
+      toast.success(
+        `Source fetched (${Math.round(result.html.length / 1024)}KB) — ready to save`
+      );
     }
   }
 
   async function handleSubmit(formData: FormData) {
     setPending(true);
     formData.set("type", type);
+
+    if (type === "embedded" && htmlContent) {
+      formData.set("html_content", htmlContent);
+    }
+
     const result = isEdit
       ? await updateTool(tool!.id, formData)
       : await createTool(formData);
@@ -95,6 +135,7 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
     toast.success(isEdit ? "Tool updated" : "Tool created");
     setOpen(false);
     setGithubUrl("");
+    setHtmlContent(null);
   }
 
   return (
@@ -172,6 +213,7 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
               <SelectContent>
                 <SelectItem value="internal">Internal</SelectItem>
                 <SelectItem value="external">External</SelectItem>
+                <SelectItem value="embedded">Embedded</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -185,6 +227,37 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
                 defaultValue={tool?.url ?? ""}
                 required
               />
+            </div>
+          )}
+          {type === "embedded" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Source</Label>
+                {htmlContent ? (
+                  <span className="flex items-center gap-1 text-xs text-green-600">
+                    <Package className="h-3 w-3" />
+                    {Math.round(htmlContent.length / 1024)}KB loaded
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    No source loaded
+                  </span>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleFetchSource}
+                disabled={importing || !githubUrl.trim()}
+              >
+                {importing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
+                Fetch Source from GitHub
+              </Button>
             </div>
           )}
           <div className="space-y-2">
@@ -221,7 +294,11 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
               defaultValue={tool?.build_hook_url ?? ""}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={pending || (type === "embedded" && !htmlContent && !isEdit)}
+          >
             {pending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}

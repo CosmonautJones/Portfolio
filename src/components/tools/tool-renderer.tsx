@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { getInternalToolComponent } from "@/lib/tools-registry";
 import { ExternalToolFrame } from "@/components/tools/external-tool-frame";
+import { EmbeddedToolFrame } from "@/components/tools/embedded-tool-frame";
 import type { Tool } from "@/lib/types";
 
 interface ToolRendererProps {
@@ -16,6 +17,10 @@ export function ToolRenderer({ tool }: ToolRendererProps) {
         <p className="text-muted-foreground">This tool is currently disabled.</p>
       </div>
     );
+  }
+
+  if (tool.type === "embedded") {
+    return <EmbeddedToolFrame tool={tool} />;
   }
 
   if (tool.type === "external" && tool.url) {
