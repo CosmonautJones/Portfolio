@@ -8,7 +8,7 @@ import { loginSchema } from "@/lib/validations";
 export async function signInWithMagicLink(formData: FormData) {
   const parsed = loginSchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
-    return { error: parsed.error.errors[0].message };
+    return { error: parsed.error.issues[0].message };
   }
   const { email } = parsed.data;
   const supabase = await createClient();
