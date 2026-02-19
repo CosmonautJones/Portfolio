@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Loader2 } from "lucide-react";
 
-export function LoginForm() {
+export function LoginForm({ urlError }: { urlError?: string }) {
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(urlError ?? null);
 
   async function handleSubmit(formData: FormData) {
     setPending(true);

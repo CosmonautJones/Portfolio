@@ -3,10 +3,16 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Sign In" };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <LoginForm />
+      <LoginForm urlError={error} />
     </div>
   );
 }
