@@ -30,7 +30,7 @@ export async function createTool(formData: FormData) {
       build_hook_url: formData.get("build_hook_url") || "",
     });
     if (!parsed.success) {
-      return { error: parsed.error.errors.map((e) => e.message).join(", ") };
+      return { error: parsed.error.issues.map((e) => e.message).join(", ") };
     }
 
     const tags = parsed.data.tags
@@ -77,7 +77,7 @@ export async function updateTool(toolId: string, formData: FormData) {
       build_hook_url: formData.get("build_hook_url") || "",
     });
     if (!parsed.success) {
-      return { error: parsed.error.errors.map((e) => e.message).join(", ") };
+      return { error: parsed.error.issues.map((e) => e.message).join(", ") };
     }
 
     const tags = parsed.data.tags
