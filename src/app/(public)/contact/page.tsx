@@ -1,4 +1,4 @@
-import { ContactSection } from "@/components/portfolio/contact-form";
+import { ContactForm } from "@/components/portfolio/contact-form";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Contact" };
@@ -10,7 +10,7 @@ export default function ContactPage() {
         Get in Touch
       </h1>
       <div className="animate-fade-up delay-100">
-        <ContactSection />
+        <ContactForm />
       </div>
     </div>
   );

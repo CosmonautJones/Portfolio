@@ -3,9 +3,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { loginSchema } from "@/lib/validations";
 
 export async function signInWithMagicLink(formData: FormData) {
-  const email = formData.get("email") as string;
+  const parsed = loginSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0].message };
+  }
+  const { email } = parsed.data;
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithOtp({

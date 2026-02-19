@@ -13,6 +13,12 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-2xl backdrop-saturate-[1.8]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground"
+      >
+        Skip to content
+      </a>
       <div className="container mx-auto flex h-14 items-center justify-between px-6">
         <Link
           href="/"

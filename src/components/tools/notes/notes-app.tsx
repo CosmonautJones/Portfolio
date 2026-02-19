@@ -11,8 +11,30 @@ import { Plus } from "lucide-react";
 import type { Note } from "@/lib/types";
 import { toast } from "sonner";
 
+function NotesSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="animate-pulse rounded-lg border bg-card p-6 space-y-3"
+        >
+          <div className="h-5 w-2/3 rounded bg-muted" />
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded bg-muted" />
+            <div className="h-3 w-4/5 rounded bg-muted" />
+          </div>
+          <div className="h-3 w-1/3 rounded bg-muted" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function NotesApp() {
   const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState(false);
   const supabaseRef = useRef<SupabaseClient | null>(null);
@@ -31,14 +53,17 @@ export default function NotesApp() {
         .select("*")
         .order("updated_at", { ascending: false });
       if (data) setNotes(data as Note[]);
+      setLoading(false);
     }
     fetchNotes();
   }, []);
 
   async function handleCreate(formData: FormData) {
+    setSaving(true);
     const result = await createNote(formData);
     if (result.error) {
       toast.error(typeof result.error === "string" ? result.error : "Validation error");
+      setSaving(false);
       return;
     }
     setCreating(false);
@@ -46,35 +71,47 @@ export default function NotesApp() {
     // Refetch
     const { data } = await getSupabase().from("notes").select("*").order("updated_at", { ascending: false });
     if (data) setNotes(data as Note[]);
+    setSaving(false);
   }
 
   async function handleUpdate(noteId: string, formData: FormData) {
+    setSaving(true);
     const result = await updateNote(noteId, formData);
     if (result.error) {
       toast.error(typeof result.error === "string" ? result.error : "Validation error");
+      setSaving(false);
       return;
     }
     setEditing(null);
     toast.success("Note updated");
     const { data } = await getSupabase().from("notes").select("*").order("updated_at", { ascending: false });
     if (data) setNotes(data as Note[]);
+    setSaving(false);
   }
 
   async function handleDelete(noteId: string) {
+    setSaving(true);
     const result = await deleteNote(noteId);
     if (result.error) {
       toast.error(typeof result.error === "string" ? result.error : "Delete failed");
+      setSaving(false);
       return;
     }
     toast.success("Note deleted");
     setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    setSaving(false);
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{notes.length} note{notes.length !== 1 && "s"}</p>
-        <Button onClick={() => { setCreating(true); setEditing(null); }}>
+        <p className="text-sm text-muted-foreground">
+          {loading ? "Loading notes..." : `${notes.length} note${notes.length !== 1 ? "s" : ""}`}
+        </p>
+        <Button
+          onClick={() => { setCreating(true); setEditing(null); }}
+          disabled={loading || saving}
+        >
           <Plus className="mr-1 h-4 w-4" /> New Note
         </Button>
       </div>
@@ -91,16 +128,20 @@ export default function NotesApp() {
         />
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {notes.map((note) => (
-          <NoteCard
-            key={note.id}
-            note={note}
-            onEdit={() => { setEditing(note); setCreating(false); }}
-            onDelete={() => handleDelete(note.id)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <NotesSkeleton />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {notes.map((note) => (
+            <NoteCard
+              key={note.id}
+              note={note}
+              onEdit={() => { setEditing(note); setCreating(false); }}
+              onDelete={() => handleDelete(note.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

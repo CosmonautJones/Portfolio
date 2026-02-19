@@ -51,7 +51,11 @@ export async function updateSession(request: NextRequest) {
 
   // Authenticated on login page → redirect to tools
   if (user && pathname === "/login") {
-    const redirectTo = request.nextUrl.searchParams.get("redirectTo") || "/tools";
+    const rawRedirectTo = request.nextUrl.searchParams.get("redirectTo") || "/tools";
+    const redirectTo =
+      rawRedirectTo.startsWith("/") && !rawRedirectTo.startsWith("//")
+        ? rawRedirectTo
+        : "/tools";
     const url = request.nextUrl.clone();
     url.pathname = redirectTo;
     url.searchParams.delete("redirectTo");

@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-6 text-center">
+    <section aria-label="Hero" className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-6 text-center">
       {/* Ambient glow — large, soft, slow-moving */}
       <div
         className="hero-glow -left-40 -top-40 h-[600px] w-[600px] bg-violet-500/15 dark:bg-violet-500/[0.07]"

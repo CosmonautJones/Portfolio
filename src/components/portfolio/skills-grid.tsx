@@ -2,7 +2,7 @@ import { SKILLS } from "@/lib/constants";
 
 export function SkillsGrid() {
   return (
-    <div className="flex flex-wrap gap-2.5">
+    <section aria-label="Skills" className="flex flex-wrap gap-2.5">
       {SKILLS.map((skill) => (
         <span
           key={skill}
@@ -11,6 +11,6 @@ export function SkillsGrid() {
           {skill}
         </span>
       ))}
-    </div>
+    </section>
   );
 }
