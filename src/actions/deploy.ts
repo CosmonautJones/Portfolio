@@ -1,11 +1,12 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/utils";
 
 export async function triggerDeploy(buildHookUrl: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.email?.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
+  if (!user || !isAdminEmail(user.email)) {
     return { error: "Unauthorized" };
   }
 

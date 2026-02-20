@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { cn } from "./utils";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { cn, isAdminEmail } from "./utils";
 
 describe("cn utility", () => {
   it("merges multiple class strings", () => {
@@ -28,5 +28,46 @@ describe("cn utility", () => {
 
   it("handles undefined and null values gracefully", () => {
     expect(cn("foo", undefined, null, "bar")).toBe("foo bar");
+  });
+});
+
+describe("isAdminEmail", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns true for exact match", () => {
+    vi.stubEnv("ADMIN_EMAIL", "admin@example.com");
+    expect(isAdminEmail("admin@example.com")).toBe(true);
+  });
+
+  it("returns true for case-insensitive match", () => {
+    vi.stubEnv("ADMIN_EMAIL", "admin@example.com");
+    expect(isAdminEmail("Admin@Example.COM")).toBe(true);
+  });
+
+  it("returns true when env is uppercase and input is lowercase", () => {
+    vi.stubEnv("ADMIN_EMAIL", "ADMIN@EXAMPLE.COM");
+    expect(isAdminEmail("admin@example.com")).toBe(true);
+  });
+
+  it("returns false for non-matching email", () => {
+    vi.stubEnv("ADMIN_EMAIL", "admin@example.com");
+    expect(isAdminEmail("other@example.com")).toBe(false);
+  });
+
+  it("returns false when email is undefined", () => {
+    vi.stubEnv("ADMIN_EMAIL", "admin@example.com");
+    expect(isAdminEmail(undefined)).toBe(false);
+  });
+
+  it("returns false when ADMIN_EMAIL is not set", () => {
+    delete process.env.ADMIN_EMAIL;
+    expect(isAdminEmail("admin@example.com")).toBe(false);
+  });
+
+  it("returns false when both are undefined/missing", () => {
+    delete process.env.ADMIN_EMAIL;
+    expect(isAdminEmail(undefined)).toBe(false);
   });
 });

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAdminEmail } from "@/lib/utils";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -31,7 +32,8 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isProtectedRoute = pathname.startsWith("/tools") || pathname.startsWith("/admin");
+  const isProtectedRoute =
+    pathname.startsWith("/tools") || pathname.startsWith("/admin") || pathname.startsWith("/adventure");
   const isAdminRoute = pathname.startsWith("/admin");
 
   // Unauthenticated → redirect to login
@@ -43,19 +45,31 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Non-admin → redirect away from admin
-  if (user && isAdminRoute && user.email !== process.env.ADMIN_EMAIL) {
+  if (user && isAdminRoute && !isAdminEmail(user.email)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/tools";
+    url.pathname = "/adventure";
     return NextResponse.redirect(url);
   }
 
-  // Authenticated on login page → redirect to tools
+  // Non-admin → redirect away from tools
+  if (user && pathname.startsWith("/tools") && !isAdminEmail(user.email)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/adventure";
+    return NextResponse.redirect(url);
+  }
+
+  // Authenticated on login page → redirect based on role
   if (user && pathname === "/login") {
-    const rawRedirectTo = request.nextUrl.searchParams.get("redirectTo") || "/tools";
-    const redirectTo =
+    const isAdmin = isAdminEmail(user.email);
+    const defaultRedirect = isAdmin ? "/tools" : "/adventure";
+    const rawRedirectTo = request.nextUrl.searchParams.get("redirectTo") || defaultRedirect;
+    let redirectTo =
       rawRedirectTo.startsWith("/") && !rawRedirectTo.startsWith("//")
         ? rawRedirectTo
-        : "/tools";
+        : defaultRedirect;
+    if (!isAdmin && (redirectTo.startsWith("/tools") || redirectTo.startsWith("/admin"))) {
+      redirectTo = "/adventure";
+    }
     const url = request.nextUrl.clone();
     url.pathname = redirectTo;
     url.searchParams.delete("redirectTo");

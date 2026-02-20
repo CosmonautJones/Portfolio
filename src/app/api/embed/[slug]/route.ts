@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { isAdminEmail } from "@/lib/utils";
 
 export async function GET(
   _request: Request,
@@ -16,6 +17,10 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!isAdminEmail(user.email)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { data: tool, error } = await supabase
     .from("tools")
     .select("html_content, status, type")
@@ -27,7 +32,7 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (tool.status === "disabled" && user.email !== process.env.ADMIN_EMAIL) {
+  if (tool.status === "disabled") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -35,6 +40,8 @@ export async function GET(
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "X-Frame-Options": "SAMEORIGIN",
+      "Content-Security-Policy":
+        "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none';",
     },
   });
 }

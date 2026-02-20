@@ -139,7 +139,18 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (isOpen && !isEdit) {
+          setType("internal");
+          setGithubUrl("");
+          setHtmlContent(null);
+          formRef.current?.reset();
+        }
+      }}
+    >
       <DialogTrigger asChild>
         {isEdit ? (
           <Button variant="ghost" size="icon" className="h-8 w-8">

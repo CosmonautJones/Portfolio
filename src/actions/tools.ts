@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { toolSchema } from "@/lib/validations";
+import { isAdminEmail } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -12,7 +13,7 @@ import { toolSchema } from "@/lib/validations";
 async function requireAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+  if (!user || !isAdminEmail(user.email)) {
     throw new Error("Unauthorized");
   }
   return user;

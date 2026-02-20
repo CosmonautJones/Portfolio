@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ToolCard } from "@/components/tools/tool-card";
+import { isAdminEmail } from "@/lib/utils";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Tools" };
 async function ToolsList() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const isAdmin = user?.email === process.env.ADMIN_EMAIL;
+  const isAdmin = isAdminEmail(user?.email);
 
   let query = supabase.from("tools").select("*").order("created_at", { ascending: true });
   if (!isAdmin) {
