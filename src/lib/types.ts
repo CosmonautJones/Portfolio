@@ -31,3 +31,25 @@ export interface Project {
   githubUrl?: string;
   role: string;
 }
+
+export interface TrackerProject {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string;
+  status: "active" | "completed" | "archived";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TrackerTask {
+  id: string;
+  project_id: string;
+  user_id: string;
+  title: string;
+  status: "todo" | "in_progress" | "done";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+}

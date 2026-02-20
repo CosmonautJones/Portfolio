@@ -5,6 +5,19 @@ export const noteSchema = z.object({
   content: z.string(),
 });
 
+export const projectSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  description: z.string().max(1000).optional(),
+  status: z.enum(["active", "completed", "archived"]).optional(),
+});
+
+export const taskSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200),
+  status: z.enum(["todo", "in_progress", "done"]).optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
+  due_date: z.string().optional(),
+});
+
 export const toolSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, "Lowercase alphanumeric with hyphens"),
   name: z.string().min(1).max(200),
