@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/actions/auth";
-import { checkIsAdmin } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,28 +15,23 @@ import { Compass, LogOut, Settings, Wrench } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 
-export function UserMenu() {
+interface UserMenuProps {
+  isAdmin?: boolean;
+}
+
+export function UserMenu({ isAdmin = false }: UserMenuProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
-      if (data.user) {
-        checkIsAdmin().then(setIsAdmin);
-      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) {
-        checkIsAdmin().then(setIsAdmin);
-      } else {
-        setIsAdmin(false);
-      }
     });
 
     return () => subscription.unsubscribe();
