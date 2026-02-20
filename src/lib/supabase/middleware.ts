@@ -26,10 +26,11 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // CRITICAL: use getUser(), NOT getSession()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Use getClaims() instead of getUser() — validates the JWT locally without
+  // a network round-trip to Supabase Auth, improving middleware performance.
+  // Server actions should still use getUser() for fully verified user data.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
   const { pathname } = request.nextUrl;
   const isProtectedRoute =
@@ -37,7 +38,7 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin");
 
   // Unauthenticated → redirect to login
-  if (!user && isProtectedRoute) {
+  if (!claims && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectTo", pathname);
@@ -45,22 +46,22 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Non-admin → redirect away from admin
-  if (user && isAdminRoute && !isAdminEmail(user.email)) {
+  if (claims && isAdminRoute && !isAdminEmail(claims.email as string)) {
     const url = request.nextUrl.clone();
     url.pathname = "/adventure";
     return NextResponse.redirect(url);
   }
 
   // Non-admin → redirect away from tools
-  if (user && pathname.startsWith("/tools") && !isAdminEmail(user.email)) {
+  if (claims && pathname.startsWith("/tools") && !isAdminEmail(claims.email as string)) {
     const url = request.nextUrl.clone();
     url.pathname = "/adventure";
     return NextResponse.redirect(url);
   }
 
   // Authenticated on login page → redirect based on role
-  if (user && pathname === "/login") {
-    const isAdmin = isAdminEmail(user.email);
+  if (claims && pathname === "/login") {
+    const isAdmin = isAdminEmail(claims.email as string);
     const defaultRedirect = isAdmin ? "/tools" : "/adventure";
     const rawRedirectTo = request.nextUrl.searchParams.get("redirectTo") || defaultRedirect;
     let redirectTo =
