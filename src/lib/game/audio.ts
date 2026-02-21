@@ -77,6 +77,14 @@ export class GameAudio {
     }
   }
 
+  playSplash(): void {
+    this.playTone(600, 100, 0.2, "sawtooth");
+  }
+
+  playLogLand(): void {
+    this.playTone(300, 350, 0.08, "triangle");
+  }
+
   setMuted(m: boolean): void {
     this.muted = m;
     try {

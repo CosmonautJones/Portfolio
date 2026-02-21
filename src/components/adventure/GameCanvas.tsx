@@ -21,6 +21,23 @@ import { Volume2, VolumeX } from "lucide-react";
 const VIEWPORT_WIDTH = 208; // 13 * 16
 const VIEWPORT_HEIGHT = 320; // 20 * 16
 
+function getDeathIcon(cause: DeathCause | null): string {
+  switch (cause) {
+    case "vehicle":
+      return "\u{1F697}";
+    case "train":
+      return "\u{1F682}";
+    case "water":
+      return "\u{1F30A}";
+    case "idle_timeout":
+      return "\u{23F0}";
+    case "off_screen":
+      return "\u{2B05}";
+    default:
+      return "";
+  }
+}
+
 function getDeathMessage(cause: DeathCause | null): string {
   switch (cause) {
     case "vehicle":
@@ -36,6 +53,34 @@ function getDeathMessage(cause: DeathCause | null): string {
     default:
       return "";
   }
+}
+
+function getDeathColor(cause: string): string {
+  switch (cause) {
+    case "vehicle":
+      return "#ef7d57";
+    case "train":
+      return "#ffff00";
+    case "water":
+      return "#41a6f6";
+    case "idle_timeout":
+      return "#ffcd75";
+    case "off_screen":
+      return "#94b0c2";
+    default:
+      return "#f4f4f4";
+  }
+}
+
+function getRankColor(rank: number): string {
+  if (rank === 1) return "#ffcd75";
+  if (rank === 2) return "#94b0c2";
+  if (rank === 3) return "#c4a35a";
+  return "#f4f4f4";
+}
+
+function padScore(score: number): string {
+  return String(score).padStart(4, "0");
 }
 
 export default function GameCanvas() {
@@ -61,6 +106,7 @@ export default function GameCanvas() {
       isCurrentUser: boolean;
     }>
   >([]);
+  const [isNewHighScore, setIsNewHighScore] = useState(false);
   const audioRef = useRef<GameAudio | null>(null);
 
   const callbacksRef = useRef<GameCallbacks | null>(null);
@@ -158,12 +204,19 @@ export default function GameCanvas() {
           audio.init();
           audio.playStart();
           setLevel(1);
+          setIsNewHighScore(false);
         }
       },
       onDeath: (cause, finalScore) => {
         setDeathCause(cause);
-        audio.playDeath();
+        if (cause === "water") {
+          audio.playSplash();
+        } else {
+          audio.playDeath();
+        }
         const current = gameStateRef.current;
+        // highScore state holds the *previous* high; engine already updated state.highScore
+        setIsNewHighScore(finalScore > 0 && current !== null && finalScore >= current.highScore);
         if (current && current.highScore > 0) {
           try {
             localStorage.setItem(
@@ -246,7 +299,14 @@ export default function GameCanvas() {
       const cappedDt = Math.min(dt, 0.1);
 
       if (gameStateRef.current) {
+        const prevRiding = gameStateRef.current.player.ridingLogId;
         tick(gameStateRef.current, cappedDt, DEFAULT_CONFIG, callbacks);
+
+        // Detect log landing — play thud when player starts riding a log
+        const nowRiding = gameStateRef.current.player.ridingLogId;
+        if (nowRiding !== null && prevRiding === null) {
+          audio.playLogLand();
+        }
 
         renderer.clear();
         renderer.renderLanes(gameStateRef.current);
@@ -283,6 +343,27 @@ export default function GameCanvas() {
           0% { opacity: 1; transform: scale(1); }
           70% { opacity: 1; transform: scale(1.1); }
           100% { opacity: 0; transform: scale(1.2); }
+        }
+        @keyframes titleFlicker {
+          0%, 100% { opacity: 1; }
+          92% { opacity: 1; }
+          93% { opacity: 0.4; }
+          94% { opacity: 1; }
+          96% { opacity: 0.7; }
+          97% { opacity: 1; }
+        }
+        @keyframes scoreCountUp {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+          100% { transform: scale(1); }
+        }
+        @keyframes rowPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        @keyframes newHighFlash {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
         }
       `}</style>
       <div
@@ -360,22 +441,32 @@ export default function GameCanvas() {
 
         {/* Playing HUD */}
         {phase === "playing" && (
-          <div className="absolute top-0 left-0 right-0 pointer-events-none p-2 flex justify-between items-start">
+          <div
+            className="absolute top-0 left-0 right-0 pointer-events-none p-2 flex justify-between items-start"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)",
+            }}
+          >
             <div className="flex gap-3">
               <span
-                className="text-white font-bold"
+                className="font-bold font-mono"
                 style={{
-                  fontSize: canvasWidth * 0.06,
-                  textShadow: "1px 1px 0 #000",
+                  fontSize: canvasWidth * 0.07,
+                  color: "#f4f4f4",
+                  textShadow:
+                    "2px 2px 0 #1a1c2c, -1px -1px 0 #1a1c2c, 1px -1px 0 #1a1c2c, -1px 1px 0 #1a1c2c",
                 }}
               >
-                Score: {score}
+                {padScore(score)}
               </span>
               <span
-                className="text-yellow-300 font-bold"
+                className="font-bold"
                 style={{
-                  fontSize: canvasWidth * 0.05,
-                  textShadow: "1px 1px 0 #000",
+                  fontSize: canvasWidth * 0.055,
+                  color: "#ffcd75",
+                  textShadow:
+                    "1px 1px 0 #1a1c2c, -1px -1px 0 #1a1c2c",
                 }}
               >
                 LVL {level}
@@ -426,81 +517,185 @@ export default function GameCanvas() {
 
         {/* Game Over overlay */}
         {phase === "game_over" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/40">
-            <h2
-              className="font-bold text-red-400 mb-2"
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/70">
+            {/* Retro frame */}
+            <div
+              className="flex flex-col items-center px-3 py-3"
               style={{
-                fontSize: canvasWidth * 0.09,
-                textShadow: "2px 2px 0 #000",
+                width: "90%",
+                maxHeight: "88%",
+                background: "#1a1c2c",
+                border: "2px solid #ffcd75",
+                boxShadow: "inset 0 0 0 1px #1a1c2c, inset 0 0 0 3px #c4a35a",
+                overflow: "hidden",
               }}
             >
-              Game Over
-            </h2>
-            <p
-              className="text-white mb-3"
-              style={{
-                fontSize: canvasWidth * 0.05,
-                textShadow: "1px 1px 0 #000",
-              }}
-            >
-              {getDeathMessage(deathCause)}
-            </p>
-            <p
-              className="text-white mb-1"
-              style={{
-                fontSize: canvasWidth * 0.05,
-                textShadow: "1px 1px 0 #000",
-              }}
-            >
-              Score: {score} (LVL {level})
-            </p>
-            <p
-              className="text-yellow-300 mb-3"
-              style={{
-                fontSize: canvasWidth * 0.05,
-                textShadow: "1px 1px 0 #000",
-              }}
-            >
-              High Score: {highScore}
-            </p>
-
-            {leaderboard.length > 0 && (
-              <div
-                className="mb-3 w-4/5 max-h-[35%] overflow-y-auto"
-                style={{ fontSize: canvasWidth * 0.035 }}
+              {/* GAME OVER title */}
+              <h2
+                className="font-bold mb-1"
+                style={{
+                  fontSize: canvasWidth * 0.1,
+                  color: "#d4513b",
+                  textShadow:
+                    "0 0 8px #d4513b, 0 0 16px #b13e53, 0 0 24px #9e2835, 2px 2px 0 #000",
+                  animation: "titleFlicker 3s infinite",
+                }}
               >
-                <p
-                  className="text-yellow-300 font-bold mb-1 text-center"
-                  style={{ textShadow: "1px 1px 0 #000" }}
-                >
-                  Leaderboard
-                </p>
-                {leaderboard.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className={`flex justify-between px-2 py-0.5 ${
-                      entry.isCurrentUser
-                        ? "text-yellow-300 font-bold"
-                        : "text-white/80"
-                    }`}
-                    style={{ textShadow: "1px 1px 0 #000" }}
-                  >
-                    <span>#{entry.rank}</span>
-                    <span>{entry.score}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+                GAME OVER
+              </h2>
 
-            <p
-              className="text-gray-300"
-              style={{
-                fontSize: canvasWidth * 0.04,
-                textShadow: "1px 1px 0 #000",
-              }}
-            >
-              Press any key to restart
-            </p>
+              {/* Death cause with icon */}
+              <p
+                className="mb-2"
+                style={{
+                  fontSize: canvasWidth * 0.045,
+                  color: deathCause ? getDeathColor(deathCause) : "#f4f4f4",
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                {getDeathIcon(deathCause)} {getDeathMessage(deathCause)}
+              </p>
+
+              {/* Score display */}
+              <div
+                className="font-mono font-bold mb-1"
+                style={{
+                  fontSize: canvasWidth * 0.08,
+                  color: "#f4f4f4",
+                  textShadow: "2px 2px 0 #000",
+                  animation: "scoreCountUp 0.5s ease-out",
+                }}
+              >
+                SCORE: {padScore(score)}
+              </div>
+
+              <div
+                className="font-mono mb-1"
+                style={{
+                  fontSize: canvasWidth * 0.04,
+                  color: "#94b0c2",
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                LVL {level} | BEST: {padScore(highScore)}
+              </div>
+
+              {/* New high score flash */}
+              {isNewHighScore && (
+                <div
+                  className="font-bold mb-1"
+                  style={{
+                    fontSize: canvasWidth * 0.05,
+                    color: "#ffcd75",
+                    textShadow: "0 0 8px #ffcd75, 0 0 16px #ef7d57",
+                    animation: "newHighFlash 0.8s infinite",
+                  }}
+                >
+                  NEW HIGH SCORE!
+                </div>
+              )}
+
+              {/* Leaderboard */}
+              {leaderboard.length > 0 && (
+                <div
+                  className="w-full mt-1 overflow-y-auto"
+                  style={{
+                    maxHeight: "45%",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#566c86 #1a1c2c",
+                  }}
+                >
+                  {/* Header */}
+                  <div
+                    className="text-center font-bold mb-1"
+                    style={{
+                      fontSize: canvasWidth * 0.05,
+                      color: "#ffcd75",
+                      textShadow: "1px 1px 0 #000",
+                    }}
+                  >
+                    HIGH SCORES
+                  </div>
+                  <div
+                    className="mx-auto mb-1"
+                    style={{
+                      width: "60%",
+                      height: 1,
+                      background:
+                        "linear-gradient(to right, transparent, #ffcd75, transparent)",
+                    }}
+                  />
+
+                  {/* Score rows */}
+                  {leaderboard.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center px-1 py-0.5 font-mono"
+                      style={{
+                        fontSize: canvasWidth * 0.035,
+                        color: entry.isCurrentUser
+                          ? "#ffcd75"
+                          : entry.rank <= 3
+                            ? getRankColor(entry.rank)
+                            : "#94b0c2",
+                        textShadow: "1px 1px 0 #000",
+                        ...(entry.isCurrentUser
+                          ? {
+                              background: "rgba(255, 205, 117, 0.1)",
+                              animation: "rowPulse 2s infinite",
+                            }
+                          : {}),
+                      }}
+                    >
+                      {/* Rank */}
+                      <span
+                        className="font-bold"
+                        style={{
+                          width: canvasWidth * 0.08,
+                          color: getRankColor(entry.rank),
+                        }}
+                      >
+                        {entry.isCurrentUser ? ">>>" : `#${entry.rank}`}
+                      </span>
+                      {/* Dot leader */}
+                      <span
+                        className="flex-1 overflow-hidden mx-1"
+                        style={{
+                          borderBottom: "1px dotted rgba(148, 176, 194, 0.3)",
+                        }}
+                      />
+                      {/* Death cause badge */}
+                      <span
+                        className="mx-1"
+                        style={{
+                          fontSize: canvasWidth * 0.025,
+                          color: getDeathColor(entry.deathCause),
+                          opacity: 0.8,
+                        }}
+                      >
+                        {getDeathIcon(entry.deathCause as DeathCause)}
+                      </span>
+                      {/* Score */}
+                      <span className="font-bold">
+                        {padScore(entry.score)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Restart prompt */}
+              <p
+                className="mt-2"
+                style={{
+                  fontSize: canvasWidth * 0.035,
+                  color: "#566c86",
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                Press any key to restart
+              </p>
+            </div>
           </div>
         )}
 

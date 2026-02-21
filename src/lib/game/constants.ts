@@ -31,6 +31,7 @@ export const SPEED_RANGES = {
   car: { min: 30, max: 70 },
   truck: { min: 20, max: 50 },
   train: { min: 120, max: 180 },
+  log: { min: 15, max: 40 },
 } as const;
 
 export const DIFFICULTY = {

@@ -70,13 +70,30 @@ export class GameRenderer {
   renderLanes(state: GameState): void {
     const { camera, lanes } = state;
     const cellSize = DEFAULT_CONFIG.cellSize;
+    const cols = DEFAULT_CONFIG.gridColumns;
 
     for (const lane of lanes) {
       const screenY = lane.y * cellSize - camera.y;
       if (screenY < -cellSize * 2 || screenY > camera.viewportHeight + cellSize)
         continue;
 
-      this.renderLaneBackground(lane, screenY);
+      this.renderLaneBackground(lane, screenY, state);
+
+      // Lane transitions
+      const nextLane = lanes.find(l => l.y === lane.y - 1);
+      if (nextLane && nextLane.type !== lane.type) {
+        const transitionColors: Record<string, string> = {
+          'grass_road': '#265c42',
+          'road_water': '#94b0c2',
+          'water_grass': '#c4a35a',
+        };
+        const key = `${lane.type}_${nextLane.type}`;
+        const color = nextLane.type === 'railroad' ? '#ffff00' : transitionColors[key];
+        if (color) {
+          this.ctx.fillStyle = color;
+          this.ctx.fillRect(0, screenY, cols * cellSize, 2);
+        }
+      }
 
       for (const obs of lane.obstacles) {
         const spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
@@ -85,9 +102,28 @@ export class GameRenderer {
     }
   }
 
-  private renderLaneBackground(lane: Lane, screenY: number): void {
+  private renderLaneBackground(lane: Lane, screenY: number, state: GameState): void {
     const cellSize = DEFAULT_CONFIG.cellSize;
     const cols = DEFAULT_CONFIG.gridColumns;
+
+    if (lane.type === "water") {
+      const offset = Math.floor(state.animationTime * 8) % cellSize;
+      const flowOffset = offset * lane.flowDirection;
+      for (let x = -1; x <= cols; x++) {
+        const key = `${lane.type}_${lane.variant}`;
+        this.sprites.draw(this.ctx, key, x * cellSize + flowOffset, screenY);
+      }
+      return;
+    }
+
+    if (lane.type === "grass") {
+      const shimmerVariant = (lane.variant + Math.floor(state.animationTime * 1.5)) % 2;
+      for (let x = 0; x < cols; x++) {
+        const key = `grass_${shimmerVariant}`;
+        this.sprites.draw(this.ctx, key, x * cellSize, screenY);
+      }
+      return;
+    }
 
     for (let x = 0; x < cols; x++) {
       const key = `${lane.type}_${lane.variant}`;

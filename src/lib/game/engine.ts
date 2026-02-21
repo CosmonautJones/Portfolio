@@ -3,6 +3,7 @@ import type {
   GameConfig,
   GameCallbacks,
   Player,
+  Obstacle,
   Lane,
   LaneType,
   ObstacleType,
@@ -26,10 +27,18 @@ const OBSTACLE_WIDTHS: Record<ObstacleType, number> = {
   car: 2,
   truck: 3,
   train: 4,
+  log: 3,
 };
 
-// Death-particle palette
-const DEATH_COLORS = ["#d4513b", "#ef7d57", "#e87461"];
+// Death-particle palettes by cause
+const DEATH_COLORS_BY_CAUSE: Record<string, string[]> = {
+  water: ["#41a6f6", "#2d6aa5", "#1e6aa0"],
+  vehicle: ["#d4513b", "#ef7d57", "#3c3c50"],
+  train: ["#d4513b", "#ef7d57", "#ffff00"],
+  idle_timeout: ["#d4513b", "#ef7d57", "#e87461"],
+  off_screen: ["#d4513b", "#ef7d57", "#e87461"],
+};
+const DEFAULT_DEATH_COLORS = ["#d4513b", "#ef7d57", "#e87461"];
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -149,8 +158,30 @@ function spawnObstaclesForLane(
       widthCells,
       speed,
     });
+  } else if (lane.type === "water") {
+    // 2-3 logs per water lane — logs are rideable platforms
+    const count = 2 + Math.floor(Math.random() * 2);
+    const widthCells = OBSTACLE_WIDTHS.log;
+    const range = SPEED_RANGES.log;
+    const baseSpeed = randomRange(range.min, range.max) * diff;
+    const speed = baseSpeed * lane.flowDirection;
+
+    // Distribute evenly with randomized offsets and guaranteed gaps
+    const spacing = (totalWidth + widthCells * cellSize) / count;
+    for (let i = 0; i < count; i++) {
+      const worldX =
+        i * spacing + randomRange(-spacing * 0.15, spacing * 0.15);
+      lane.obstacles.push({
+        id: nextId.value++,
+        type: "log",
+        laneY: lane.y,
+        worldX,
+        widthCells,
+        speed,
+      });
+    }
   }
-  // grass and water: no obstacles
+  // grass: no obstacles
 }
 
 // ---------------------------------------------------------------------------
@@ -280,6 +311,7 @@ export function createInitialState(
     hopTarget: null,
     alive: true,
     idleTimer: 0,
+    ridingLogId: null,
   };
 
   const camera = {
@@ -303,6 +335,7 @@ export function createInitialState(
     deathCause: null,
     nextEntityId: nextId.value,
     timeAccumulator: 0,
+    animationTime: 0,
   };
 }
 
@@ -419,8 +452,98 @@ function initiateHop(
   player.facing = direction;
   player.hopProgress = 0;
   player.idleTimer = 0;
+  player.ridingLogId = null;
   if (callbacks) {
     callbacks.onHop();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Log riding helpers
+// ---------------------------------------------------------------------------
+
+function findLogUnderPlayer(
+  state: GameState,
+  config: GameConfig,
+): Obstacle | null {
+  const { player } = state;
+  const { cellSize } = config;
+  const lane = state.lanes.find((l) => l.y === player.gridPos.y);
+  if (!lane || lane.type !== "water") return null;
+
+  const playerCenterX = player.worldPos.x + cellSize / 2;
+  for (const obs of lane.obstacles) {
+    if (obs.type !== "log") continue;
+    const logLeft = obs.worldX;
+    const logRight = obs.worldX + obs.widthCells * cellSize;
+    if (playerCenterX >= logLeft && playerCenterX <= logRight) {
+      return obs;
+    }
+  }
+  return null;
+}
+
+function updateLogRiding(
+  state: GameState,
+  config: GameConfig,
+  callbacks: GameCallbacks,
+): void {
+  const { player } = state;
+  const { cellSize, gridColumns, fixedTimestep } = config;
+
+  // Skip if not riding or mid-hop
+  if (player.ridingLogId === null || player.hopTarget !== null) return;
+
+  // Find the log by ID in the current lane
+  const lane = state.lanes.find((l) => l.y === player.gridPos.y);
+  if (!lane) {
+    killPlayer(state, "water", callbacks);
+    return;
+  }
+
+  const log = lane.obstacles.find((o) => o.id === player.ridingLogId);
+  if (!log) {
+    // Log disappeared — player falls in water
+    killPlayer(state, "water", callbacks);
+    return;
+  }
+
+  // Drift player with the log
+  player.worldPos.x += log.speed * fixedTimestep;
+  player.gridPos.x = Math.round(player.worldPos.x / cellSize);
+
+  // Check if player drifted off the log edge
+  const playerCenterX = player.worldPos.x + cellSize / 2;
+  const logLeft = log.worldX;
+  const logRight = log.worldX + log.widthCells * cellSize;
+  if (playerCenterX < logLeft || playerCenterX > logRight) {
+    killPlayer(state, "water", callbacks);
+    return;
+  }
+
+  // Check if player drifted off-screen
+  const totalWidth = gridColumns * cellSize;
+  if (player.worldPos.x < -cellSize || player.worldPos.x > totalWidth) {
+    killPlayer(state, "water", callbacks);
+  }
+}
+
+function spawnSplashParticles(state: GameState): void {
+  const { player } = state;
+  const count = 3 + Math.floor(Math.random() * 3); // 3-5
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 20 + Math.random() * 30;
+    state.particles.push({
+      x: player.worldPos.x + DEFAULT_CONFIG_CELL_HALF,
+      y: player.worldPos.y + DEFAULT_CONFIG_CELL_HALF,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.15 + Math.random() * 0.1,
+      maxLife: 0.25,
+      color: pickRandom(["#41a6f6", "#2d6aa5", "#73eff7"]),
+      size: 1 + Math.floor(Math.random() * 2),
+    });
   }
 }
 
@@ -473,12 +596,21 @@ function updatePlayer(
         }
       }
 
-      // Check if landing on water lane
+      // Check if landing on water lane — survive if on a log
       const landingLane = state.lanes.find(
         (l) => l.y === player.gridPos.y,
       );
       if (landingLane && landingLane.type === "water") {
-        killPlayer(state, "water", callbacks);
+        const log = findLogUnderPlayer(state, config);
+        if (log) {
+          player.ridingLogId = log.id;
+          spawnSplashParticles(state);
+        } else {
+          killPlayer(state, "water", callbacks);
+        }
+      } else {
+        // Not on water — clear riding state
+        player.ridingLogId = null;
       }
     }
   } else {
@@ -542,6 +674,9 @@ function checkCollisions(
     if (!lanesToCheck.has(lane.y)) continue;
 
     for (const obs of lane.obstacles) {
+      // Logs are safe to touch — they're rideable platforms
+      if (obs.type === "log") continue;
+
       const ox1 = obs.worldX;
       const oy1 = obs.laneY * cellSize;
       const ox2 = obs.worldX + obs.widthCells * cellSize;
@@ -576,11 +711,17 @@ function killPlayer(
     state.highScore = state.score;
   }
 
-  // Spawn death particles
+  // Spawn death particles with per-cause colors
+  const colors = DEATH_COLORS_BY_CAUSE[cause] ?? DEFAULT_DEATH_COLORS;
   const particleCount = 8 + Math.floor(Math.random() * 5); // 8-12
+  const speedMult = cause === "train" ? 1.5 : 1;
   for (let i = 0; i < particleCount; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 30 + Math.random() * 60;
+    // Water deaths use a ring pattern; others radiate outward
+    const angle =
+      cause === "water"
+        ? (i / particleCount) * Math.PI * 2
+        : Math.random() * Math.PI * 2;
+    const speed = (30 + Math.random() * 60) * speedMult;
     state.particles.push({
       x: player.worldPos.x + DEFAULT_CONFIG_CELL_HALF,
       y: player.worldPos.y + DEFAULT_CONFIG_CELL_HALF,
@@ -588,7 +729,7 @@ function killPlayer(
       vy: Math.sin(angle) * speed,
       life: 0.4 + Math.random() * 0.4,
       maxLife: 0.8,
-      color: pickRandom(DEATH_COLORS),
+      color: pickRandom(colors),
       size: 1 + Math.floor(Math.random() * 3),
     });
   }
@@ -655,6 +796,7 @@ function updateParticles(state: GameState, config: GameConfig): void {
     const p = state.particles[i];
     p.x += p.vx * dt;
     p.y += p.vy * dt;
+    p.vy += 50 * dt; // gravity
     p.life -= dt;
     if (p.life <= 0) {
       state.particles.splice(i, 1);
@@ -708,6 +850,7 @@ export function tick(
 
     if (state.phase === "playing") {
       updatePlayer(state, config, callbacks);
+      updateLogRiding(state, config, callbacks);
       updateObstacles(state, config);
       checkCollisions(state, config, callbacks);
       checkIdleTimeout(state, config, callbacks);
@@ -716,8 +859,9 @@ export function tick(
       generateLanesIfNeeded(state, config);
     }
 
-    // Always update particles (they should animate during game_over too)
+    // Always update particles and animation time
     updateParticles(state, config);
+    state.animationTime += config.fixedTimestep;
   }
 }
 
@@ -762,6 +906,7 @@ export function resetForNewGame(
   state.player.hopTarget = null;
   state.player.alive = true;
   state.player.idleTimer = 0;
+  state.player.ridingLogId = null;
 
   // Reset camera
   state.camera.y =
@@ -778,6 +923,7 @@ export function resetForNewGame(
   state.generatedUpTo = targetY;
   state.nextEntityId = nextId.value;
   state.timeAccumulator = 0;
+  state.animationTime = 0;
 
   if (callbacks) {
     callbacks.onPhaseChange("playing");

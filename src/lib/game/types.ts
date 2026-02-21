@@ -10,7 +10,7 @@ export interface WorldPosition {
 
 export type Direction = "up" | "down" | "left" | "right";
 export type LaneType = "grass" | "road" | "water" | "railroad";
-export type ObstacleType = "car" | "truck" | "train";
+export type ObstacleType = "car" | "truck" | "train" | "log";
 export type GamePhase = "menu" | "playing" | "paused" | "game_over";
 export type DeathCause =
   | "vehicle"
@@ -29,6 +29,7 @@ export interface Player {
   hopTarget: GridPosition | null;
   alive: boolean;
   idleTimer: number;
+  ridingLogId: number | null;
 }
 
 export interface Obstacle {
@@ -96,6 +97,7 @@ export interface GameState {
   deathCause: DeathCause | null;
   nextEntityId: number;
   timeAccumulator: number;
+  animationTime: number;
 }
 
 export interface GameCallbacks {
