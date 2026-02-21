@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isProtectedRoute =
-    pathname.startsWith("/tools") || pathname.startsWith("/admin") || pathname.startsWith("/adventure");
+    pathname.startsWith("/tools") || pathname.startsWith("/admin");
   const isAdminRoute = pathname.startsWith("/admin");
 
   // Unauthenticated → redirect to login
