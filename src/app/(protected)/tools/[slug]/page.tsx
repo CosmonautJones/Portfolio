@@ -40,12 +40,25 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
   const tool = data as Tool;
 
+  const badgeColors = {
+    internal: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
+    external: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20",
+    embedded: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+  } as const;
+
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
-      <h1 className="mb-2 text-3xl font-bold">{tool.name}</h1>
-      {tool.description && (
-        <p className="mb-8 text-muted-foreground">{tool.description}</p>
-      )}
+      <div className="animate-fade-up">
+        <h1 className="gradient-text mb-2 text-3xl font-bold">{tool.name}</h1>
+        {tool.description && (
+          <div className="mb-8 flex items-center gap-3">
+            <p className="text-muted-foreground">{tool.description}</p>
+            <span className={`inline-block shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium ${badgeColors[tool.type] ?? badgeColors.internal}`}>
+              {tool.type}
+            </span>
+          </div>
+        )}
+      </div>
       <ToolRenderer tool={tool} />
     </div>
   );
