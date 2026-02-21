@@ -11,7 +11,7 @@ interface NoteCardProps {
 
 export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
   return (
-    <Card>
+    <Card className="gradient-border bg-card/80 backdrop-blur-sm border-border/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg">
       <CardHeader className="flex flex-row items-start justify-between">
         <CardTitle className="text-base">{note.title}</CardTitle>
         <div className="flex gap-1">

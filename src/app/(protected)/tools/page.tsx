@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { ToolCard } from "@/components/tools/tool-card";
+import { ToolsFilter } from "@/components/tools/tools-filter";
 import { isAdminEmail } from "@/lib/utils";
+import { Wrench } from "lucide-react";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -22,18 +23,20 @@ async function ToolsList() {
   const items = (tools ?? []) as Tool[];
 
   if (items.length === 0) {
-    return <p className="text-muted-foreground">No tools available.</p>;
+    return (
+      <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+          <Wrench className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+        <h2 className="gradient-text mb-2 text-xl font-semibold">No tools yet</h2>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Tools will appear here once they&apos;ve been added to the hub.
+        </p>
+      </div>
+    );
   }
 
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((tool, i) => (
-        <div key={tool.id} className={`animate-scale-in delay-${Math.min((i + 1) * 100, 700)}`}>
-          <ToolCard tool={tool} />
-        </div>
-      ))}
-    </div>
-  );
+  return <ToolsFilter tools={items} />;
 }
 
 export default function ToolsPage() {

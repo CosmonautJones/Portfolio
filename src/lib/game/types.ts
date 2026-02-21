@@ -91,6 +91,7 @@ export interface GameState {
   actionQueue: InputAction[];
   score: number;
   highScore: number;
+  level: number;
   generatedUpTo: number;
   deathCause: DeathCause | null;
   nextEntityId: number;
@@ -101,6 +102,8 @@ export interface GameCallbacks {
   onScoreChange: (score: number) => void;
   onPhaseChange: (phase: GamePhase) => void;
   onDeath: (cause: DeathCause, finalScore: number) => void;
+  onHop: () => void;
+  onLevelUp: (level: number) => void;
 }
 
 export interface GameConfig {

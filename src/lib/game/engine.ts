@@ -16,6 +16,7 @@ import {
   MAX_CONSECUTIVE,
   SPEED_RANGES,
   DIFFICULTY,
+  LEVEL_THRESHOLDS,
 } from "./constants";
 
 // ---------------------------------------------------------------------------
@@ -50,9 +51,23 @@ function pickRandom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function getLevelForScore(score: number): number {
+  let level = 1;
+  for (let i = 1; i < LEVEL_THRESHOLDS.length; i++) {
+    if (score >= LEVEL_THRESHOLDS[i]) {
+      level = i + 1;
+    }
+  }
+  return level;
+}
+
 function difficultyMultiplier(score: number): number {
   const t = clamp(score / DIFFICULTY.maxScoreThreshold, 0, 1);
-  return lerp(DIFFICULTY.minMultiplier, DIFFICULTY.maxMultiplier, t);
+  const baseMult = lerp(DIFFICULTY.minMultiplier, DIFFICULTY.maxMultiplier, t);
+  // Add small level-based step bonus
+  const level = getLevelForScore(score);
+  const levelBonus = (level - 1) * 0.1;
+  return baseMult + levelBonus;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,6 +298,7 @@ export function createInitialState(
     actionQueue: [],
     score: 0,
     highScore: 0,
+    level: 1,
     generatedUpTo: targetY,
     deathCause: null,
     nextEntityId: nextId.value,
@@ -329,7 +345,7 @@ function processActions(
           // Process the movement
           const dir = actionToDirection(action);
           if (dir && state.player.hopTarget === null) {
-            initiateHop(state.player, dir, config);
+            initiateHop(state.player, dir, config, callbacks);
           }
         }
         // pause in menu → ignored
@@ -342,7 +358,7 @@ function processActions(
         } else {
           const dir = actionToDirection(action);
           if (dir && state.player.hopTarget === null) {
-            initiateHop(state.player, dir, config);
+            initiateHop(state.player, dir, config, callbacks);
           }
         }
         break;
@@ -372,6 +388,7 @@ function initiateHop(
   player: Player,
   direction: Direction,
   config: GameConfig,
+  callbacks?: GameCallbacks,
 ): void {
   let tx = player.gridPos.x;
   let ty = player.gridPos.y;
@@ -402,6 +419,9 @@ function initiateHop(
   player.facing = direction;
   player.hopProgress = 0;
   player.idleTimer = 0;
+  if (callbacks) {
+    callbacks.onHop();
+  }
 }
 
 function updatePlayer(
@@ -444,6 +464,13 @@ function updatePlayer(
       if (newScore > state.score) {
         state.score = newScore;
         callbacks.onScoreChange(state.score);
+
+        // Check for level up
+        const newLevel = getLevelForScore(state.score);
+        if (newLevel > state.level) {
+          state.level = newLevel;
+          callbacks.onLevelUp(newLevel);
+        }
       }
 
       // Check if landing on water lane
@@ -744,6 +771,7 @@ export function resetForNewGame(
   // Reset game state (keep highScore)
   state.phase = "playing";
   state.score = 0;
+  state.level = 1;
   state.deathCause = null;
   state.particles.length = 0;
   state.actionQueue.length = 0;

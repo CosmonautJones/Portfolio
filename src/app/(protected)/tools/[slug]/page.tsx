@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { ToolRenderer } from "@/components/tools/tool-renderer";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { Tool } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -49,6 +50,10 @@ export default async function ToolPage({ params }: ToolPageProps) {
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="animate-fade-up">
+        <Breadcrumb items={[
+          { label: "Tools", href: "/tools" },
+          { label: tool.name },
+        ]} />
         <h1 className="gradient-text mb-2 text-3xl font-bold">{tool.name}</h1>
         {tool.description && (
           <div className="mb-8 flex items-center gap-3">

@@ -22,7 +22,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="animate-fade-up flex gap-2">
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}

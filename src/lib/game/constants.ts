@@ -38,3 +38,5 @@ export const DIFFICULTY = {
   minMultiplier: 1.0,
   maxMultiplier: 2.5,
 } as const;
+
+export const LEVEL_THRESHOLDS = [0, 25, 50, 100, 150, 200] as const;

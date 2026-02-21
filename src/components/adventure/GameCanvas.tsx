@@ -14,6 +14,9 @@ import { createInputHandler } from "@/lib/game/input";
 import { LOBSTER_SPRITES, LOBSTER_FLIP_KEYS } from "@/lib/game/sprites/lobster";
 import { TILE_SPRITES } from "@/lib/game/sprites/tiles";
 import { OBSTACLE_SPRITES } from "@/lib/game/sprites/obstacles";
+import { GameAudio } from "@/lib/game/audio";
+import { submitScore, getLeaderboard } from "@/actions/game-scores";
+import { Volume2, VolumeX } from "lucide-react";
 
 const VIEWPORT_WIDTH = 208; // 13 * 16
 const VIEWPORT_HEIGHT = 320; // 20 * 16
@@ -46,6 +49,18 @@ export default function GameCanvas() {
   const [deathCause, setDeathCause] = useState<DeathCause | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(VIEWPORT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(VIEWPORT_HEIGHT);
+  const [muted, setMuted] = useState(false);
+  const [level, setLevel] = useState(1);
+  const [levelUpText, setLevelUpText] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<
+    Array<{
+      rank: number;
+      score: number;
+      deathCause: string;
+      isCurrentUser: boolean;
+    }>
+  >([]);
+  const audioRef = useRef<GameAudio | null>(null);
 
   const callbacksRef = useRef<GameCallbacks | null>(null);
 
@@ -56,16 +71,29 @@ export default function GameCanvas() {
     const scale = Math.max(
       1,
       Math.floor(
-        Math.min(rect.width / VIEWPORT_WIDTH, rect.height / VIEWPORT_HEIGHT)
-      )
+        Math.min(rect.width / VIEWPORT_WIDTH, rect.height / VIEWPORT_HEIGHT),
+      ),
     );
     setCanvasWidth(VIEWPORT_WIDTH * scale);
     setCanvasHeight(VIEWPORT_HEIGHT * scale);
   }, []);
 
+  const toggleMute = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      const newMuted = !audio.isMuted();
+      audio.setMuted(newMuted);
+      setMuted(newMuted);
+    }
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Create audio manager
+    const audio = new GameAudio();
+    audioRef.current = audio;
 
     // Create and prerender all sprites
     const spriteCache = new SpriteCache();
@@ -103,28 +131,66 @@ export default function GameCanvas() {
       // localStorage unavailable
     }
 
+    // Load mute state
+    try {
+      setMuted(localStorage.getItem("adventure_muted") === "true");
+    } catch {
+      // localStorage unavailable
+    }
+
+    // Fetch initial leaderboard
+    getLeaderboard()
+      .then((result) => {
+        if (result.scores) setLeaderboard(result.scores);
+      })
+      .catch(() => {});
+
     // Callbacks
     const callbacks: GameCallbacks = {
       onScoreChange: (newScore) => {
         setScore(newScore);
+        audio.playScore();
       },
       onPhaseChange: (newPhase) => {
         setPhase(newPhase);
+        if (newPhase === "playing") {
+          audio.init();
+          audio.playStart();
+          setLevel(1);
+        }
       },
-      onDeath: (cause) => {
+      onDeath: (cause, finalScore) => {
         setDeathCause(cause);
+        audio.playDeath();
         const current = gameStateRef.current;
         if (current && current.highScore > 0) {
           try {
             localStorage.setItem(
               "adventure_high_score",
-              String(current.highScore)
+              String(current.highScore),
             );
           } catch {
             // localStorage unavailable
           }
           setHighScore(current.highScore);
         }
+        // Submit score to leaderboard (fire-and-forget)
+        submitScore(finalScore, cause).catch(() => {});
+        // Refresh leaderboard
+        getLeaderboard()
+          .then((result) => {
+            if (result.scores) setLeaderboard(result.scores);
+          })
+          .catch(() => {});
+      },
+      onHop: () => {
+        audio.playHop();
+      },
+      onLevelUp: (newLevel) => {
+        setLevel(newLevel);
+        audio.playLevelUp();
+        setLevelUpText(newLevel);
+        setTimeout(() => setLevelUpText(null), 1500);
       },
     };
     callbacksRef.current = callbacks;
@@ -211,7 +277,17 @@ export default function GameCanvas() {
       ref={containerRef}
       className="relative flex items-center justify-center w-full h-full"
     >
-      <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+      <style>{`
+        @keyframes fadeOut {
+          0% { opacity: 1; transform: scale(1); }
+          70% { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 0; transform: scale(1.2); }
+        }
+      `}</style>
+      <div
+        className="relative"
+        style={{ width: canvasWidth, height: canvasHeight }}
+      >
         <canvas
           ref={canvasRef}
           width={VIEWPORT_WIDTH}
@@ -256,20 +332,93 @@ export default function GameCanvas() {
             >
               WASD or Arrow Keys to move
             </p>
+            <button
+              onClick={toggleMute}
+              className="pointer-events-auto mt-4 p-1.5 rounded hover:bg-white/20 transition-colors"
+            >
+              {muted ? (
+                <VolumeX
+                  className="text-white/50"
+                  style={{
+                    width: canvasWidth * 0.06,
+                    height: canvasWidth * 0.06,
+                  }}
+                />
+              ) : (
+                <Volume2
+                  className="text-white/50"
+                  style={{
+                    width: canvasWidth * 0.06,
+                    height: canvasWidth * 0.06,
+                  }}
+                />
+              )}
+            </button>
           </div>
         )}
 
         {/* Playing HUD */}
         {phase === "playing" && (
-          <div className="absolute top-0 left-0 pointer-events-none p-2">
+          <div className="absolute top-0 left-0 right-0 pointer-events-none p-2 flex justify-between items-start">
+            <div className="flex gap-3">
+              <span
+                className="text-white font-bold"
+                style={{
+                  fontSize: canvasWidth * 0.06,
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                Score: {score}
+              </span>
+              <span
+                className="text-yellow-300 font-bold"
+                style={{
+                  fontSize: canvasWidth * 0.05,
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                LVL {level}
+              </span>
+            </div>
+            <button
+              onClick={toggleMute}
+              className="pointer-events-auto p-1 rounded hover:bg-white/20 transition-colors"
+            >
+              {muted ? (
+                <VolumeX
+                  className="text-white/70"
+                  style={{
+                    width: canvasWidth * 0.06,
+                    height: canvasWidth * 0.06,
+                  }}
+                />
+              ) : (
+                <Volume2
+                  className="text-white/70"
+                  style={{
+                    width: canvasWidth * 0.06,
+                    height: canvasWidth * 0.06,
+                  }}
+                />
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Level up flash text */}
+        {levelUpText !== null && (
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{ animation: "fadeOut 1.5s forwards" }}
+          >
             <span
-              className="text-white font-bold"
+              className="font-bold text-yellow-300"
               style={{
-                fontSize: canvasWidth * 0.06,
-                textShadow: "1px 1px 0 #000",
+                fontSize: canvasWidth * 0.12,
+                textShadow: "2px 2px 0 #000, -1px -1px 0 #000",
               }}
             >
-              Score: {score}
+              LEVEL {levelUpText}!
             </span>
           </div>
         )}
@@ -302,10 +451,10 @@ export default function GameCanvas() {
                 textShadow: "1px 1px 0 #000",
               }}
             >
-              Score: {score}
+              Score: {score} (LVL {level})
             </p>
             <p
-              className="text-yellow-300 mb-4"
+              className="text-yellow-300 mb-3"
               style={{
                 fontSize: canvasWidth * 0.05,
                 textShadow: "1px 1px 0 #000",
@@ -313,6 +462,35 @@ export default function GameCanvas() {
             >
               High Score: {highScore}
             </p>
+
+            {leaderboard.length > 0 && (
+              <div
+                className="mb-3 w-4/5 max-h-[35%] overflow-y-auto"
+                style={{ fontSize: canvasWidth * 0.035 }}
+              >
+                <p
+                  className="text-yellow-300 font-bold mb-1 text-center"
+                  style={{ textShadow: "1px 1px 0 #000" }}
+                >
+                  Leaderboard
+                </p>
+                {leaderboard.map((entry) => (
+                  <div
+                    key={`${entry.rank}-${entry.score}`}
+                    className={`flex justify-between px-2 py-0.5 ${
+                      entry.isCurrentUser
+                        ? "text-yellow-300 font-bold"
+                        : "text-white/80"
+                    }`}
+                    style={{ textShadow: "1px 1px 0 #000" }}
+                  >
+                    <span>#{entry.rank}</span>
+                    <span>{entry.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <p
               className="text-gray-300"
               style={{

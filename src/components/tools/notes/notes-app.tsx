@@ -7,7 +7,7 @@ import { createNote, updateNote, deleteNote } from "@/actions/notes";
 import { NoteEditor } from "@/components/tools/notes/note-editor";
 import { NoteCard } from "@/components/tools/notes/note-card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import type { Note } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -15,16 +15,20 @@ function NotesSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="animate-pulse rounded-lg border bg-card p-6 space-y-3"
-        >
-          <div className="h-5 w-2/3 rounded bg-muted" />
+        <div key={i} className="animate-pulse rounded-xl border border-border/50 bg-card/80 p-6 space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="h-5 w-2/3 rounded bg-muted" />
+            <div className="flex gap-1">
+              <div className="h-8 w-8 rounded bg-muted" />
+              <div className="h-8 w-8 rounded bg-muted" />
+            </div>
+          </div>
           <div className="space-y-2">
             <div className="h-3 w-full rounded bg-muted" />
             <div className="h-3 w-4/5 rounded bg-muted" />
+            <div className="h-3 w-3/5 rounded bg-muted" />
           </div>
-          <div className="h-3 w-1/3 rounded bg-muted" />
+          <div className="h-3 w-1/4 rounded bg-muted" />
         </div>
       ))}
     </div>
@@ -130,15 +134,29 @@ export default function NotesApp() {
 
       {loading ? (
         <NotesSkeleton />
+      ) : notes.length === 0 && !creating && !editing ? (
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <FileText className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h2 className="gradient-text mb-2 text-xl font-semibold">No notes yet</h2>
+          <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+            Start capturing your thoughts and ideas.
+          </p>
+          <Button onClick={() => { setCreating(true); setEditing(null); }}>
+            <Plus className="mr-1 h-4 w-4" /> New Note
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {notes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onEdit={() => { setEditing(note); setCreating(false); }}
-              onDelete={() => handleDelete(note.id)}
-            />
+          {notes.map((note, i) => (
+            <div key={note.id} className={`animate-scale-in delay-${Math.min((i + 1) * 100, 700)}`}>
+              <NoteCard
+                note={note}
+                onEdit={() => { setEditing(note); setCreating(false); }}
+                onDelete={() => handleDelete(note.id)}
+              />
+            </div>
           ))}
         </div>
       )}

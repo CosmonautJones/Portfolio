@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, CheckCircle2 } from "lucide-react";
 import type { TrackerTask } from "@/lib/types";
 
 interface TaskListProps {
@@ -43,9 +43,13 @@ function isOverdue(dueDate: string | null) {
 export function TaskList({ tasks, onStatusChange, onDelete }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <p className="text-center text-sm text-muted-foreground py-8">
-        No tasks yet. Add one above!
-      </p>
+      <div className="animate-fade-up flex flex-col items-center justify-center py-8 text-center">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+          <CheckCircle2 className="h-6 w-6 text-muted-foreground/50" />
+        </div>
+        <p className="text-sm font-medium text-muted-foreground">No tasks yet</p>
+        <p className="text-xs text-muted-foreground/70">Add your first task above</p>
+      </div>
     );
   }
 
@@ -54,7 +58,9 @@ export function TaskList({ tasks, onStatusChange, onDelete }: TaskListProps) {
       {tasks.map((task) => (
         <div
           key={task.id}
-          className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+          className={`animate-fade-in flex items-center gap-3 rounded-lg border p-3 transition-all duration-300 hover:bg-muted/50 ${
+            task.status === "done" ? "opacity-60" : ""
+          }`}
         >
           <button
             onClick={() => onStatusChange(task.id, statusCycle[task.status])}

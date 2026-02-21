@@ -25,7 +25,7 @@ export function ProjectCard({ project, tasks, onOpen, onEdit, onDelete }: Projec
   const total = tasks.length;
 
   return (
-    <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={onOpen}>
+    <Card className="gradient-border cursor-pointer bg-card/80 backdrop-blur-sm border-border/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg" onClick={onOpen}>
       <CardHeader className="flex flex-row items-start justify-between">
         <div className="space-y-1 min-w-0 flex-1">
           <CardTitle className="text-base truncate">{project.name}</CardTitle>

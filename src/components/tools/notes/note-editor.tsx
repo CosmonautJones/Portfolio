@@ -14,7 +14,7 @@ interface NoteEditorProps {
 
 export function NoteEditor({ note, onSubmit, onCancel }: NoteEditorProps) {
   return (
-    <Card>
+    <Card className="animate-fade-up bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader>
         <CardTitle>{note ? "Edit Note" : "New Note"}</CardTitle>
       </CardHeader>
