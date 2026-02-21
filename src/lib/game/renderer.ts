@@ -96,7 +96,11 @@ export class GameRenderer {
       }
 
       for (const obs of lane.obstacles) {
-        const spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
+        let spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
+        // Car color variety — every 3rd car is blue
+        if (obs.type === "car" && obs.id % 3 === 0) {
+          spriteKey = obs.speed < 0 ? "car_blue_flip" : "car_blue";
+        }
         this.sprites.draw(this.ctx, spriteKey, obs.worldX, screenY);
       }
     }
@@ -133,8 +137,32 @@ export class GameRenderer {
 
   renderPlayer(state: GameState): void {
     const { player, camera } = state;
+    const cellSize = DEFAULT_CONFIG.cellSize;
     const screenX = player.worldPos.x;
-    const screenY = player.worldPos.y - camera.y;
+    let screenY = player.worldPos.y - camera.y;
+
+    // Hop arc — bob upward during hop for bouncy feel
+    let arcOffset = 0;
+    if (player.animation === "hop" && player.hopTarget !== null) {
+      arcOffset = Math.sin(player.hopProgress * Math.PI) * 4;
+    }
+
+    // Shadow — dark ellipse at feet, stays grounded even during hop arc
+    const shadowY = player.worldPos.y - camera.y + cellSize - 3;
+    this.ctx.globalAlpha = 0.3;
+    this.ctx.fillStyle = "#1a1c2c";
+    this.ctx.beginPath();
+    this.ctx.ellipse(
+      Math.round(screenX + cellSize / 2),
+      Math.round(shadowY + 1),
+      5, 2, 0, 0, Math.PI * 2,
+    );
+    this.ctx.fill();
+    this.ctx.globalAlpha = 1;
+
+    // Apply hop arc to sprite position
+    screenY -= arcOffset;
+
     const spriteKey = `lobster_${player.facing}_${player.animation}`;
     this.sprites.draw(this.ctx, spriteKey, screenX, screenY);
   }
@@ -155,5 +183,17 @@ export class GameRenderer {
       this.ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
     }
     this.ctx.globalAlpha = 1;
+  }
+
+  renderVignette(): void {
+    const { width, height } = this.ctx.canvas;
+    const gradient = this.ctx.createRadialGradient(
+      width / 2, height / 2, Math.min(width, height) * 0.35,
+      width / 2, height / 2, Math.min(width, height) * 0.75,
+    );
+    gradient.addColorStop(0, "rgba(0,0,0,0)");
+    gradient.addColorStop(1, "rgba(0,0,0,0.25)");
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, width, height);
   }
 }

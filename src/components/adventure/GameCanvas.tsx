@@ -107,6 +107,8 @@ export default function GameCanvas() {
     }>
   >([]);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [scorePopups, setScorePopups] = useState<number[]>([]);
+  const popupIdRef = useRef(0);
   const audioRef = useRef<GameAudio | null>(null);
 
   const callbacksRef = useRef<GameCallbacks | null>(null);
@@ -197,6 +199,11 @@ export default function GameCanvas() {
       onScoreChange: (newScore) => {
         setScore(newScore);
         audio.playScore();
+        const id = popupIdRef.current++;
+        setScorePopups(prev => [...prev, id]);
+        setTimeout(() => {
+          setScorePopups(prev => prev.filter(p => p !== id));
+        }, 600);
       },
       onPhaseChange: (newPhase) => {
         setPhase(newPhase);
@@ -312,6 +319,7 @@ export default function GameCanvas() {
         renderer.renderLanes(gameStateRef.current);
         renderer.renderPlayer(gameStateRef.current);
         renderer.renderParticles(gameStateRef.current.particles);
+        renderer.renderVignette();
       }
 
       rafId = requestAnimationFrame(loop);
@@ -364,6 +372,10 @@ export default function GameCanvas() {
         @keyframes newHighFlash {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes scorePopup {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-20px); }
         }
       `}</style>
       <div
@@ -496,6 +508,24 @@ export default function GameCanvas() {
             </button>
           </div>
         )}
+
+        {/* Score popups */}
+        {phase === "playing" && scorePopups.map((id) => (
+          <div
+            key={id}
+            className="absolute pointer-events-none font-bold font-mono"
+            style={{
+              top: "6%",
+              left: "3%",
+              fontSize: canvasWidth * 0.055,
+              color: "#a7f070",
+              textShadow: "1px 1px 0 #1a1c2c",
+              animation: "scorePopup 0.6s ease-out forwards",
+            }}
+          >
+            +1
+          </div>
+        ))}
 
         {/* Level up flash text */}
         {levelUpText !== null && (

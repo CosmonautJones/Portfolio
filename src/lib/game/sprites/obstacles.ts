@@ -38,6 +38,14 @@ const CAR: SpritePixels = [
   [ 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
 ];
 
+// Helper to recolor a sprite by swapping one palette index for another
+function recolorSprite(pixels: SpritePixels, from: number, to: number): SpritePixels {
+  return pixels.map(row => row.map(px => px === from ? to : px));
+}
+
+// Blue car variant — same shape as CAR with cranberry (3) recolored to medium blue (10)
+const CAR_BLUE = recolorSprite(CAR, 3, 10);
+
 // Truck: 48x16 — green delivery truck facing right
 // Cab on right side with windshield, long cargo box on left
 // prettier-ignore
@@ -106,6 +114,7 @@ const LOG: SpritePixels = [
 
 export const OBSTACLE_SPRITES: Record<string, SpritePixels> = {
   car: CAR,
+  car_blue: CAR_BLUE,
   truck: TRUCK,
   train: TRAIN,
   log: LOG,
@@ -113,6 +122,7 @@ export const OBSTACLE_SPRITES: Record<string, SpritePixels> = {
 
 export const OBSTACLE_WIDTHS: Record<string, number> = {
   car: 32,
+  car_blue: 32,
   truck: 48,
   train: 64,
   log: 48,
