@@ -79,7 +79,8 @@ export class GameRenderer {
       this.renderLaneBackground(lane, screenY);
 
       for (const obs of lane.obstacles) {
-        this.sprites.draw(this.ctx, `${obs.type}`, obs.worldX, screenY);
+        const spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
+        this.sprites.draw(this.ctx, spriteKey, obs.worldX, screenY);
       }
     }
   }

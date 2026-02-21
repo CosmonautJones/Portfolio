@@ -145,6 +145,10 @@ export const LOBSTER_SPRITES: Record<string, SpritePixels> = {
   lobster_right_idle: LOBSTER_RIGHT_IDLE,
   lobster_right_hop: LOBSTER_RIGHT_HOP,
   lobster_death: LOBSTER_DEATH,
+  lobster_up_death: LOBSTER_DEATH,
+  lobster_down_death: LOBSTER_DEATH,
+  lobster_left_death: LOBSTER_DEATH,
+  lobster_right_death: LOBSTER_DEATH,
 };
 
 // Left sprites are horizontally flipped versions of right sprites
