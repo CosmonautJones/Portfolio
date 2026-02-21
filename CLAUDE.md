@@ -21,7 +21,8 @@ Next.js 15 App Router application — a portfolio site with an authenticated too
 
 - `src/app/(public)/` — Public portfolio pages (home, about, work, contact)
 - `src/app/(auth)/` — Auth flow (login, confirmation callback)
-- `src/app/(protected)/` — Requires authentication (tools browser, admin panel, adventure)
+- `src/app/(protected)/` — Requires authentication (tools browser, admin panel)
+- `src/app/(adventure)/` — Game pages (ClaudeBot's Adventure)
 - `src/app/api/embed/[slug]/` — Serves embedded tool HTML content
 
 ### Tool System (core domain)
@@ -42,6 +43,7 @@ All mutations go through server actions, not API routes. Each action calls `requ
 - `projects.ts` — Project CRUD
 - `auth.ts` — Sign out
 - `deploy.ts` — Trigger Netlify build webhooks
+- `game-scores.ts` — Score submission and leaderboard
 
 ### Key Libraries
 
@@ -52,7 +54,7 @@ All mutations go through server actions, not API routes. Each action calls `requ
 
 ### Database
 
-Supabase PostgreSQL with migrations in `supabase/migrations/`. Four tables: `tools`, `notes`, `projects`, and `tasks`. RLS policies defined in migration 003. The `notes` table has a `user_id` foreign key and an auto-updating `updated_at` trigger.
+Supabase PostgreSQL with migrations in `supabase/migrations/`. Five tables: `tools`, `notes`, `projects`, `tasks`, and `game_scores`. RLS policies defined in migration 003. The `notes` table has a `user_id` foreign key and an auto-updating `updated_at` trigger.
 
 ### Environment Variables
 

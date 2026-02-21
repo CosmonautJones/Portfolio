@@ -24,7 +24,7 @@ export function ExternalToolFrame({ tool }: ExternalToolFrameProps) {
         src={tool.url!}
         className="h-[calc(100vh-16rem)] w-full rounded-lg border"
         title={tool.name}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        sandbox="allow-scripts allow-forms allow-popups"
       />
     </div>
   );

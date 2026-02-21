@@ -40,6 +40,7 @@ export async function getLeaderboard(limit = 10) {
     } = await supabase.auth.getUser();
 
     const scores = (data ?? []).map((entry, i) => ({
+      id: entry.id,
       rank: i + 1,
       score: entry.score,
       deathCause: entry.death_cause,

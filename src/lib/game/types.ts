@@ -18,7 +18,7 @@ export type DeathCause =
   | "water"
   | "idle_timeout"
   | "off_screen";
-export type PlayerAnimation = "idle" | "hop" | "land" | "death";
+export type PlayerAnimation = "idle" | "hop" | "death";
 
 export interface Player {
   gridPos: GridPosition;

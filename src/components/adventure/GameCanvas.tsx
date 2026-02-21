@@ -54,6 +54,7 @@ export default function GameCanvas() {
   const [levelUpText, setLevelUpText] = useState<number | null>(null);
   const [leaderboard, setLeaderboard] = useState<
     Array<{
+      id: string;
       rank: number;
       score: number;
       deathCause: string;
@@ -476,7 +477,7 @@ export default function GameCanvas() {
                 </p>
                 {leaderboard.map((entry) => (
                   <div
-                    key={`${entry.rank}-${entry.score}`}
+                    key={entry.id}
                     className={`flex justify-between px-2 py-0.5 ${
                       entry.isCurrentUser
                         ? "text-yellow-300 font-bold"
