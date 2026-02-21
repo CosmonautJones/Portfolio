@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,14 @@ export function LoginForm({
             </>
           )}
         </Button>
+        <div className="text-center">
+          <Link
+            href="/adventure"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            or play as guest
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
