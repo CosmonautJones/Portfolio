@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function submitScore(score: number, deathCause: string) {
+export async function submitScore(score: number, deathCause: string, gameType = "adventure") {
   try {
     const supabase = await createClient();
     const {
@@ -14,6 +14,7 @@ export async function submitScore(score: number, deathCause: string) {
       user_id: user.id,
       score,
       death_cause: deathCause,
+      game_type: gameType,
     });
     if (error) return { error: error.message };
     return { success: true };
@@ -22,13 +23,14 @@ export async function submitScore(score: number, deathCause: string) {
   }
 }
 
-export async function getLeaderboard(limit = 10) {
+export async function getLeaderboard(limit = 10, gameType = "adventure") {
   try {
     const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("game_scores")
       .select("id, score, death_cause, created_at, user_id")
+      .eq("game_type", gameType)
       .order("score", { ascending: false })
       .limit(limit);
 

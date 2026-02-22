@@ -1,11 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { XPBar } from "@/components/progression/xp-bar";
+import { AchievementPanel } from "@/components/progression/achievement-panel";
+import { useVisitor } from "@/hooks/use-visitor";
 import { Moon, Sun } from "lucide-react";
 
 interface NavbarProps {
@@ -14,6 +18,16 @@ interface NavbarProps {
 
 export function Navbar({ isAdmin = false }: NavbarProps) {
   const { theme, setTheme } = useTheme();
+  const { awardXP } = useVisitor();
+  const themeTracked = useRef(false);
+
+  function handleToggleTheme() {
+    setTheme(theme === "dark" ? "light" : "dark");
+    if (!themeTracked.current) {
+      themeTracked.current = true;
+      awardXP("toggle_theme");
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-2xl backdrop-saturate-[1.8]">
@@ -44,11 +58,13 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-1">
+          <XPBar />
+          <AchievementPanel />
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-full text-muted-foreground transition-colors hover:text-foreground"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={handleToggleTheme}
           >
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
