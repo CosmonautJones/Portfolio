@@ -28,8 +28,10 @@ export interface Project {
   image: string;
   tags: string[];
   liveUrl?: string;
+  demoUrl?: string;
   githubUrl?: string;
   role: string;
+  featured?: boolean;
 }
 
 export interface TrackerProject {

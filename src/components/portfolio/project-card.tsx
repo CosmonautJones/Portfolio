@@ -1,29 +1,49 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Play } from "lucide-react";
 import type { Project } from "@/lib/types";
+
+const gradients = [
+  "from-violet-500/20 via-purple-500/10 to-fuchsia-500/20",
+  "from-cyan-500/20 via-blue-500/10 to-indigo-500/20",
+  "from-emerald-500/20 via-green-500/10 to-teal-500/20",
+  "from-amber-500/20 via-orange-500/10 to-red-500/20",
+];
 
 interface ProjectCardProps {
   project: Project;
+  featured?: boolean;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, featured }: ProjectCardProps) {
+  const gradientIndex = project.title.length % gradients.length;
+  const gradient = gradients[gradientIndex];
+  const heightClass = featured ? "h-56" : "h-48";
+
   return (
     <Card className="group flex flex-col overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:shadow-2xl hover:shadow-violet-500/[0.04] dark:hover:shadow-violet-500/[0.08]">
       {project.image ? (
-        <div className="relative h-48 w-full overflow-hidden">
+        <div className={`relative ${heightClass} w-full overflow-hidden`}>
           <Image
             src={project.image}
             alt={project.title}
             width={400}
             height={225}
-            className="w-full h-48 object-cover rounded-t-lg"
+            className={`w-full ${heightClass} object-cover rounded-t-lg`}
           />
         </div>
       ) : (
-        <div className="h-48 w-full rounded-t-lg bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-fuchsia-500/20" />
+        <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg bg-gradient-to-br ${gradient}`}>
+          {/* Large faded tag overlay */}
+          {project.tags[0] && (
+            <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-foreground/[0.06] select-none sm:text-6xl">
+              {project.tags[0]}
+            </span>
+          )}
+        </div>
       )}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
@@ -53,6 +73,18 @@ export function ProjectCard({ project }: ProjectCardProps) {
           ))}
         </div>
         <div className="flex gap-2">
+          {project.demoUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-8 rounded-full border-border/50 text-xs transition-all duration-300 hover:border-border hover:bg-secondary/80"
+            >
+              <Link href={project.demoUrl}>
+                <Play className="mr-1.5 h-3 w-3" /> Demo
+              </Link>
+            </Button>
+          )}
           {project.liveUrl && (
             <Button
               variant="outline"
