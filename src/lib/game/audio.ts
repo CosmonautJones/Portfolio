@@ -97,4 +97,11 @@ export class GameAudio {
   isMuted(): boolean {
     return this.muted;
   }
+
+  destroy(): void {
+    if (this.ctx) {
+      this.ctx.close().catch(() => {});
+      this.ctx = null;
+    }
+  }
 }

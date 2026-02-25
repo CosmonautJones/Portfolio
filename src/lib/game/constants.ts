@@ -41,3 +41,12 @@ export const DIFFICULTY = {
 } as const;
 
 export const LEVEL_THRESHOLDS = [0, 25, 50, 100, 150, 200] as const;
+
+// Physics & rendering constants
+export const COLLISION_MARGIN = 0.1; // fraction of cellSize for forgiving hitbox
+export const LOG_LANDING_MARGIN = 0.4; // fraction of cellSize for log landing tolerance
+export const CAMERA_DEAD_ZONE = 0.65; // fraction of viewport height for camera target
+export const PARTICLE_GRAVITY = 50; // px/s^2
+export const SWIPE_THRESHOLD = 30; // px minimum for swipe detection
+export const WATER_FLOW_SPEED = 8; // tile-offsets per second for water animation
+export const GRASS_SHIMMER_SPEED = 1.5; // variant flips per second

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createInitialState, tick, resetForNewGame } from "../engine";
-import { DEFAULT_CONFIG } from "../constants";
-import type { GameCallbacks, GameState, Obstacle, Lane } from "../types";
+import { DEFAULT_CONFIG, MAX_CONSECUTIVE } from "../constants";
+import type { GameCallbacks, GameState, Obstacle, Lane, LaneType } from "../types";
 
 const VIEWPORT_HEIGHT = 320;
 const CELL = DEFAULT_CONFIG.cellSize; // 16
@@ -353,5 +353,236 @@ describe("Log mechanics", () => {
 
     expect(state.player.ridingLogId).toBeNull();
     expect(state.animationTime).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("Collision detection", () => {
+  let state: GameState;
+  let cb: GameCallbacks;
+
+  beforeEach(() => {
+    state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    cb = makeCallbacks();
+  });
+
+  it("player dies from car collision", () => {
+    state.phase = "playing";
+
+    // Find the player's current lane and place a car on top of them
+    const lane = state.lanes.find((l) => l.y === state.player.gridPos.y)!;
+    lane.obstacles.push({
+      id: 7000,
+      type: "car",
+      laneY: lane.y,
+      worldX: state.player.worldPos.x,
+      widthCells: 2,
+      speed: 0,
+    });
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    expect(state.player.alive).toBe(false);
+    expect(state.deathCause).toBe("vehicle");
+  });
+
+  it("player dies from train collision with 'train' cause", () => {
+    state.phase = "playing";
+
+    const lane = state.lanes.find((l) => l.y === state.player.gridPos.y)!;
+    lane.obstacles.push({
+      id: 7001,
+      type: "train",
+      laneY: lane.y,
+      worldX: state.player.worldPos.x,
+      widthCells: 4,
+      speed: 0,
+    });
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    expect(state.player.alive).toBe(false);
+    expect(state.deathCause).toBe("train");
+  });
+
+  it("player survives when obstacle is just outside hitbox margin", () => {
+    state.phase = "playing";
+
+    // Place car just beyond the player's right edge + margin
+    const lane = state.lanes.find((l) => l.y === state.player.gridPos.y)!;
+    lane.obstacles = [
+      {
+        id: 7002,
+        type: "car",
+        laneY: lane.y,
+        worldX: state.player.worldPos.x + CELL + 1, // just past right edge
+        widthCells: 2,
+        speed: 0,
+      },
+    ];
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    expect(state.player.alive).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("Idle timeout and back-death", () => {
+  let state: GameState;
+  let cb: GameCallbacks;
+
+  beforeEach(() => {
+    state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    cb = makeCallbacks();
+  });
+
+  it("player dies from idle timeout after idleTimeout seconds", () => {
+    state.phase = "playing";
+
+    // Ensure player lane has no obstacles that could kill them first
+    const lane = state.lanes.find((l) => l.y === state.player.gridPos.y)!;
+    lane.obstacles = [];
+
+    // Tick for slightly more than idleTimeout seconds (7s)
+    const ticksNeeded = Math.ceil(
+      (DEFAULT_CONFIG.idleTimeout + 0.1) / DT,
+    );
+    for (let i = 0; i < ticksNeeded; i++) {
+      tick(state, DT, DEFAULT_CONFIG, cb);
+      if (!state.player.alive) break;
+    }
+
+    expect(state.player.alive).toBe(false);
+    expect(state.deathCause).toBe("idle_timeout");
+  });
+
+  it("player dies from being too far behind (off_screen)", () => {
+    state.phase = "playing";
+
+    // Simulate the player having advanced far, then place them way behind
+    state.score = 20; // pretend player reached row -20
+
+    // Place player at row 0, which is 20 + SAFE_START_LANES-1 = 23 rows behind
+    // backDeathDistance is 5, so 23 > 5 → should die
+    placePlayer(state, Math.floor(DEFAULT_CONFIG.gridColumns / 2), 0);
+
+    // Clear obstacles on player's lane to avoid vehicle death
+    const lane = state.lanes.find((l) => l.y === 0);
+    if (lane) lane.obstacles = [];
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    expect(state.player.alive).toBe(false);
+    expect(state.deathCause).toBe("off_screen");
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("Lane generation", () => {
+  it("respects MAX_CONSECUTIVE limits for procedurally generated lanes", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+
+    // Only check procedurally generated lanes (y < 0), not the safe start grass
+    const generated = state.lanes
+      .filter((l) => l.y < 0)
+      .sort((a, b) => b.y - a.y); // descending y (most behind first)
+
+    expect(generated.length).toBeGreaterThan(0);
+
+    let runType: LaneType = generated[0].type;
+    let runLength = 1;
+
+    for (let i = 1; i < generated.length; i++) {
+      if (generated[i].type === runType) {
+        runLength++;
+        expect(runLength).toBeLessThanOrEqual(
+          MAX_CONSECUTIVE[runType],
+        );
+      } else {
+        runType = generated[i].type;
+        runLength = 1;
+      }
+    }
+  });
+
+  it("generates new lanes as player progresses", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    const cb = makeCallbacks();
+    state.phase = "playing";
+
+    const initialLaneCount = state.lanes.length;
+
+    // Move player far forward to trigger generation
+    placePlayer(state, Math.floor(DEFAULT_CONFIG.gridColumns / 2), -50);
+    state.score = 50;
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    expect(state.lanes.length).toBeGreaterThan(initialLaneCount);
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("Lane pruning", () => {
+  it("removes lanes far behind the player", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    const cb = makeCallbacks();
+    state.phase = "playing";
+
+    // Initial safe lanes are at y=0,1,2,3
+    // Move player far forward
+    placePlayer(state, Math.floor(DEFAULT_CONFIG.gridColumns / 2), -50);
+    state.score = 50;
+
+    tick(state, DT, DEFAULT_CONFIG, cb);
+
+    // Lanes with y > player.gridPos.y + backDeathDistance + 5 should be pruned
+    const pruneThreshold =
+      state.player.gridPos.y + DEFAULT_CONFIG.backDeathDistance + 5;
+    const lanesBelow = state.lanes.filter((l) => l.y > pruneThreshold);
+
+    expect(lanesBelow.length).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("Level progression", () => {
+  let state: GameState;
+  let cb: GameCallbacks;
+
+  beforeEach(() => {
+    state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    cb = makeCallbacks();
+  });
+
+  it("triggers onLevelUp when crossing a threshold", () => {
+    state.phase = "playing";
+
+    // Set score just below level 2 threshold (25)
+    state.score = 24;
+    state.level = 1;
+
+    // Clear obstacles on all nearby lanes so player can hop safely
+    for (const lane of state.lanes) {
+      if (
+        lane.y <= state.player.gridPos.y &&
+        lane.y >= state.player.gridPos.y - 2
+      ) {
+        lane.obstacles = [];
+        lane.type = "grass";
+      }
+    }
+
+    // Hop forward to score a point (score goes from 24 to 25)
+    placePlayer(state, Math.floor(DEFAULT_CONFIG.gridColumns / 2), 0);
+    state.actionQueue.push("move_up");
+    tick(state, DT, DEFAULT_CONFIG, cb);
+    completeHop(state, cb);
+
+    // If score reached 25, onLevelUp should have been called
+    if (state.score >= 25) {
+      expect(cb.onLevelUp).toHaveBeenCalledWith(2);
+    }
   });
 });

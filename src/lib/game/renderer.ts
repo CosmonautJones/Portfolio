@@ -1,6 +1,6 @@
 import { PALETTE } from "./sprites/palette";
 import type { SpritePixels, Lane, GameState } from "./types";
-import { DEFAULT_CONFIG } from "./constants";
+import { DEFAULT_CONFIG, WATER_FLOW_SPEED, GRASS_SHIMMER_SPEED } from "./constants";
 
 export function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
@@ -111,7 +111,7 @@ export class GameRenderer {
     const cols = DEFAULT_CONFIG.gridColumns;
 
     if (lane.type === "water") {
-      const offset = Math.floor(state.animationTime * 8) % cellSize;
+      const offset = Math.floor(state.animationTime * WATER_FLOW_SPEED) % cellSize;
       const flowOffset = offset * lane.flowDirection;
       for (let x = -1; x <= cols; x++) {
         const key = `${lane.type}_${lane.variant}`;
@@ -121,7 +121,7 @@ export class GameRenderer {
     }
 
     if (lane.type === "grass") {
-      const shimmerVariant = (lane.variant + Math.floor(state.animationTime * 1.5)) % 2;
+      const shimmerVariant = (lane.variant + Math.floor(state.animationTime * GRASS_SHIMMER_SPEED)) % 2;
       for (let x = 0; x < cols; x++) {
         const key = `grass_${shimmerVariant}`;
         this.sprites.draw(this.ctx, key, x * cellSize, screenY);
@@ -176,11 +176,12 @@ export class GameRenderer {
       color: string;
       size: number;
     }[],
+    cameraY: number,
   ): void {
     for (const p of particles) {
       this.ctx.globalAlpha = p.life / p.maxLife;
       this.ctx.fillStyle = p.color;
-      this.ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+      this.ctx.fillRect(Math.round(p.x), Math.round(p.y - cameraY), p.size, p.size);
     }
     this.ctx.globalAlpha = 1;
   }

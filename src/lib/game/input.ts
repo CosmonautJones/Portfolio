@@ -1,4 +1,5 @@
 import type { InputAction } from "./types";
+import { SWIPE_THRESHOLD } from "./constants";
 
 export const KEY_MAP: Record<string, InputAction> = {
   ArrowUp: "move_up",
@@ -17,8 +18,6 @@ export const KEY_MAP: Record<string, InputAction> = {
   p: "pause",
   P: "pause",
 };
-
-const SWIPE_THRESHOLD = 30;
 
 export function createInputHandler(onAction: (action: InputAction) => void) {
   let touchStartX = 0;
