@@ -46,7 +46,14 @@ export function ProjectCard({ project, tasks, onOpen, onEdit, onDelete }: Projec
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-3 text-sm">
-          <Badge variant="secondary" className={statusColors[project.status]}>
+          <Badge
+            variant={
+              project.status === "active" ? "default" :
+              project.status === "completed" ? "secondary" :
+              "outline"
+            }
+            className={statusColors[project.status]}
+          >
             {project.status}
           </Badge>
           <span className="text-muted-foreground flex items-center gap-1">

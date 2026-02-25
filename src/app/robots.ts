@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/tools/", "/login", "/auth/"],
+        disallow: ["/admin/", "/api/", "/login", "/auth/"],
       },
     ],
     sitemap: "https://travisjohnjones.com/sitemap.xml",

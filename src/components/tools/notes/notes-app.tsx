@@ -41,6 +41,7 @@ export default function NotesApp() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabaseRef = useRef<SupabaseClient | null>(null);
 
   function getSupabase() {
@@ -50,16 +51,24 @@ export default function NotesApp() {
     return supabaseRef.current;
   }
 
-  useEffect(() => {
-    async function fetchNotes() {
-      const { data } = await getSupabase()
-        .from("notes")
-        .select("*")
-        .order("updated_at", { ascending: false });
-      if (data) setNotes(data as Note[]);
-      setLoading(false);
+  async function fetchNotes() {
+    setError(null);
+    setLoading(true);
+    const { data, error: fetchError } = await getSupabase()
+      .from("notes")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (fetchError) {
+      setError(fetchError.message);
+    } else if (data) {
+      setNotes(data as Note[]);
     }
+    setLoading(false);
+  }
+
+  useEffect(() => {
     fetchNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCreate(formData: FormData) {
@@ -132,33 +141,45 @@ export default function NotesApp() {
         />
       )}
 
-      {loading ? (
-        <NotesSkeleton />
-      ) : notes.length === 0 && !creating && !editing ? (
-        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-            <FileText className="h-8 w-8 text-muted-foreground/50" />
-          </div>
-          <h2 className="gradient-text mb-2 text-xl font-semibold">No notes yet</h2>
-          <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-            Start capturing your thoughts and ideas.
-          </p>
-          <Button onClick={() => { setCreating(true); setEditing(null); }}>
-            <Plus className="mr-1 h-4 w-4" /> New Note
+      {error && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-sm text-destructive mb-2">Failed to load notes</p>
+          <p className="text-xs text-muted-foreground">{error}</p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => { setError(null); fetchNotes(); }}>
+            Try Again
           </Button>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {notes.map((note, i) => (
-            <div key={note.id} className={`animate-scale-in delay-${Math.min((i + 1) * 100, 700)}`}>
-              <NoteCard
-                note={note}
-                onEdit={() => { setEditing(note); setCreating(false); }}
-                onDelete={() => handleDelete(note.id)}
-              />
+      )}
+
+      {!error && (
+        loading ? (
+          <NotesSkeleton />
+        ) : notes.length === 0 && !creating && !editing ? (
+          <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+              <FileText className="h-8 w-8 text-muted-foreground/50" />
             </div>
-          ))}
-        </div>
+            <h2 className="gradient-text mb-2 text-xl font-semibold">No notes yet</h2>
+            <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+              Start capturing your thoughts and ideas.
+            </p>
+            <Button onClick={() => { setCreating(true); setEditing(null); }}>
+              <Plus className="mr-1 h-4 w-4" /> New Note
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {notes.map((note, i) => (
+              <div key={note.id} className="animate-scale-in" style={{ animationDelay: `${Math.min((i + 1) * 100, 700)}ms` }}>
+                <NoteCard
+                  note={note}
+                  onEdit={() => { setEditing(note); setCreating(false); }}
+                  onDelete={() => handleDelete(note.id)}
+                />
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );

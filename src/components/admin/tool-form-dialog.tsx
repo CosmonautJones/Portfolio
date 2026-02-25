@@ -168,18 +168,21 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
         </DialogHeader>
 
         {!isEdit && (
-          <div className="flex gap-2">
-            <Input
-              placeholder="https://github.com/owner/repo"
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleImport();
-                }
-              }}
-            />
+          <div className="space-y-2">
+            <Label htmlFor="github-url">GitHub Repository URL</Label>
+            <div className="flex gap-2">
+              <Input
+                id="github-url"
+                placeholder="https://github.com/owner/repo"
+                value={githubUrl}
+                onChange={(e) => setGithubUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleImport();
+                  }
+                }}
+              />
             <Button
               type="button"
               variant="secondary"
@@ -192,6 +195,7 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
                 <Download className="h-4 w-4" />
               )}
             </Button>
+            </div>
           </div>
         )}
 

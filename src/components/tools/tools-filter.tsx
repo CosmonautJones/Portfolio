@@ -175,7 +175,8 @@ export function ToolsFilter({ tools }: ToolsFilterProps) {
           {filteredTools.map((tool, i) => (
             <div
               key={tool.id}
-              className={`animate-scale-in delay-${Math.min((i + 1) * 100, 700)}`}
+              className="animate-scale-in"
+              style={{ animationDelay: `${Math.min((i + 1) * 100, 700)}ms` }}
             >
               <ToolCard tool={tool} />
             </div>
