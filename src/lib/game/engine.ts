@@ -18,6 +18,10 @@ import {
   SPEED_RANGES,
   DIFFICULTY,
   LEVEL_THRESHOLDS,
+  COLLISION_MARGIN,
+  LOG_LANDING_MARGIN,
+  CAMERA_DEAD_ZONE,
+  PARTICLE_GRAVITY,
 } from "./constants";
 
 // ---------------------------------------------------------------------------
@@ -315,8 +319,8 @@ export function createInitialState(
   };
 
   const camera = {
-    y: startY * cellSize - viewportHeight * 0.65,
-    targetY: startY * cellSize - viewportHeight * 0.65,
+    y: startY * cellSize - viewportHeight * CAMERA_DEAD_ZONE,
+    targetY: startY * cellSize - viewportHeight * CAMERA_DEAD_ZONE,
     viewportWidth: gridColumns * cellSize,
     viewportHeight,
   };
@@ -471,11 +475,14 @@ function findLogUnderPlayer(
   const lane = state.lanes.find((l) => l.y === player.gridPos.y);
   if (!lane || lane.type !== "water") return null;
 
+  // Use a forgiving margin so lateral hops (where the log drifts during
+  // the hop animation) still register as a landing.
+  const margin = cellSize * LOG_LANDING_MARGIN;
   const playerCenterX = player.worldPos.x + cellSize / 2;
   for (const obs of lane.obstacles) {
     if (obs.type !== "log") continue;
-    const logLeft = obs.worldX;
-    const logRight = obs.worldX + obs.widthCells * cellSize;
+    const logLeft = obs.worldX - margin;
+    const logRight = obs.worldX + obs.widthCells * cellSize + margin;
     if (playerCenterX >= logLeft && playerCenterX <= logRight) {
       return obs;
     }
@@ -497,14 +504,14 @@ function updateLogRiding(
   // Find the log by ID in the current lane
   const lane = state.lanes.find((l) => l.y === player.gridPos.y);
   if (!lane) {
-    killPlayer(state, "water", callbacks);
+    killPlayer(state, "water", config, callbacks);
     return;
   }
 
   const log = lane.obstacles.find((o) => o.id === player.ridingLogId);
   if (!log) {
     // Log disappeared — player falls in water
-    killPlayer(state, "water", callbacks);
+    killPlayer(state, "water", config, callbacks);
     return;
   }
 
@@ -517,26 +524,27 @@ function updateLogRiding(
   const logLeft = log.worldX;
   const logRight = log.worldX + log.widthCells * cellSize;
   if (playerCenterX < logLeft || playerCenterX > logRight) {
-    killPlayer(state, "water", callbacks);
+    killPlayer(state, "water", config, callbacks);
     return;
   }
 
   // Check if player drifted off-screen
   const totalWidth = gridColumns * cellSize;
   if (player.worldPos.x < -cellSize || player.worldPos.x > totalWidth) {
-    killPlayer(state, "water", callbacks);
+    killPlayer(state, "water", config, callbacks);
   }
 }
 
-function spawnSplashParticles(state: GameState): void {
+function spawnSplashParticles(state: GameState, config: GameConfig): void {
   const { player } = state;
+  const cellHalf = config.cellSize / 2;
   const count = 3 + Math.floor(Math.random() * 3); // 3-5
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 20 + Math.random() * 30;
     state.particles.push({
-      x: player.worldPos.x + DEFAULT_CONFIG_CELL_HALF,
-      y: player.worldPos.y + DEFAULT_CONFIG_CELL_HALF,
+      x: player.worldPos.x + cellHalf,
+      y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 0.15 + Math.random() * 0.1,
@@ -604,9 +612,9 @@ function updatePlayer(
         const log = findLogUnderPlayer(state, config);
         if (log) {
           player.ridingLogId = log.id;
-          spawnSplashParticles(state);
+          spawnSplashParticles(state, config);
         } else {
-          killPlayer(state, "water", callbacks);
+          killPlayer(state, "water", config, callbacks);
         }
       } else {
         // Not on water — clear riding state
@@ -656,8 +664,8 @@ function checkCollisions(
   const { player } = state;
   const { cellSize } = config;
 
-  // Player hitbox with 10% margin (forgiving)
-  const margin = cellSize * 0.1;
+  // Player hitbox with forgiving margin
+  const margin = cellSize * COLLISION_MARGIN;
   const px1 = player.worldPos.x + margin;
   const py1 = player.worldPos.y + margin;
   const px2 = player.worldPos.x + cellSize - margin;
@@ -685,7 +693,7 @@ function checkCollisions(
       // AABB overlap test
       if (px1 < ox2 && px2 > ox1 && py1 < oy2 && py2 > oy1) {
         const cause: DeathCause = obs.type === "train" ? "train" : "vehicle";
-        killPlayer(state, cause, callbacks);
+        killPlayer(state, cause, config, callbacks);
         return;
       }
     }
@@ -699,9 +707,11 @@ function checkCollisions(
 function killPlayer(
   state: GameState,
   cause: DeathCause,
+  config: GameConfig,
   callbacks: GameCallbacks,
 ): void {
   const { player } = state;
+  const cellHalf = config.cellSize / 2;
   player.alive = false;
   player.animation = "death";
   state.phase = "game_over";
@@ -723,8 +733,8 @@ function killPlayer(
         : Math.random() * Math.PI * 2;
     const speed = (30 + Math.random() * 60) * speedMult;
     state.particles.push({
-      x: player.worldPos.x + DEFAULT_CONFIG_CELL_HALF,
-      y: player.worldPos.y + DEFAULT_CONFIG_CELL_HALF,
+      x: player.worldPos.x + cellHalf,
+      y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 0.4 + Math.random() * 0.4,
@@ -738,16 +748,13 @@ function killPlayer(
   callbacks.onPhaseChange("game_over");
 }
 
-// Approximate center offset for particle spawn
-const DEFAULT_CONFIG_CELL_HALF = 8; // cellSize / 2 for default 16
-
 // ---------------------------------------------------------------------------
 // Camera
 // ---------------------------------------------------------------------------
 
 function updateCamera(state: GameState, config: GameConfig): void {
   const { camera, player } = state;
-  camera.targetY = player.worldPos.y - camera.viewportHeight * 0.65;
+  camera.targetY = player.worldPos.y - camera.viewportHeight * CAMERA_DEAD_ZONE;
   camera.y += (camera.targetY - camera.y) * config.cameraSmoothing;
 }
 
@@ -764,7 +771,7 @@ function checkIdleTimeout(
     state.phase === "playing" &&
     state.player.idleTimer > config.idleTimeout
   ) {
-    killPlayer(state, "idle_timeout", callbacks);
+    killPlayer(state, "idle_timeout", config, callbacks);
   }
 }
 
@@ -782,7 +789,7 @@ function checkBackDeath(
     state.player.gridPos.y >
     furthestY + config.backDeathDistance
   ) {
-    killPlayer(state, "off_screen", callbacks);
+    killPlayer(state, "off_screen", config, callbacks);
   }
 }
 
@@ -796,7 +803,7 @@ function updateParticles(state: GameState, config: GameConfig): void {
     const p = state.particles[i];
     p.x += p.vx * dt;
     p.y += p.vy * dt;
-    p.vy += 50 * dt; // gravity
+    p.vy += PARTICLE_GRAVITY * dt;
     p.life -= dt;
     if (p.life <= 0) {
       state.particles.splice(i, 1);
@@ -831,6 +838,15 @@ function generateLanesIfNeeded(
   state.generatedUpTo = targetY;
 }
 
+function pruneLanesBehindPlayer(state: GameState, config: GameConfig): void {
+  const pruneY = state.player.gridPos.y + config.backDeathDistance + 5;
+  for (let i = state.lanes.length - 1; i >= 0; i--) {
+    if (state.lanes[i].y > pruneY) {
+      state.lanes.splice(i, 1);
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main tick
 // ---------------------------------------------------------------------------
@@ -857,6 +873,7 @@ export function tick(
       checkBackDeath(state, config, callbacks);
       updateCamera(state, config);
       generateLanesIfNeeded(state, config);
+      pruneLanesBehindPlayer(state, config);
     }
 
     // Always update particles and animation time
@@ -910,7 +927,7 @@ export function resetForNewGame(
 
   // Reset camera
   state.camera.y =
-    startY * cellSize - state.camera.viewportHeight * 0.65;
+    startY * cellSize - state.camera.viewportHeight * CAMERA_DEAD_ZONE;
   state.camera.targetY = state.camera.y;
 
   // Reset game state (keep highScore)

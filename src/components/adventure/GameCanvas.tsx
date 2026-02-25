@@ -318,7 +318,7 @@ export default function GameCanvas() {
         renderer.clear();
         renderer.renderLanes(gameStateRef.current);
         renderer.renderPlayer(gameStateRef.current);
-        renderer.renderParticles(gameStateRef.current.particles);
+        renderer.renderParticles(gameStateRef.current.particles, gameStateRef.current.camera.y);
         renderer.renderVignette();
       }
 
@@ -338,6 +338,7 @@ export default function GameCanvas() {
         resizeObserver.disconnect();
       }
       inputHandler.destroy();
+      audio.destroy();
     };
   }, [updateScale]);
 
