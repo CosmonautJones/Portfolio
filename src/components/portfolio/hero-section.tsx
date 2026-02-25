@@ -1,9 +1,25 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ArrowRight } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 export function HeroSection() {
+  const shouldReduce = useReducedMotion();
+
+  function entry(delay: number) {
+    if (shouldReduce) return {};
+    return {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.7, delay, ease },
+    };
+  }
+
   return (
     <section aria-label="Hero" className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
       {/* Ambient glow — large, soft, slow-moving */}
@@ -25,27 +41,38 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative z-10 max-w-4xl">
         {/* Pill badge */}
-        <div className="animate-fade-up mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Software Developer
-        </div>
+        <motion.div {...entry(0)}>
+          <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Software Developer
+          </div>
+        </motion.div>
 
         {/* Main headline — massive, Apple-style */}
-        <h1 className="animate-fade-up delay-100 gradient-text text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight">
+        <motion.h1
+          {...entry(0.1)}
+          className="gradient-text-animated text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight"
+        >
           {SITE_CONFIG.name}
-        </h1>
+        </motion.h1>
 
         {/* Tagline */}
-        <p className="animate-fade-up delay-200 mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl">
+        <motion.p
+          {...entry(0.2)}
+          className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
+        >
           {SITE_CONFIG.tagline}
-        </p>
+        </motion.p>
 
         {/* CTA buttons */}
-        <div className="animate-fade-up delay-300 mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <motion.div
+          {...entry(0.3)}
+          className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+        >
           <Button
             asChild
             size="lg"
-            className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+            className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Link href="/work">
               View My Work
@@ -60,7 +87,7 @@ export function HeroSection() {
           >
             <Link href="/contact">Get in Touch</Link>
           </Button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom fade — seamless transition to next section */}

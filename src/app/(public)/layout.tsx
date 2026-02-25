@@ -10,6 +10,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="flex min-h-screen flex-col">
+      <div className="aurora-bg" aria-hidden="true" />
       <Navbar isAdmin={isAdmin} />
       <main id="main-content" className="flex-1">{children}</main>
       <Footer />

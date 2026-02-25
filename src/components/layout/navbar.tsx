@@ -2,8 +2,11 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { motion } from "motion/react";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
@@ -20,6 +23,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   const { awardXP } = useVisitor();
   const themeTracked = useRef(false);
+  const pathname = usePathname();
 
   function handleToggleTheme() {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -46,15 +50,32 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              pathname === link.href ||
+              (link.href !== "/" && pathname.startsWith(link.href));
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative text-sm font-medium transition-colors duration-200",
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {link.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-underline"
+                    className="absolute -bottom-[19px] left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 to-cyan-400"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-1">
