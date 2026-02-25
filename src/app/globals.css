@@ -254,3 +254,195 @@
 .delay-500 { animation-delay: 500ms; }
 .delay-600 { animation-delay: 600ms; }
 .delay-700 { animation-delay: 700ms; }
+
+/* ─── Animated gradient text — shimmer effect ─── */
+@keyframes aurora-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text-animated {
+  background: linear-gradient(
+    135deg,
+    oklch(0.5 0.25 285) 0%,
+    oklch(0.48 0.24 265) 25%,
+    oklch(0.55 0.2 230) 50%,
+    oklch(0.48 0.24 265) 75%,
+    oklch(0.5 0.25 285) 100%
+  );
+  background-size: 200% auto;
+  animation: aurora-shift 8s ease-in-out infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dark .gradient-text-animated {
+  background: linear-gradient(
+    135deg,
+    oklch(0.78 0.14 285) 0%,
+    oklch(0.76 0.15 265) 25%,
+    oklch(0.8 0.12 230) 50%,
+    oklch(0.76 0.15 265) 75%,
+    oklch(0.78 0.14 285) 100%
+  );
+  background-size: 200% auto;
+  animation: aurora-shift 8s ease-in-out infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Ambient aurora background ─── */
+@keyframes aurora-drift {
+  0%, 100% { background-position: 0% 0%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+}
+
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.55 0.22 285 / 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, oklch(0.5 0.2 265 / 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 50% 80%, oklch(0.55 0.18 230 / 0.04) 0%, transparent 70%);
+  background-size: 200% 200%;
+  animation: aurora-drift 25s ease-in-out infinite;
+}
+
+:root .aurora-bg {
+  opacity: 0.5;
+}
+.dark .aurora-bg {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .aurora-bg {
+    animation: none;
+    background-size: 100% 100%;
+  }
+}
+
+/* ─── Electron-style glass card ─── */
+.glass-card {
+  background: oklch(1 0 0 / 0.03);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid oklch(1 0 0 / 0.06);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.05),
+    0 0 0 0 oklch(0.55 0.2 265 / 0);
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.glass-card:hover {
+  border-color: oklch(1 0 0 / 0.12);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    0 8px 32px oklch(0 0 0 / 0.12),
+    0 0 0 1px oklch(0.55 0.2 265 / 0.08);
+}
+:root .glass-card {
+  background: oklch(1 0 0 / 0.6);
+  border: 1px solid oklch(0 0 0 / 0.06);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.7);
+}
+:root .glass-card:hover {
+  border-color: oklch(0 0 0 / 0.1);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.7),
+    0 8px 32px oklch(0 0 0 / 0.06);
+}
+
+/* ─── Gradient border with glow halo on hover ─── */
+.gradient-border-glow {
+  position: relative;
+}
+.gradient-border-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 285),
+    oklch(0.5 0.2 265),
+    oklch(0.55 0.18 230)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.gradient-border-glow::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 285 / 0.15),
+    oklch(0.5 0.2 265 / 0.15),
+    oklch(0.55 0.18 230 / 0.15)
+  );
+  filter: blur(12px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: -1;
+}
+.gradient-border-glow:hover::before,
+.gradient-border-glow:hover::after {
+  opacity: 1;
+}
+
+/* ─── Button glow on hover ─── */
+.btn-glow {
+  position: relative;
+  overflow: visible;
+}
+.btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 285 / 0.2),
+    oklch(0.55 0.18 230 / 0.2)
+  );
+  filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: -1;
+}
+.btn-glow:hover::after {
+  opacity: 1;
+}
+
+/* ─── Focus glow for form inputs ─── */
+.focus-glow:focus-visible {
+  border-color: oklch(0.65 0.2 265);
+  box-shadow:
+    0 0 0 3px oklch(0.65 0.2 265 / 0.2),
+    0 0 12px oklch(0.65 0.2 265 / 0.1);
+  transition: border-color 0.2s, box-shadow 0.3s;
+}
+
+/* ─── Reduced motion — respect user preference ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

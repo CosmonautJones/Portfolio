@@ -1,6 +1,8 @@
 import { ProjectCard } from "@/components/portfolio/project-card";
 import { PROJECTS } from "@/lib/constants";
 import type { Metadata } from "next";
+import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
 export const metadata: Metadata = { title: "Work" };
 
@@ -11,42 +13,38 @@ export default function WorkPage() {
   return (
     <div className="container mx-auto px-6 py-24 sm:py-32">
       <div className="mb-16 max-w-2xl">
-        <h1 className="animate-fade-up gradient-text inline-block text-4xl font-bold tracking-tight sm:text-5xl">
-          Projects
-        </h1>
-        <p className="animate-fade-up delay-100 mt-4 text-lg text-muted-foreground">
-          Interactive demos and projects I&apos;ve built.
-        </p>
+        <AnimateOnScroll>
+          <h1 className="gradient-text-animated inline-block text-4xl font-bold tracking-tight sm:text-5xl">
+            Projects
+          </h1>
+        </AnimateOnScroll>
+        <AnimateOnScroll delay={0.1}>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Interactive demos and projects I&apos;ve built.
+          </p>
+        </AnimateOnScroll>
       </div>
 
       {/* Featured projects */}
       {featured.length > 0 && (
-        <div className="mb-12 grid gap-6 sm:grid-cols-2">
-          {featured.map((project, i) => (
-            <div
-              key={project.title}
-              className="animate-scale-in"
-              style={{ animationDelay: `${200 + i * 100}ms` }}
-            >
+        <StaggerChildren className="mb-12 grid gap-6 sm:grid-cols-2">
+          {featured.map((project) => (
+            <StaggerItem key={project.title}>
               <ProjectCard project={project} featured />
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerChildren>
       )}
 
       {/* Other projects */}
       {others.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {others.map((project, i) => (
-            <div
-              key={project.title}
-              className="animate-scale-in"
-              style={{ animationDelay: `${200 + (featured.length + i) * 100}ms` }}
-            >
+        <StaggerChildren className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {others.map((project) => (
+            <StaggerItem key={project.title}>
               <ProjectCard project={project} />
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerChildren>
       )}
     </div>
   );

@@ -24,7 +24,7 @@ export function ProjectCard({ project, featured }: ProjectCardProps) {
   const heightClass = featured ? "h-56" : "h-48";
 
   return (
-    <Card className="group flex flex-col overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-border/80 hover:shadow-2xl hover:shadow-violet-500/[0.04] dark:hover:shadow-violet-500/[0.08]">
+    <Card className="glass-card gradient-border-glow group flex flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/[0.04] dark:hover:shadow-violet-500/[0.08]">
       {project.image ? (
         <div className={`relative ${heightClass} w-full overflow-hidden`}>
           <Image

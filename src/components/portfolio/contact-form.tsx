@@ -75,6 +75,7 @@ export function ContactForm() {
           <Input
             id="name"
             placeholder="Your name"
+            className="focus-glow"
             {...register("name")}
             aria-invalid={!!errors.name}
           />
@@ -89,6 +90,7 @@ export function ContactForm() {
             id="email"
             type="email"
             placeholder="you@example.com"
+            className="focus-glow"
             {...register("email")}
             aria-invalid={!!errors.email}
           />
@@ -102,7 +104,7 @@ export function ContactForm() {
           <Textarea
             id="message"
             placeholder="Your message..."
-            className="min-h-[120px]"
+            className="min-h-[120px] focus-glow"
             {...register("message")}
             aria-invalid={!!errors.message}
           />
@@ -116,7 +118,7 @@ export function ContactForm() {
             type="submit"
             size="lg"
             disabled={isSubmitting}
-            className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+            className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Send className="mr-2 h-4 w-4" />
             Send Message
