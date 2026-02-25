@@ -56,6 +56,7 @@ export default function ProjectTrackerApp() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<TrackerProject | null>(null);
   const [activeProject, setActiveProject] = useState<TrackerProject | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const supabaseRef = useRef<SupabaseClient | null>(null);
 
   function getSupabase() {
@@ -85,18 +86,26 @@ export default function ProjectTrackerApp() {
     if (data) setTasks(data as TrackerTask[]);
   }
 
-  useEffect(() => {
-    async function init() {
-      const supabase = getSupabase();
-      const [{ data: projectData }, { data: taskData }] = await Promise.all([
-        supabase.from("projects").select("*").order("updated_at", { ascending: false }),
-        supabase.from("tasks").select("*").order("created_at", { ascending: true }),
-      ]);
+  async function fetchAll() {
+    setError(null);
+    setLoading(true);
+    const supabase = getSupabase();
+    const [{ data: projectData, error: projectError }, { data: taskData, error: taskError }] = await Promise.all([
+      supabase.from("projects").select("*").order("updated_at", { ascending: false }),
+      supabase.from("tasks").select("*").order("created_at", { ascending: true }),
+    ]);
+    if (projectError || taskError) {
+      setError((projectError || taskError)!.message);
+    } else {
       if (projectData) setProjects(projectData as TrackerProject[]);
       if (taskData) setTasks(taskData as TrackerTask[]);
-      setLoading(false);
     }
-    init();
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCreateProject(formData: FormData) {
@@ -290,7 +299,11 @@ export default function ProjectTrackerApp() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Badge variant="secondary">{activeProject.status}</Badge>
+              <Badge variant={
+                activeProject.status === "active" ? "default" :
+                activeProject.status === "completed" ? "secondary" :
+                "outline"
+              }>{activeProject.status}</Badge>
               <span>
                 {projectTasks.filter((t) => t.status === "done").length}/{projectTasks.length} tasks done
               </span>
@@ -358,42 +371,54 @@ export default function ProjectTrackerApp() {
         />
       )}
 
-      {loading ? (
-        <ProjectsSkeleton />
-      ) : projects.length === 0 && !creating && !editing ? (
-        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-            <FolderOpen className="h-8 w-8 text-muted-foreground/50" />
-          </div>
-          <h2 className="gradient-text mb-2 text-xl font-semibold">No projects yet</h2>
-          <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-            Get organized — create your first project to start tracking tasks.
-          </p>
-          <Button onClick={() => { setCreating(true); setEditing(null); }}>
-            <Plus className="mr-1 h-4 w-4" /> New Project
+      {error && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-sm text-destructive mb-2">Failed to load data</p>
+          <p className="text-xs text-muted-foreground">{error}</p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => { setError(null); fetchAll(); }}>
+            Try Again
           </Button>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {projects.map((project, i) => (
-            <div key={project.id} className={`animate-scale-in delay-${Math.min((i + 1) * 100, 700)}`}>
-              <ProjectCard
-                project={project}
-                tasks={tasks.filter((t) => t.project_id === project.id)}
-                onOpen={() => {
-                  setActiveProject(project);
-                  setEditing(null);
-                  setCreating(false);
-                }}
-                onEdit={() => {
-                  setEditing(project);
-                  setCreating(false);
-                }}
-                onDelete={() => handleDeleteProject(project.id)}
-              />
+      )}
+
+      {!error && (
+        loading ? (
+          <ProjectsSkeleton />
+        ) : projects.length === 0 && !creating && !editing ? (
+          <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+              <FolderOpen className="h-8 w-8 text-muted-foreground/50" />
             </div>
-          ))}
-        </div>
+            <h2 className="gradient-text mb-2 text-xl font-semibold">No projects yet</h2>
+            <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+              Get organized — create your first project to start tracking tasks.
+            </p>
+            <Button onClick={() => { setCreating(true); setEditing(null); }}>
+              <Plus className="mr-1 h-4 w-4" /> New Project
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {projects.map((project, i) => (
+              <div key={project.id} className="animate-scale-in" style={{ animationDelay: `${Math.min((i + 1) * 100, 700)}ms` }}>
+                <ProjectCard
+                  project={project}
+                  tasks={tasks.filter((t) => t.project_id === project.id)}
+                  onOpen={() => {
+                    setActiveProject(project);
+                    setEditing(null);
+                    setCreating(false);
+                  }}
+                  onEdit={() => {
+                    setEditing(project);
+                    setCreating(false);
+                  }}
+                  onDelete={() => handleDeleteProject(project.id)}
+                />
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );
