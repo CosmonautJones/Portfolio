@@ -9,7 +9,7 @@ import { Github, Loader2 } from "lucide-react";
 
 export function LoginForm({
   urlError,
-  redirectTo = "/tools",
+  redirectTo = "/adventure",
 }: {
   urlError?: string;
   redirectTo?: string;
@@ -43,6 +43,16 @@ export function LoginForm({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p className="text-center text-xs text-muted-foreground/70">
+            Sign in to unlock
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs">XP &amp; Levels</span>
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs">Achievements</span>
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs">Leaderboard</span>
+          </div>
+        </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button
           onClick={handleGitHubLogin}

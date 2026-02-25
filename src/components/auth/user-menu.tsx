@@ -73,6 +73,13 @@ export function UserMenu({ isAdmin = false }: UserMenuProps) {
             </Link>
           </DropdownMenuItem>
         )}
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/adventure">
+              <Compass className="mr-2 h-4 w-4" /> Adventure
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={async () => {
             await signOut();

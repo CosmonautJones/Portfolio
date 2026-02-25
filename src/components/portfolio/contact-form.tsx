@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { SITE_CONFIG } from "@/lib/constants";
-import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send } from "lucide-react";
+import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -20,6 +21,8 @@ const contactSchema = z.object({
 type ContactFormValues = z.infer<typeof contactSchema>;
 
 export function ContactForm() {
+  const [copied, setCopied] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -48,6 +51,16 @@ export function ContactForm() {
     });
 
     reset();
+  }
+
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText(SITE_CONFIG.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy email address.");
+    }
   }
 
   return (
@@ -98,17 +111,47 @@ export function ContactForm() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          size="lg"
-          disabled={isSubmitting}
-          className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
-        >
-          <Send className="mr-2 h-4 w-4" />
-          Send Message
-          <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-        </Button>
+        <div className="space-y-2">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send Message
+            <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Opens your email client with the message pre-filled
+          </p>
+        </div>
       </form>
+
+      <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
+        <p className="text-sm text-muted-foreground">
+          Or email me directly at{" "}
+          <span className="font-medium text-foreground">{SITE_CONFIG.email}</span>
+        </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={copyEmail}
+          className="ml-auto h-8 shrink-0 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              Copy
+            </>
+          )}
+        </Button>
+      </div>
 
       <div className="border-t border-border/50 pt-8">
         <p className="mb-4 text-sm text-muted-foreground">

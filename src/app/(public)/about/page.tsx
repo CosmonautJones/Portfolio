@@ -1,6 +1,9 @@
 import { SkillsGrid } from "@/components/portfolio/skills-grid";
 import { ApproachSection } from "@/components/portfolio/approach-section";
 import { ExperienceTimeline } from "@/components/portfolio/experience-timeline";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "About" };
@@ -40,6 +43,35 @@ export default function AboutPage() {
           Tech Stack
         </h2>
         <SkillsGrid />
+      </div>
+
+      <div
+        className="animate-fade-up mt-20 border-t border-border/40 pt-16 text-center"
+        style={{ animationDelay: "500ms" }}
+      >
+        <p className="mb-8 text-lg text-muted-foreground">
+          Interested in working together or want to see what I&apos;ve built?
+        </p>
+        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Button
+            asChild
+            size="lg"
+            className="h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+          >
+            <Link href="/work">
+              View My Work
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            asChild
+            className="h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
+          >
+            <Link href="/contact">Get in Touch</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
