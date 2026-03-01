@@ -23,7 +23,7 @@ export const PROJECTS: Project[] = [
     title: "Pixel Art Editor",
     description:
       "A browser-based pixel art canvas with a 32-color palette, drawing tools, flood fill, and PNG export. Draw, erase, and create retro-style artwork right in the browser.",
-    image: "",
+    image: "/projects/pixel-art-editor.jpg",
     tags: ["Canvas API", "React", "TypeScript"],
     demoUrl: "/work/pixel-art-editor",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
@@ -34,7 +34,7 @@ export const PROJECTS: Project[] = [
     title: "Cocktail Mixer",
     description:
       "Pick a cocktail and watch an animated step-by-step recipe unfold. Each ingredient pours in with smooth animations, building the drink visually layer by layer.",
-    image: "",
+    image: "/projects/cocktail-mixer.jpg",
     tags: ["Animation", "React", "CSS"],
     demoUrl: "/work/cocktail-mixer",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
@@ -45,7 +45,7 @@ export const PROJECTS: Project[] = [
     title: "ClaudeBot's Adventure",
     description:
       "A retro arcade game built with HTML5 Canvas. Help ClaudeBot cross rivers, dodge traffic, and chase a high score on the global leaderboard.",
-    image: "",
+    image: "/projects/claudebot-adventure.jpg",
     tags: ["Game Engine", "Canvas API", "TypeScript", "Web Audio"],
     demoUrl: "/adventure",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",

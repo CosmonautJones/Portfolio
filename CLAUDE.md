@@ -4,6 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Always commit to main.
 
+## Workflow
+
+After completing any feature or fix:
+1. Write or update tests covering the changes
+2. Run `npm test` and `npm run build` — both must pass
+3. If tests pass, commit and push to main automatically (no need to ask)
+
 ## Commands
 
 - `npm run dev` — Start dev server (Next.js + Turbopack)
