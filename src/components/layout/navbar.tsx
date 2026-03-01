@@ -14,6 +14,8 @@ import { XPBar } from "@/components/progression/xp-bar";
 import { AchievementPanel } from "@/components/progression/achievement-panel";
 import { useVisitor } from "@/hooks/use-visitor";
 import { Moon, Sun } from "lucide-react";
+import { TerminalToggle } from "@/components/terminal/terminal-toggle";
+import { ColorSchemePicker } from "@/components/layout/color-scheme-picker";
 
 interface NavbarProps {
   isAdmin?: boolean;
@@ -69,7 +71,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
                 {isActive && (
                   <motion.div
                     layoutId="nav-underline"
-                    className="absolute -bottom-[19px] left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 to-cyan-400"
+                    className="absolute -bottom-[19px] left-0 right-0 h-[2px] nav-underline"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -81,6 +83,8 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
         <div className="flex items-center gap-1">
           <XPBar />
           <AchievementPanel />
+          <TerminalToggle />
+          <ColorSchemePicker />
           <Button
             variant="ghost"
             size="icon"

@@ -6,12 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, Play } from "lucide-react";
 import type { Project } from "@/lib/types";
 
-const gradients = [
-  "from-violet-500/20 via-purple-500/10 to-fuchsia-500/20",
-  "from-cyan-500/20 via-blue-500/10 to-indigo-500/20",
-  "from-emerald-500/20 via-green-500/10 to-teal-500/20",
-  "from-amber-500/20 via-orange-500/10 to-red-500/20",
-];
+const gradientClasses = ["project-gradient-1", "project-gradient-2"];
 
 interface ProjectCardProps {
   project: Project;
@@ -19,12 +14,11 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, featured }: ProjectCardProps) {
-  const gradientIndex = project.title.length % gradients.length;
-  const gradient = gradients[gradientIndex];
+  const gradientClass = gradientClasses[project.title.length % gradientClasses.length];
   const heightClass = featured ? "h-56" : "h-48";
 
   return (
-    <Card className="glass-card gradient-border-glow group flex flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/[0.04] dark:hover:shadow-violet-500/[0.08]">
+    <Card className="glass-card gradient-border-glow hover-shadow-accent group flex flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1">
       {project.image ? (
         <div className={`relative ${heightClass} w-full overflow-hidden`}>
           <Image
@@ -36,7 +30,7 @@ export function ProjectCard({ project, featured }: ProjectCardProps) {
           />
         </div>
       ) : (
-        <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg bg-gradient-to-br ${gradient}`}>
+        <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg ${gradientClass}`}>
           {/* Large faded tag overlay */}
           {project.tags[0] && (
             <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-foreground/[0.06] select-none sm:text-6xl">

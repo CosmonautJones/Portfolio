@@ -230,29 +230,34 @@ function GlassSvg({ glass }: { glass: string }) {
     <>
       <path
         d={config.outline}
-        fill="rgba(255,255,255,0.03)"
-        stroke="rgba(255,255,255,0.15)"
+        fill="currentColor"
+        fillOpacity={0.03}
+        stroke="currentColor"
+        strokeOpacity={0.15}
         strokeWidth={1.5}
         strokeLinejoin="round"
       />
       <path
         d={config.rim}
         fill="none"
-        stroke="rgba(255,255,255,0.3)"
+        stroke="currentColor"
+        strokeOpacity={0.3}
         strokeWidth={2}
         strokeLinecap="round"
       />
       <path
         d={config.base}
         fill="none"
-        stroke="rgba(255,255,255,0.2)"
+        stroke="currentColor"
+        strokeOpacity={0.2}
         strokeWidth={2.5}
         strokeLinecap="round"
       />
       <path
         d={config.highlight}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        stroke="currentColor"
+        strokeOpacity={0.08}
         strokeWidth={1.5}
         strokeLinecap="round"
       />
@@ -582,7 +587,7 @@ function DrinkCard({
         boxShadow: `0 8px 30px ${cocktail.color}30`,
       }}
       whileTap={{ scale: 0.97 }}
-      className="flex cursor-pointer flex-col items-center gap-3 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-colors duration-300 hover:border-border hover:bg-card/80"
+      className="glass-card flex cursor-pointer flex-col items-center gap-3 rounded-2xl p-6 transition-colors duration-300"
     >
       <span className="text-5xl">{cocktail.emoji}</span>
       <span className="font-semibold">{cocktail.name}</span>
@@ -738,7 +743,7 @@ function RecipeDetails({
             <Button
               onClick={onReset}
               variant="outline"
-              className="gap-2"
+              className="gap-2 rounded-full"
             >
               <RotateCcw className="size-4" />
               Make Another
@@ -809,7 +814,7 @@ function RecipeView({
         onClick={onReset}
         variant="ghost"
         size="sm"
-        className="w-fit gap-2"
+        className="w-fit gap-2 rounded-full"
       >
         <ArrowLeft className="size-4" />
         Back to drinks

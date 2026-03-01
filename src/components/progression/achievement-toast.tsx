@@ -41,7 +41,7 @@ export function AchievementToast({ achievement, visible }: AchievementToastProps
             <p className="text-sm font-semibold">{achievement.name}</p>
             <p className="text-xs text-muted-foreground">{achievement.description}</p>
           </div>
-          <span className="ml-2 rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-bold text-violet-400">
+          <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-accent-glow" style={{ background: "color-mix(in oklch, var(--accent-1), transparent 80%)" }}>
             +{achievement.xpReward} XP
           </span>
         </motion.div>

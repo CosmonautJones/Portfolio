@@ -12,6 +12,8 @@ export const XP_AWARDS = {
   streak_3:          { xp: 30,  rule: "once_ever" },
   streak_7:          { xp: 75,  rule: "once_ever" },
   toggle_theme:      { xp: 5,   rule: "once_ever" },
+  open_terminal:     { xp: 10,  rule: "once_ever" },
+  open_hidden_terminal: { xp: 25, rule: "once_ever" },
 } as const;
 
 export type XPAction = keyof typeof XP_AWARDS;

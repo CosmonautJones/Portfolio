@@ -70,7 +70,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.91 0.004 260);
   --input: oklch(0.91 0.004 260);
-  --ring: oklch(0.55 0.2 265);
+  --ring: var(--accent-glow);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -84,6 +84,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Accent gradient arc — overridden by .theme-* scheme classes */
+  --accent-1: oklch(0.5 0.25 285);
+  --accent-2: oklch(0.48 0.24 265);
+  --accent-3: oklch(0.55 0.2 230);
+  --accent-glow: oklch(0.55 0.2 265);
 }
 
 /* ─── Dark Mode — Apple-style rich dark, not pure black ─── */
@@ -105,7 +111,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.65 0.2 265);
+  --ring: var(--accent-glow);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -119,6 +125,55 @@
   --sidebar-accent-foreground: oklch(0.96 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.65 0.2 265);
+
+  --accent-1: oklch(0.78 0.14 285);
+  --accent-2: oklch(0.76 0.15 265);
+  --accent-3: oklch(0.8 0.12 230);
+  --accent-glow: oklch(0.65 0.2 265);
+}
+
+/* ─── Color Scheme Themes ─── */
+
+/* Ocean — teal/cyan/blue */
+.theme-ocean {
+  --accent-1: oklch(0.52 0.18 185);
+  --accent-2: oklch(0.55 0.2 200);
+  --accent-3: oklch(0.52 0.22 240);
+  --accent-glow: oklch(0.55 0.2 200);
+}
+.dark.theme-ocean {
+  --accent-1: oklch(0.75 0.14 185);
+  --accent-2: oklch(0.78 0.15 200);
+  --accent-3: oklch(0.76 0.14 240);
+  --accent-glow: oklch(0.70 0.17 200);
+}
+
+/* Ember — amber/orange/warm-red */
+.theme-ember {
+  --accent-1: oklch(0.6 0.2 80);
+  --accent-2: oklch(0.58 0.22 55);
+  --accent-3: oklch(0.55 0.22 30);
+  --accent-glow: oklch(0.58 0.22 55);
+}
+.dark.theme-ember {
+  --accent-1: oklch(0.8 0.15 80);
+  --accent-2: oklch(0.78 0.18 55);
+  --accent-3: oklch(0.75 0.18 30);
+  --accent-glow: oklch(0.75 0.18 55);
+}
+
+/* Emerald — green/emerald/teal */
+.theme-emerald {
+  --accent-1: oklch(0.52 0.18 145);
+  --accent-2: oklch(0.54 0.2 160);
+  --accent-3: oklch(0.52 0.17 180);
+  --accent-glow: oklch(0.54 0.2 160);
+}
+.dark.theme-emerald {
+  --accent-1: oklch(0.74 0.16 145);
+  --accent-2: oklch(0.76 0.17 160);
+  --accent-3: oklch(0.74 0.15 180);
+  --accent-glow: oklch(0.72 0.17 160);
 }
 
 @layer base {
@@ -129,28 +184,17 @@
     @apply bg-background text-foreground antialiased;
   }
   ::selection {
-    background: oklch(0.65 0.2 265 / 0.25);
+    background: color-mix(in oklch, var(--accent-glow), transparent 75%);
   }
 }
 
-/* ─── Apple-style gradient text ─── */
+/* ─── Gradient text — driven by accent variables ─── */
 .gradient-text {
   background: linear-gradient(
     135deg,
-    oklch(0.5 0.25 285) 0%,
-    oklch(0.48 0.24 265) 40%,
-    oklch(0.55 0.2 230) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.dark .gradient-text {
-  background: linear-gradient(
-    135deg,
-    oklch(0.78 0.14 285) 0%,
-    oklch(0.76 0.15 265) 40%,
-    oklch(0.8 0.12 230) 100%
+    var(--accent-1) 0%,
+    var(--accent-2) 40%,
+    var(--accent-3) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -167,12 +211,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    135deg,
-    oklch(0.55 0.22 285),
-    oklch(0.5 0.2 265),
-    oklch(0.55 0.18 230)
-  );
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3));
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
@@ -190,6 +229,52 @@
   filter: blur(120px);
   pointer-events: none;
   will-change: transform, opacity;
+}
+.hero-glow-1 { background: color-mix(in oklch, var(--accent-1), transparent 85%); }
+.hero-glow-2 { background: color-mix(in oklch, var(--accent-2), transparent 85%); }
+.hero-glow-3 { background: color-mix(in oklch, var(--accent-3), transparent 90%); }
+.dark .hero-glow-1 { background: color-mix(in oklch, var(--accent-1), transparent 93%); }
+.dark .hero-glow-2 { background: color-mix(in oklch, var(--accent-2), transparent 94%); }
+.dark .hero-glow-3 { background: color-mix(in oklch, var(--accent-3), transparent 96%); }
+
+/* ─── Accent utility classes — used in JSX to replace hardcoded colors ─── */
+.nav-underline {
+  background: linear-gradient(to right, var(--accent-1), var(--accent-3));
+}
+.xp-bar-fill {
+  background: linear-gradient(to right, var(--accent-1), var(--accent-3));
+}
+.accent-dot {
+  background: var(--accent-1);
+}
+.level-up-text {
+  background: linear-gradient(to right, var(--accent-1), var(--accent-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-accent-glow {
+  color: var(--accent-glow);
+}
+.hover-shadow-accent:hover {
+  box-shadow: 0 20px 40px color-mix(in oklch, var(--accent-glow), transparent 96%);
+}
+.dark .hover-shadow-accent:hover {
+  box-shadow: 0 20px 40px color-mix(in oklch, var(--accent-glow), transparent 92%);
+}
+.project-gradient-1 {
+  background: linear-gradient(to bottom right,
+    color-mix(in oklch, var(--accent-1), transparent 80%),
+    color-mix(in oklch, var(--accent-2), transparent 90%),
+    color-mix(in oklch, var(--accent-1), transparent 80%)
+  );
+}
+.project-gradient-2 {
+  background: linear-gradient(to bottom right,
+    color-mix(in oklch, var(--accent-3), transparent 80%),
+    color-mix(in oklch, var(--accent-2), transparent 90%),
+    color-mix(in oklch, var(--accent-3), transparent 80%)
+  );
 }
 
 /* ─── Animations — smooth, Apple-like easing ─── */
@@ -265,26 +350,11 @@
 .gradient-text-animated {
   background: linear-gradient(
     135deg,
-    oklch(0.5 0.25 285) 0%,
-    oklch(0.48 0.24 265) 25%,
-    oklch(0.55 0.2 230) 50%,
-    oklch(0.48 0.24 265) 75%,
-    oklch(0.5 0.25 285) 100%
-  );
-  background-size: 200% auto;
-  animation: aurora-shift 8s ease-in-out infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.dark .gradient-text-animated {
-  background: linear-gradient(
-    135deg,
-    oklch(0.78 0.14 285) 0%,
-    oklch(0.76 0.15 265) 25%,
-    oklch(0.8 0.12 230) 50%,
-    oklch(0.76 0.15 265) 75%,
-    oklch(0.78 0.14 285) 100%
+    var(--accent-1) 0%,
+    var(--accent-2) 25%,
+    var(--accent-3) 50%,
+    var(--accent-2) 75%,
+    var(--accent-1) 100%
   );
   background-size: 200% auto;
   animation: aurora-shift 8s ease-in-out infinite;
@@ -307,9 +377,9 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.55 0.22 285 / 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, oklch(0.5 0.2 265 / 0.05) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 50% 80%, oklch(0.55 0.18 230 / 0.04) 0%, transparent 70%);
+    radial-gradient(ellipse 80% 50% at 20% 40%, color-mix(in oklch, var(--accent-1), transparent 94%) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, color-mix(in oklch, var(--accent-2), transparent 95%) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 50% 80%, color-mix(in oklch, var(--accent-3), transparent 96%) 0%, transparent 70%);
   background-size: 200% 200%;
   animation: aurora-drift 25s ease-in-out infinite;
 }
@@ -336,7 +406,7 @@
   border: 1px solid oklch(1 0 0 / 0.06);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.05),
-    0 0 0 0 oklch(0.55 0.2 265 / 0);
+    0 0 0 0 color-mix(in oklch, var(--accent-glow), transparent 100%);
   transition: border-color 0.4s, box-shadow 0.4s;
 }
 .glass-card:hover {
@@ -344,7 +414,7 @@
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.08),
     0 8px 32px oklch(0 0 0 / 0.12),
-    0 0 0 1px oklch(0.55 0.2 265 / 0.08);
+    0 0 0 1px color-mix(in oklch, var(--accent-glow), transparent 92%);
 }
 :root .glass-card {
   background: oklch(1 0 0 / 0.6);
@@ -368,12 +438,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    135deg,
-    oklch(0.55 0.22 285),
-    oklch(0.5 0.2 265),
-    oklch(0.55 0.18 230)
-  );
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3));
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
@@ -387,9 +452,9 @@
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    oklch(0.55 0.22 285 / 0.15),
-    oklch(0.5 0.2 265 / 0.15),
-    oklch(0.55 0.18 230 / 0.15)
+    color-mix(in oklch, var(--accent-1), transparent 85%),
+    color-mix(in oklch, var(--accent-2), transparent 85%),
+    color-mix(in oklch, var(--accent-3), transparent 85%)
   );
   filter: blur(12px);
   pointer-events: none;
@@ -414,8 +479,8 @@
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    oklch(0.55 0.22 285 / 0.2),
-    oklch(0.55 0.18 230 / 0.2)
+    color-mix(in oklch, var(--accent-1), transparent 80%),
+    color-mix(in oklch, var(--accent-3), transparent 80%)
   );
   filter: blur(10px);
   opacity: 0;
@@ -429,10 +494,10 @@
 
 /* ─── Focus glow for form inputs ─── */
 .focus-glow:focus-visible {
-  border-color: oklch(0.65 0.2 265);
+  border-color: var(--accent-glow);
   box-shadow:
-    0 0 0 3px oklch(0.65 0.2 265 / 0.2),
-    0 0 12px oklch(0.65 0.2 265 / 0.1);
+    0 0 0 3px color-mix(in oklch, var(--accent-glow), transparent 80%),
+    0 0 12px color-mix(in oklch, var(--accent-glow), transparent 90%);
   transition: border-color 0.2s, box-shadow 0.3s;
 }
 

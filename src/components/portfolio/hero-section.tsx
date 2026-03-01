@@ -25,15 +25,15 @@ export function HeroSection() {
       {/* Ambient glow — large, soft, slow-moving */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div
-          className="hero-glow -left-40 -top-40 h-[600px] w-[600px] bg-violet-500/15 dark:bg-violet-500/[0.07]"
+          className="hero-glow hero-glow-1 -left-40 -top-40 h-[600px] w-[600px]"
           style={{ animation: "pulse-glow 10s ease-in-out infinite" }}
         />
         <div
-          className="hero-glow -bottom-40 -right-40 h-[500px] w-[500px] bg-indigo-500/15 dark:bg-indigo-500/[0.06]"
+          className="hero-glow hero-glow-2 -bottom-40 -right-40 h-[500px] w-[500px]"
           style={{ animation: "pulse-glow 10s ease-in-out infinite 5s" }}
         />
         <div
-          className="hero-glow left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2 bg-cyan-400/10 dark:bg-cyan-400/[0.04]"
+          className="hero-glow hero-glow-3 left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2"
           style={{ animation: "float 12s ease-in-out infinite" }}
         />
       </div>
@@ -83,7 +83,7 @@ export function HeroSection() {
             variant="outline"
             size="lg"
             asChild
-            className="h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
+            className="btn-glow h-12 rounded-full border-border/40 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
             <Link href="/contact">Get in Touch</Link>
           </Button>

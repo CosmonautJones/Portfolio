@@ -18,7 +18,7 @@ import { TaskList } from "./task-list";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Plus, Pencil, Trash2, Archive, CheckCircle2, RotateCcw, FolderOpen } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Archive, CheckCircle2, RotateCcw, FolderOpen, AlertCircle } from "lucide-react";
 import type { TrackerProject, TrackerTask } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -299,10 +299,10 @@ export default function ProjectTrackerApp() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Badge variant={
-                activeProject.status === "active" ? "default" :
-                activeProject.status === "completed" ? "secondary" :
-                "outline"
+              <Badge variant="outline" className={
+                activeProject.status === "active" ? "bg-green-500/10 text-green-700 dark:text-green-400" :
+                activeProject.status === "completed" ? "bg-blue-500/10 text-blue-700 dark:text-blue-400" :
+                "bg-gray-500/10 text-gray-700 dark:text-gray-400"
               }>{activeProject.status}</Badge>
               <span>
                 {projectTasks.filter((t) => t.status === "done").length}/{projectTasks.length} tasks done
@@ -372,10 +372,13 @@ export default function ProjectTrackerApp() {
       )}
 
       {error && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-sm text-destructive mb-2">Failed to load data</p>
-          <p className="text-xs text-muted-foreground">{error}</p>
-          <Button variant="outline" size="sm" className="mt-4" onClick={() => { setError(null); fetchAll(); }}>
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+            <AlertCircle className="h-8 w-8 text-destructive/70" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">Failed to load data</h2>
+          <p className="mb-4 max-w-sm text-sm text-muted-foreground">{error}</p>
+          <Button variant="outline" size="sm" onClick={() => { setError(null); fetchAll(); }}>
             Try Again
           </Button>
         </div>

@@ -41,7 +41,7 @@ export function AchievementPanel() {
         >
           <Trophy className="h-4 w-4" />
           {unlockedCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-violet-500 text-[9px] font-bold text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full accent-dot text-[9px] font-bold text-white">
               {unlockedCount}
             </span>
           )}
@@ -57,7 +57,7 @@ export function AchievementPanel() {
           <SheetDescription>
             {unlockedCount} / {totalCount} unlocked
             {profile && (
-              <span className="ml-2 text-violet-400">
+              <span className="ml-2 text-accent-glow">
                 &middot; Level {profile.level} &middot; {profile.title}
               </span>
             )}

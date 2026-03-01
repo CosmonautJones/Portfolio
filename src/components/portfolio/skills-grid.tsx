@@ -10,7 +10,7 @@ export function SkillsGrid() {
       {SKILL_CATEGORIES.map((category) => (
         <AnimateOnScroll key={category.label}>
           <div>
-            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {category.label}
             </h3>
             <StaggerChildren className="flex flex-wrap gap-2.5" staggerDelay={0.03}>

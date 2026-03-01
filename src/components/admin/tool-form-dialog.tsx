@@ -249,7 +249,7 @@ export function ToolFormDialog({ tool }: ToolFormDialogProps) {
               <div className="flex items-center justify-between">
                 <Label>Source</Label>
                 {htmlContent ? (
-                  <span className="flex items-center gap-1 text-xs text-green-600">
+                  <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                     <Package className="h-3 w-3" />
                     {Math.round(htmlContent.length / 1024)}KB loaded
                   </span>

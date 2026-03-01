@@ -165,6 +165,32 @@ export async function trackEvent(
   }
 }
 
+export async function addDiscovery(eggId: string): Promise<void> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("discoveries")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile) return;
+
+    const discoveries: string[] = profile.discoveries ?? [];
+    if (discoveries.includes(eggId)) return;
+
+    await supabase
+      .from("profiles")
+      .update({ discoveries: [...discoveries, eggId] })
+      .eq("id", user.id);
+  } catch {
+    // Fire-and-forget
+  }
+}
+
 export async function updateStreak(): Promise<{ streakDays: number } | { error: string }> {
   try {
     const supabase = await createClient();

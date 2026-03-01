@@ -14,7 +14,7 @@ export function AboutPreview() {
         </h2>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.05}>
-        <blockquote className="text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
+        <blockquote className="border-l-4 pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl" style={{ borderColor: "var(--accent-glow)" }}>
           &ldquo;A developer who cares about craft, clarity, and shipping things that actually
           work.&rdquo;
         </blockquote>

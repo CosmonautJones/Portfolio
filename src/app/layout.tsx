@@ -4,6 +4,9 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
 import { LevelUpOverlay } from "@/components/progression/level-up-overlay";
+import { TerminalProvider } from "@/components/terminal/terminal-provider";
+import { TerminalSheet } from "@/components/terminal/terminal-sheet";
+import { KonamiEffects } from "@/components/easter-eggs/konami-effects";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
@@ -33,11 +36,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var s=localStorage.getItem('color-scheme');if(s&&['ocean','ember','emerald'].includes(s)){document.documentElement.classList.add('theme-'+s)}})()`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <VisitorProvider>
-            {children}
-            <LevelUpOverlay />
+            <TerminalProvider>
+              {children}
+              <TerminalSheet />
+              <KonamiEffects />
+              <LevelUpOverlay />
+            </TerminalProvider>
           </VisitorProvider>
           <Toaster />
         </ThemeProvider>

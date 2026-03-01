@@ -41,7 +41,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <Link href={`/tools/${tool.slug}`}>
-      <Card className="gradient-border h-full bg-card/80 backdrop-blur-sm border-border/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/[0.03] dark:hover:shadow-violet-500/[0.06]">
+      <Card className="gradient-border hover-shadow-accent h-full bg-card/80 backdrop-blur-sm border-border/50 transition-all duration-500 hover:-translate-y-1">
         <CardHeader className="flex flex-row items-center gap-3">
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${styles.iconBg}`}>
             <IconComponent className={`h-5 w-5 ${styles.iconText}`} />

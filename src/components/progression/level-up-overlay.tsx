@@ -53,7 +53,7 @@ export function LevelUpOverlay() {
               initial={{ scale: 0 }}
               animate={{ scale: [0, 1.3, 1] }}
               transition={{ duration: 0.6, times: [0, 0.6, 1] }}
-              className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400"
+              className="text-6xl font-black level-up-text"
             >
               LEVEL {displayLevel}
             </motion.div>

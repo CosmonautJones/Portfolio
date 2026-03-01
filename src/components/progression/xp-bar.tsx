@@ -22,12 +22,12 @@ export function XPBar() {
 
   return (
     <div className="group relative flex items-center gap-2" title={tooltipText}>
-      <span className="text-[10px] font-bold text-violet-400 tabular-nums">
+      <span className="text-[10px] font-bold text-accent-glow tabular-nums">
         {level}
       </span>
       <div className="relative h-1.5 w-16 overflow-hidden rounded-full bg-muted">
         <motion.div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
+          className="absolute inset-y-0 left-0 rounded-full xp-bar-fill"
           style={{ width }}
         />
       </div>
