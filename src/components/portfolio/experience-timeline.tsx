@@ -10,7 +10,7 @@ export function ExperienceTimeline() {
         <StaggerItem key={item.year}>
           <div className="relative pb-10 last:pb-0">
             {/* Dot marker */}
-            <div className="absolute -left-[calc(2rem+5px)] top-1 h-2.5 w-2.5 rounded-full border-2 bg-background" style={{ borderColor: "var(--accent-glow)" }} />
+            <div className="absolute -left-[calc(2rem+5px)] top-1 h-2.5 w-2.5 rounded-full border-2 border-accent-glow bg-background" />
             {/* Year badge */}
             <span className="mb-2 inline-flex rounded-full bg-secondary/80 px-3 py-0.5 text-xs font-medium text-muted-foreground">
               {item.year}

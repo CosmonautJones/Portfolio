@@ -256,6 +256,12 @@
 .text-accent-glow {
   color: var(--accent-glow);
 }
+.border-accent-glow {
+  border-color: var(--accent-glow);
+}
+.drop-shadow-accent {
+  filter: drop-shadow(0 0 12px color-mix(in oklch, var(--accent-glow), transparent 70%));
+}
 .hover-shadow-accent:hover {
   box-shadow: 0 20px 40px color-mix(in oklch, var(--accent-glow), transparent 96%);
 }

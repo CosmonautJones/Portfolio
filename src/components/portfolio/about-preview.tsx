@@ -14,7 +14,7 @@ export function AboutPreview() {
         </h2>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.05}>
-        <blockquote className="border-l-4 pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl" style={{ borderColor: "var(--accent-glow)" }}>
+        <blockquote className="border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
           &ldquo;A developer who cares about craft, clarity, and shipping things that actually
           work.&rdquo;
         </blockquote>
@@ -31,7 +31,7 @@ export function AboutPreview() {
             asChild
             variant="outline"
             size="lg"
-            className="btn-glow h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
+            className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
             <Link href="/about">
               More About Me

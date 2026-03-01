@@ -30,7 +30,7 @@ export function FeaturedProjects() {
           asChild
           variant="outline"
           size="lg"
-          className="btn-glow h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
+          className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
         >
           <Link href="/work">
             View All Projects
