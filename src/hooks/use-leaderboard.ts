@@ -2,16 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getLeaderboard } from "@/actions/game-scores";
+import type { LeaderboardEntry as BaseLeaderboardEntry } from "@/lib/types";
 
-export interface LeaderboardEntry {
-  id: string;
-  rank: number;
-  score: number;
-  deathCause: string;
-  createdAt: string;
-  isCurrentUser: boolean;
+export type LeaderboardEntry = BaseLeaderboardEntry & {
   changed?: boolean;
-}
+};
 
 interface UseLeaderboardOptions {
   pollInterval?: number;

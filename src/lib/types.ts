@@ -111,5 +111,6 @@ export interface LeaderboardEntry {
   score: number;
   deathCause: string;
   displayName: string | null;
+  createdAt: string;
   isCurrentUser: boolean;
 }
