@@ -555,6 +555,124 @@ function spawnSplashParticles(state: GameState, config: GameConfig): void {
   }
 }
 
+/** Spawn 2-3 tiny dust particles on hop landing. Colors match terrain type. */
+function spawnHopDust(state: GameState, config: GameConfig): void {
+  const { player } = state;
+  const cellHalf = config.cellSize / 2;
+  const lane = state.lanes.find((l) => l.y === player.gridPos.y);
+  const terrainColors: Record<string, string[]> = {
+    grass: ["#38b764", "#265c42"],
+    road: ["#566c86", "#333c57"],
+    water: ["#41a6f6", "#2d6aa5"],
+    railroad: ["#566c86", "#333c57"],
+  };
+  const colors = terrainColors[lane?.type ?? "grass"] ?? terrainColors.grass;
+  const count = 2 + Math.floor(Math.random() * 2); // 2-3
+  for (let i = 0; i < count; i++) {
+    const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1.2; // spread below
+    const speed = 8 + Math.random() * 15;
+    state.particles.push({
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 4,
+      y: player.worldPos.y + config.cellSize - 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed * 0.5,
+      life: 0.15 + Math.random() * 0.1,
+      maxLife: 0.25,
+      color: pickRandom(colors),
+      size: 1,
+      shape: "circle",
+    });
+  }
+}
+
+/** Spawn 2-3 gold sparkle particles upward from player on score increment */
+function spawnScoreSparkle(state: GameState, config: GameConfig): void {
+  const { player } = state;
+  const cellHalf = config.cellSize / 2;
+  const count = 2 + Math.floor(Math.random() * 2); // 2-3
+  for (let i = 0; i < count; i++) {
+    const angle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.8; // upward
+    const speed = 20 + Math.random() * 25;
+    state.particles.push({
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 6,
+      y: player.worldPos.y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.3 + Math.random() * 0.2,
+      maxLife: 0.5,
+      color: pickRandom(["#ffcd75", "#ef7d57", "#a7f070"]),
+      size: 1 + Math.floor(Math.random() * 2),
+      shape: "circle",
+    });
+  }
+}
+
+/** Spawn train warning spark particles when train is close to player's row */
+export function spawnTrainWarning(state: GameState, config: GameConfig): void {
+  const { player, lanes } = state;
+  const { cellSize, gridColumns } = config;
+  const totalWidth = gridColumns * cellSize;
+
+  for (const lane of lanes) {
+    if (lane.type !== "railroad") continue;
+    // Only care about lane within 3 rows of player
+    if (Math.abs(lane.y - player.gridPos.y) > 3) continue;
+
+    for (const obs of lane.obstacles) {
+      if (obs.type !== "train") continue;
+      // Check if train is within 3 cells of entering viewport
+      const trainEdge = obs.speed > 0 ? obs.worldX : obs.worldX + obs.widthCells * cellSize;
+      const inRange = trainEdge > -cellSize * 3 && trainEdge < totalWidth + cellSize * 3;
+      if (!inRange) continue;
+
+      // Spawn sparks at the leading edge
+      if (Math.random() < 0.3) { // Don't spam every tick
+        const sparkX = obs.speed > 0 ? obs.worldX + obs.widthCells * cellSize : obs.worldX;
+        state.particles.push({
+          x: sparkX,
+          y: lane.y * cellSize + cellSize * 0.5,
+          vx: (Math.random() - 0.5) * 40,
+          vy: -(10 + Math.random() * 20),
+          life: 0.1 + Math.random() * 0.15,
+          maxLife: 0.25,
+          color: pickRandom(["#ffff00", "#ef7d57", "#d4513b"]),
+          size: 1,
+          shape: "circle",
+        });
+      }
+    }
+  }
+}
+
+/** Spawn periodic water ripple ring particles on visible water lanes */
+export function spawnWaterRipples(state: GameState, config: GameConfig): void {
+  const { camera, lanes } = state;
+  const { cellSize, gridColumns } = config;
+
+  for (const lane of lanes) {
+    if (lane.type !== "water") continue;
+    const screenY = lane.y * cellSize - camera.y;
+    if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize) continue;
+
+    // ~1 ripple per 2-3s per lane → probability per tick at 60fps
+    if (Math.random() < 0.008) {
+      const rx = Math.random() * gridColumns * cellSize;
+      const baseSize = 1;
+      state.particles.push({
+        x: rx,
+        y: lane.y * cellSize + cellSize * 0.5,
+        vx: 0,
+        vy: 0,
+        life: 0.6,
+        maxLife: 0.6,
+        color: "#73eff7",
+        size: baseSize,
+        shape: "circle",
+      });
+    }
+  }
+}
+
 function updatePlayer(
   state: GameState,
   config: GameConfig,
@@ -589,12 +707,16 @@ function updatePlayer(
       player.hopProgress = 0;
       player.animation = "idle";
 
+      // Hop dust particles on landing
+      spawnHopDust(state, config);
+
       // Check score (lower y = further forward)
       const startY = SAFE_START_LANES - 1;
       const newScore = startY - player.gridPos.y;
       if (newScore > state.score) {
         state.score = newScore;
         callbacks.onScoreChange(state.score);
+        spawnScoreSparkle(state, config);
 
         // Check for level up
         const newLevel = getLevelForScore(state.score);
@@ -801,9 +923,17 @@ function updateParticles(state: GameState, config: GameConfig): void {
   const dt = config.fixedTimestep;
   for (let i = state.particles.length - 1; i >= 0; i--) {
     const p = state.particles[i];
+    // Store previous position for trail rendering
+    if (p.trail) {
+      p.prevX = p.x;
+      p.prevY = p.y;
+    }
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.vy += PARTICLE_GRAVITY * dt;
+    if (p.rotation !== undefined && p.rotationSpeed) {
+      p.rotation += p.rotationSpeed * dt;
+    }
     p.life -= dt;
     if (p.life <= 0) {
       state.particles.splice(i, 1);
@@ -874,6 +1004,8 @@ export function tick(
       updateCamera(state, config);
       generateLanesIfNeeded(state, config);
       pruneLanesBehindPlayer(state, config);
+      spawnTrainWarning(state, config);
+      spawnWaterRipples(state, config);
     }
 
     // Always update particles and animation time

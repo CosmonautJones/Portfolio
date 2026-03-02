@@ -1,5 +1,5 @@
 import { PALETTE } from "./sprites/palette";
-import type { SpritePixels, Lane, GameState } from "./types";
+import type { SpritePixels, Lane, GameState, Particle } from "./types";
 import { DEFAULT_CONFIG, WATER_FLOW_SPEED, GRASS_SHIMMER_SPEED } from "./constants";
 
 export function hexToRgb(hex: string): [number, number, number] {
@@ -52,19 +52,64 @@ export class SpriteCache {
   }
 }
 
+// Star field for background atmosphere
+interface Star {
+  x: number;
+  y: number;
+  speed: number;
+  opacity: number;
+}
+
+function createStarField(count: number, width: number, height: number): Star[] {
+  const stars: Star[] = [];
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * width,
+      y: Math.random() * height * 0.3, // top 30% only
+      speed: 0.1 + Math.random() * 0.3,
+      opacity: 0.15 + Math.random() * 0.25,
+    });
+  }
+  return stars;
+}
+
 export class GameRenderer {
   private ctx: CanvasRenderingContext2D;
   private sprites: SpriteCache;
+  private stars: Star[];
+  private laneFirstVisible = new Map<number, number>();
 
   constructor(canvas: HTMLCanvasElement, sprites: SpriteCache) {
     const ctx = canvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
     this.ctx = ctx;
     this.sprites = sprites;
+    this.stars = createStarField(5, canvas.width, canvas.height);
   }
 
   clear(): void {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+  }
+
+  renderBackground(): void {
+    const { width, height } = this.ctx.canvas;
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, "#0e071b");
+    gradient.addColorStop(0.4, "#1a1c2c");
+    gradient.addColorStop(1, "#1a1c2c");
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, width, height);
+  }
+
+  renderStarField(animationTime: number): void {
+    for (const star of this.stars) {
+      const drift = (animationTime * star.speed) % this.ctx.canvas.width;
+      const x = (star.x + drift) % this.ctx.canvas.width;
+      this.ctx.globalAlpha = star.opacity;
+      this.ctx.fillStyle = "#f4f4f4";
+      this.ctx.fillRect(Math.round(x), Math.round(star.y), 1, 1);
+    }
+    this.ctx.globalAlpha = 1;
   }
 
   renderLanes(state: GameState): void {
@@ -76,6 +121,17 @@ export class GameRenderer {
       const screenY = lane.y * cellSize - camera.y;
       if (screenY < -cellSize * 2 || screenY > camera.viewportHeight + cellSize)
         continue;
+
+      // Lane fade-in tracking
+      if (!this.laneFirstVisible.has(lane.y)) {
+        this.laneFirstVisible.set(lane.y, state.animationTime);
+      }
+      const firstSeen = this.laneFirstVisible.get(lane.y)!;
+      const fadeAge = state.animationTime - firstSeen;
+      const laneAlpha = Math.min(1, fadeAge / 0.3);
+      if (laneAlpha < 1) {
+        this.ctx.globalAlpha = laneAlpha;
+      }
 
       this.renderLaneBackground(lane, screenY, state);
 
@@ -102,6 +158,11 @@ export class GameRenderer {
           spriteKey = obs.speed < 0 ? "car_blue_flip" : "car_blue";
         }
         this.sprites.draw(this.ctx, spriteKey, obs.worldX, screenY);
+      }
+
+      // Restore alpha after lane fade-in
+      if (laneAlpha < 1) {
+        this.ctx.globalAlpha = 1;
       }
     }
   }
@@ -167,21 +228,36 @@ export class GameRenderer {
     this.sprites.draw(this.ctx, spriteKey, screenX, screenY);
   }
 
-  renderParticles(
-    particles: readonly {
-      x: number;
-      y: number;
-      life: number;
-      maxLife: number;
-      color: string;
-      size: number;
-    }[],
-    cameraY: number,
-  ): void {
+  renderParticles(particles: readonly Particle[], cameraY: number): void {
     for (const p of particles) {
-      this.ctx.globalAlpha = p.life / p.maxLife;
+      const alpha = p.life / p.maxLife;
+      this.ctx.globalAlpha = alpha;
       this.ctx.fillStyle = p.color;
-      this.ctx.fillRect(Math.round(p.x), Math.round(p.y - cameraY), p.size, p.size);
+
+      const px = Math.round(p.x);
+      const py = Math.round(p.y - cameraY);
+
+      // Trail rendering — faded duplicate at previous position
+      if (p.trail && p.prevX !== undefined && p.prevY !== undefined) {
+        this.ctx.globalAlpha = alpha * 0.3;
+        this.ctx.fillRect(Math.round(p.prevX), Math.round(p.prevY - cameraY), p.size, p.size);
+        this.ctx.globalAlpha = alpha;
+      }
+
+      const shape = p.shape ?? "square";
+      if (shape === "circle") {
+        this.ctx.beginPath();
+        this.ctx.arc(px + p.size / 2, py + p.size / 2, p.size / 2, 0, Math.PI * 2);
+        this.ctx.fill();
+      } else if (shape === "line" && p.rotation !== undefined) {
+        this.ctx.save();
+        this.ctx.translate(px, py);
+        this.ctx.rotate(p.rotation);
+        this.ctx.fillRect(-p.size / 2, -0.5, p.size, 1);
+        this.ctx.restore();
+      } else {
+        this.ctx.fillRect(px, py, p.size, p.size);
+      }
     }
     this.ctx.globalAlpha = 1;
   }

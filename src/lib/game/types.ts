@@ -57,6 +57,8 @@ export interface Camera {
   viewportHeight: number;
 }
 
+export type ParticleShape = "square" | "circle" | "line";
+
 export interface Particle {
   x: number;
   y: number;
@@ -66,6 +68,12 @@ export interface Particle {
   maxLife: number;
   color: string;
   size: number;
+  rotation?: number;
+  rotationSpeed?: number;
+  shape?: ParticleShape;
+  trail?: boolean;
+  prevX?: number;
+  prevY?: number;
 }
 
 export type SpritePixels = number[][];

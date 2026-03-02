@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import GameCanvas from "@/components/adventure/GameCanvas";
+import { AdventureShell } from "@/components/adventure/AdventureShell";
 import { WelcomeBanner } from "@/components/adventure/welcome-banner";
 
 export const metadata: Metadata = { title: "Adventure" };
@@ -17,7 +17,7 @@ export default function AdventurePage() {
         Back to Projects
       </Link>
       <WelcomeBanner />
-      <GameCanvas />
+      <AdventureShell />
     </div>
   );
 }
