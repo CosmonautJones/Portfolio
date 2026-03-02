@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import type { LeaderboardEntry } from "@/lib/types";
 
 export async function submitScore(score: number, deathCause: string, gameType = "adventure") {
   try {
@@ -10,11 +11,15 @@ export async function submitScore(score: number, deathCause: string, gameType = 
     } = await supabase.auth.getUser();
     if (!user) return { error: "Not authenticated" };
 
+    const displayName =
+      (user.user_metadata?.preferred_username as string) ?? null;
+
     const { error } = await supabase.from("game_scores").insert({
       user_id: user.id,
       score,
       death_cause: deathCause,
       game_type: gameType,
+      display_name: displayName,
     });
     if (error) return { error: error.message };
     return { success: true };
@@ -23,13 +28,16 @@ export async function submitScore(score: number, deathCause: string, gameType = 
   }
 }
 
-export async function getLeaderboard(limit = 10, gameType = "adventure") {
+export async function getLeaderboard(
+  limit = 10,
+  gameType = "adventure",
+): Promise<{ scores: LeaderboardEntry[]; error?: string }> {
   try {
     const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("game_scores")
-      .select("id, score, death_cause, created_at, user_id")
+      .select("id, score, death_cause, created_at, user_id, display_name")
       .eq("game_type", gameType)
       .order("score", { ascending: false })
       .limit(limit);
@@ -41,11 +49,12 @@ export async function getLeaderboard(limit = 10, gameType = "adventure") {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const scores = (data ?? []).map((entry, i) => ({
+    const scores: LeaderboardEntry[] = (data ?? []).map((entry, i) => ({
       id: entry.id,
       rank: i + 1,
       score: entry.score,
       deathCause: entry.death_cause,
+      displayName: entry.display_name,
       createdAt: entry.created_at,
       isCurrentUser: entry.user_id === user?.id,
     }));
@@ -145,6 +154,63 @@ export async function getRecentScores(limit = 5, gameType = "adventure") {
     return {
       error: error instanceof Error ? error.message : "Unknown error",
       scores: [],
+    };
+  }
+}
+
+export async function submitAchievements(
+  unlocks: Array<{ achievementId: string; score: number }>,
+) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated" };
+    if (unlocks.length === 0) return { success: true };
+
+    const rows = unlocks.map((u) => ({
+      user_id: user.id,
+      achievement_id: u.achievementId,
+      game_score: u.score,
+    }));
+
+    const { error } = await supabase
+      .from("game_achievements")
+      .upsert(rows, { onConflict: "user_id,achievement_id", ignoreDuplicates: true });
+
+    if (error) return { error: error.message };
+    return { success: true };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function getUserAchievements(): Promise<{
+  achievementIds: string[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { achievementIds: [] };
+
+    const { data, error } = await supabase
+      .from("game_achievements")
+      .select("achievement_id")
+      .eq("user_id", user.id);
+
+    if (error) return { error: error.message, achievementIds: [] };
+
+    return {
+      achievementIds: (data ?? []).map((r) => r.achievement_id),
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Unknown error",
+      achievementIds: [],
     };
   }
 }

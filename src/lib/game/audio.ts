@@ -85,6 +85,26 @@ export class GameAudio {
     this.playTone(300, 350, 0.08, "triangle");
   }
 
+  playAchievement(): void {
+    if (this.muted || !this.ctx) return;
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + i * 0.075);
+      gain.gain.setValueAtTime(0.15, this.ctx!.currentTime + i * 0.075);
+      gain.gain.linearRampToValueAtTime(
+        0,
+        this.ctx!.currentTime + i * 0.075 + 0.12,
+      );
+      osc.connect(gain);
+      gain.connect(this.ctx!.destination);
+      osc.start(this.ctx!.currentTime + i * 0.075);
+      osc.stop(this.ctx!.currentTime + i * 0.075 + 0.12);
+    });
+  }
+
   setMuted(m: boolean): void {
     this.muted = m;
     try {

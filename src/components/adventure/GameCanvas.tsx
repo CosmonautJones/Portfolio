@@ -9,6 +9,7 @@ import type {
   DeathCause,
   GameCallbacks,
 } from "@/lib/game/types";
+import type { LeaderboardEntry } from "@/lib/types";
 import { SpriteCache, GameRenderer } from "@/lib/game/renderer";
 import { createInputHandler } from "@/lib/game/input";
 import { LOBSTER_SPRITES, LOBSTER_FLIP_KEYS } from "@/lib/game/sprites/lobster";
@@ -21,7 +22,18 @@ import {
   updateScreenShake,
   getShakeParams,
 } from "@/lib/game/effects";
-import { submitScore, getLeaderboard } from "@/actions/game-scores";
+import {
+  submitScore,
+  getLeaderboard,
+  submitAchievements,
+  getUserAchievements,
+} from "@/actions/game-scores";
+import { AchievementTracker } from "@/lib/game/achievement-tracker";
+import {
+  ACHIEVEMENTS,
+  ACHIEVEMENT_MAP,
+  TOTAL_ACHIEVEMENTS,
+} from "@/lib/game/achievements";
 import { CRTOverlay } from "./CRTOverlay";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -90,6 +102,13 @@ function padScore(score: number): string {
   return String(score).padStart(4, "0");
 }
 
+interface AchievementPopup {
+  id: string;
+  name: string;
+  emoji: string;
+  key: number;
+}
+
 interface GameCanvasProps {
   onScoreUpdate?: (score: number, level: number) => void;
   onPhaseChange?: (phase: GamePhase) => void;
@@ -116,20 +135,19 @@ export default function GameCanvas({
   const [muted, setMuted] = useState(false);
   const [level, setLevel] = useState(1);
   const [levelUpText, setLevelUpText] = useState<number | null>(null);
-  const [leaderboard, setLeaderboard] = useState<
-    Array<{
-      id: string;
-      rank: number;
-      score: number;
-      deathCause: string;
-      isCurrentUser: boolean;
-    }>
-  >([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [scorePopups, setScorePopups] = useState<number[]>([]);
   const popupIdRef = useRef(0);
   const audioRef = useRef<GameAudio | null>(null);
   const screenShakeRef = useRef(createScreenShake());
+  const achievementTrackerRef = useRef<AchievementTracker | null>(null);
+  const [achievementPopup, setAchievementPopup] =
+    useState<AchievementPopup | null>(null);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<Set<string>>(
+    new Set(),
+  );
+  const achievementPopupKeyRef = useRef(0);
 
   // Stable refs for external callbacks so the effect doesn't re-run
   const onScoreUpdateRef = useRef(onScoreUpdate);
@@ -164,6 +182,33 @@ export default function GameCanvas({
     }
   }, []);
 
+  const showAchievementPopup = useCallback(
+    (achievementId: string) => {
+      const def = ACHIEVEMENT_MAP.get(achievementId);
+      if (!def) return;
+      const key = achievementPopupKeyRef.current++;
+      setAchievementPopup({ id: def.id, name: def.name, emoji: def.emoji, key });
+      setUnlockedAchievements((prev) => new Set([...prev, achievementId]));
+      audioRef.current?.playAchievement();
+      setTimeout(() => {
+        setAchievementPopup((current) =>
+          current?.key === key ? null : current,
+        );
+      }, 2500);
+    },
+    [],
+  );
+
+  const processUnlocks = useCallback(
+    (unlocks: Array<{ achievementId: string; score: number }>) => {
+      if (unlocks.length === 0) return;
+      unlocks.forEach((u, i) => {
+        setTimeout(() => showAchievementPopup(u.achievementId), i * 800);
+      });
+    },
+    [showAchievementPopup],
+  );
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -171,6 +216,25 @@ export default function GameCanvas({
     // Create audio manager
     const audio = new GameAudio();
     audioRef.current = audio;
+
+    // Initialize achievement tracker
+    const deathHistory = AchievementTracker.loadDeathHistory();
+    const tracker = new AchievementTracker([], deathHistory);
+    achievementTrackerRef.current = tracker;
+
+    // Fetch unlocked achievements from server
+    getUserAchievements()
+      .then((result) => {
+        if (result.achievementIds.length > 0) {
+          const serverTracker = new AchievementTracker(
+            result.achievementIds,
+            deathHistory,
+          );
+          achievementTrackerRef.current = serverTracker;
+          setUnlockedAchievements(new Set(result.achievementIds));
+        }
+      })
+      .catch(() => {});
 
     // Create and prerender all sprites
     const spriteCache = new SpriteCache();
@@ -235,6 +299,13 @@ export default function GameCanvas({
         // Notify parent
         const gs = gameStateRef.current;
         if (gs) onScoreUpdateRef.current?.(newScore, gs.level);
+
+        // Achievement tracking
+        const t = achievementTrackerRef.current;
+        if (t) {
+          const unlocks = t.onScoreChange(newScore);
+          if (unlocks.length > 0) processUnlocks(unlocks);
+        }
       },
       onPhaseChange: (newPhase) => {
         setPhase(newPhase);
@@ -244,6 +315,13 @@ export default function GameCanvas({
           audio.playStart();
           setLevel(1);
           setIsNewHighScore(false);
+
+          // Reset tracker for new game
+          const t = achievementTrackerRef.current;
+          const current = gameStateRef.current;
+          if (t && current) {
+            t.resetForNewGame(current.highScore);
+          }
         }
       },
       onDeath: (cause, finalScore) => {
@@ -273,6 +351,23 @@ export default function GameCanvas({
           }
           setHighScore(current.highScore);
         }
+
+        // Achievement tracking — death achievements
+        const t = achievementTrackerRef.current;
+        if (t) {
+          const deathUnlocks = t.onDeath(cause, finalScore);
+          if (deathUnlocks.length > 0) processUnlocks(deathUnlocks);
+
+          // Flush all pending and persist to server
+          const allUnlocks = t.flushPendingUnlocks();
+          if (allUnlocks.length > 0) {
+            submitAchievements(allUnlocks).catch(() => {});
+          }
+
+          // Save death history to localStorage
+          AchievementTracker.saveDeathHistory(t.getDeathCausesSeen());
+        }
+
         // Submit score to leaderboard (fire-and-forget)
         submitScore(finalScore, cause).catch(() => {});
         // Refresh leaderboard
@@ -295,6 +390,13 @@ export default function GameCanvas({
         // Notify parent
         const gs = gameStateRef.current;
         if (gs) onScoreUpdateRef.current?.(gs.score, newLevel);
+
+        // Achievement tracking
+        const t = achievementTrackerRef.current;
+        if (t) {
+          const unlocks = t.onLevelUp(newLevel, gameStateRef.current?.score ?? 0);
+          if (unlocks.length > 0) processUnlocks(unlocks);
+        }
       },
     };
     callbacksRef.current = callbacks;
@@ -356,6 +458,13 @@ export default function GameCanvas({
         const nowRiding = gameStateRef.current.player.ridingLogId;
         if (nowRiding !== null && prevRiding === null) {
           audio.playLogLand();
+
+          // Achievement tracking — log ride
+          const t = achievementTrackerRef.current;
+          if (t) {
+            const unlocks = t.onLogRide(gameStateRef.current.score);
+            if (unlocks.length > 0) processUnlocks(unlocks);
+          }
         }
 
         // Update screen shake
@@ -406,7 +515,7 @@ export default function GameCanvas({
       inputHandler.destroy();
       audio.destroy();
     };
-  }, [updateScale]);
+  }, [updateScale, processUnlocks]);
 
   return (
     <div
@@ -449,6 +558,12 @@ export default function GameCanvas({
           50% { transform: scale(1.15); }
           100% { transform: scale(1); }
         }
+        @keyframes achievementSlideIn {
+          0% { opacity: 0; transform: translateY(-100%); }
+          15% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-100%); }
+        }
       `}</style>
       <div
         className="relative"
@@ -470,6 +585,38 @@ export default function GameCanvas({
 
         {/* CRT scanline overlay */}
         <CRTOverlay />
+
+        {/* Achievement popup (during gameplay) */}
+        {achievementPopup && phase === "playing" && (
+          <div
+            key={achievementPopup.key}
+            className="absolute left-1/2 pointer-events-none flex items-center gap-1 px-2 py-1"
+            style={{
+              top: "12%",
+              transform: "translateX(-50%)",
+              background: "rgba(26, 28, 44, 0.9)",
+              border: "1px solid #ffcd75",
+              borderRadius: 4,
+              animation: "achievementSlideIn 2.5s ease-out forwards",
+              zIndex: 10,
+            }}
+          >
+            <span style={{ fontSize: canvasWidth * 0.05 }}>
+              {achievementPopup.emoji}
+            </span>
+            <span
+              className="font-bold"
+              style={{
+                fontSize: canvasWidth * 0.032,
+                color: "#ffcd75",
+                textShadow: "1px 1px 0 #000",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {achievementPopup.name}
+            </span>
+          </div>
+        )}
 
         {/* Menu overlay */}
         {phase === "menu" && (
@@ -709,7 +856,7 @@ export default function GameCanvas({
                 <div
                   className="w-full mt-1 overflow-y-auto"
                   style={{
-                    maxHeight: "45%",
+                    maxHeight: "35%",
                     scrollbarWidth: "thin",
                     scrollbarColor: "#566c86 #1a1c2c",
                   }}
@@ -741,7 +888,7 @@ export default function GameCanvas({
                       key={entry.id}
                       className="flex items-center px-1 py-0.5 font-mono"
                       style={{
-                        fontSize: canvasWidth * 0.035,
+                        fontSize: canvasWidth * 0.032,
                         color: entry.isCurrentUser
                           ? "#ffcd75"
                           : entry.rank <= 3
@@ -758,13 +905,24 @@ export default function GameCanvas({
                     >
                       {/* Rank */}
                       <span
-                        className="font-bold"
+                        className="font-bold shrink-0"
                         style={{
                           width: canvasWidth * 0.08,
                           color: getRankColor(entry.rank),
                         }}
                       >
                         {entry.isCurrentUser ? ">>>" : `#${entry.rank}`}
+                      </span>
+                      {/* Display name */}
+                      <span
+                        className="truncate shrink-1 mx-0.5"
+                        style={{
+                          maxWidth: canvasWidth * 0.25,
+                          fontSize: canvasWidth * 0.028,
+                          color: entry.isCurrentUser ? "#ffcd75" : "#73869c",
+                        }}
+                      >
+                        {entry.displayName ?? "???"}
                       </span>
                       {/* Dot leader */}
                       <span
@@ -776,7 +934,7 @@ export default function GameCanvas({
                       />
                       {/* Death cause badge */}
                       <span
-                        className="mx-1"
+                        className="mx-0.5 shrink-0"
                         style={{
                           fontSize: canvasWidth * 0.025,
                           color: getDeathColor(entry.deathCause),
@@ -786,13 +944,53 @@ export default function GameCanvas({
                         {getDeathIcon(entry.deathCause as DeathCause)}
                       </span>
                       {/* Score */}
-                      <span className="font-bold">
+                      <span className="font-bold shrink-0">
                         {padScore(entry.score)}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* Achievement grid */}
+              <div className="w-full mt-2">
+                <div
+                  className="text-center font-bold mb-1"
+                  style={{
+                    fontSize: canvasWidth * 0.035,
+                    color: "#94b0c2",
+                    textShadow: "1px 1px 0 #000",
+                  }}
+                >
+                  ACHIEVEMENTS ({unlockedAchievements.size}/{TOTAL_ACHIEVEMENTS})
+                </div>
+                <div
+                  className="flex flex-wrap justify-center gap-1 px-1"
+                >
+                  {ACHIEVEMENTS.map((a) => {
+                    const isUnlocked = unlockedAchievements.has(a.id);
+                    return (
+                      <div
+                        key={a.id}
+                        title={
+                          isUnlocked
+                            ? `${a.name}: ${a.description}`
+                            : "???"
+                        }
+                        className="pointer-events-auto cursor-default"
+                        style={{
+                          fontSize: canvasWidth * 0.045,
+                          opacity: isUnlocked ? 1 : 0.25,
+                          filter: isUnlocked ? "none" : "grayscale(1)",
+                          transition: "opacity 0.3s, filter 0.3s",
+                        }}
+                      >
+                        {a.emoji}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Restart prompt */}
               <p

@@ -97,3 +97,19 @@ export interface GameEvent {
   payload: Record<string, unknown>;
   created_at: string;
 }
+
+export interface GameAchievement {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  rank: number;
+  score: number;
+  deathCause: string;
+  displayName: string | null;
+  isCurrentUser: boolean;
+}
