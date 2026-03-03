@@ -56,11 +56,13 @@ export const COIN_VALUES: Record<CoinType, number> = {
   gold: 5,
   silver: 15,
   diamond: 50,
+  ruby: 25,
 };
 
 export const COIN_RARITY: { type: CoinType; weight: number }[] = [
-  { type: "gold", weight: 82 },
-  { type: "silver", weight: 15 },
+  { type: "gold", weight: 75 },
+  { type: "silver", weight: 13 },
+  { type: "ruby", weight: 9 },
   { type: "diamond", weight: 3 },
 ];
 
@@ -79,6 +81,7 @@ export const COIN_COLLECT_RADIUS = 0.75; // fraction of cellSize
 export const OBJECT_HEIGHT: Record<string, number> = {
   car: 4,
   car_blue: 4,
+  car_yellow: 4,
   truck: 5,
   train: 6,
   log: 2,

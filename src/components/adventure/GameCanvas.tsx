@@ -21,8 +21,12 @@ import { GameAudio } from "@/lib/game/audio";
 import {
   createScreenShake,
   triggerScreenShake,
+  triggerMicroShake,
   updateScreenShake,
   getShakeParams,
+  createComboState,
+  updateCombo,
+  resetCombo,
 } from "@/lib/game/effects";
 import {
   submitScore,
@@ -145,9 +149,11 @@ export default function GameCanvas({
   const [coinPopups, setCoinPopups] = useState<{ id: number; value: number; type: CoinType }[]>([]);
   const [coinsCollected, setCoinsCollected] = useState(0);
   const [coinBonus, setCoinBonus] = useState(0);
+  const [combo, setCombo] = useState(0);
   const popupIdRef = useRef(0);
   const audioRef = useRef<GameAudio | null>(null);
   const screenShakeRef = useRef(createScreenShake());
+  const comboRef = useRef(createComboState());
   const achievementTrackerRef = useRef<AchievementTracker | null>(null);
   const [achievementPopup, setAchievementPopup] =
     useState<AchievementPopup | null>(null);
@@ -313,6 +319,16 @@ export default function GameCanvas({
       onScoreChange: (newScore) => {
         setScore(newScore);
         audio.playScore();
+
+        // Track combo — update on each forward hop that increments score
+        const now = performance.now() / 1000;
+        const currentCombo = updateCombo(comboRef.current, now);
+        setCombo(currentCombo);
+        // Clear combo display after 1.5s of inactivity
+        setTimeout(() => {
+          setCombo((prev) => (prev === currentCombo ? 0 : prev));
+        }, 1500);
+
         const id = popupIdRef.current++;
         setScorePopups((prev) => [...prev, id]);
         setTimeout(() => {
@@ -339,6 +355,8 @@ export default function GameCanvas({
           setIsNewHighScore(false);
           setCoinsCollected(0);
           setCoinBonus(0);
+          setCombo(0);
+          resetCombo(comboRef.current);
 
           // Reset tracker for new game
           const t = achievementTrackerRef.current;
@@ -356,9 +374,12 @@ export default function GameCanvas({
           audio.playDeath();
         }
 
-        // Screen shake
-        const { intensity, duration } = getShakeParams(cause);
-        triggerScreenShake(screenShakeRef.current, intensity, duration);
+        // Screen shake with directional bias
+        const { intensity, duration, biasX, biasY } = getShakeParams(cause);
+        triggerScreenShake(screenShakeRef.current, intensity, duration, biasX, biasY);
+        // Reset combo on death
+        setCombo(0);
+        resetCombo(comboRef.current);
 
         const current = gameStateRef.current;
         setIsNewHighScore(
@@ -430,6 +451,7 @@ export default function GameCanvas({
         });
         setCoinBonus((prev) => prev + bonusPoints);
         audio.playCoinCollect(coin.type);
+        triggerMicroShake(screenShakeRef.current);
 
         // Coin score popup
         const id = popupIdRef.current++;
@@ -514,6 +536,7 @@ export default function GameCanvas({
         const nowRiding = gameStateRef.current.player.ridingLogId;
         if (nowRiding !== null && prevRiding === null) {
           audio.playLogLand();
+          triggerMicroShake(screenShakeRef.current, 0, 0.5);
 
           // Achievement tracking — log ride
           const t = achievementTrackerRef.current;
@@ -527,7 +550,7 @@ export default function GameCanvas({
         const shake = updateScreenShake(screenShakeRef.current, cappedDt);
 
         renderer.clear();
-        renderer.renderBackground();
+        renderer.renderBackground(gameStateRef.current.animationTime);
         renderer.renderStarField(gameStateRef.current.animationTime);
 
         // Apply screen shake offset
@@ -551,7 +574,7 @@ export default function GameCanvas({
           ctx.restore();
         }
 
-        renderer.renderVignette();
+        renderer.renderVignette(gameStateRef.current.animationTime);
       }
 
       rafId = requestAnimationFrame(loop);
@@ -625,6 +648,16 @@ export default function GameCanvas({
           0% { opacity: 1; transform: translateY(0) scale(1.2); }
           30% { opacity: 1; transform: translateY(-8px) scale(1); }
           100% { opacity: 0; transform: translateY(-25px) scale(0.9); }
+        }
+        @keyframes comboPop {
+          0% { transform: scale(1.4); opacity: 1; }
+          60% { transform: scale(0.95); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes comboFade {
+          0% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { opacity: 0; }
         }
       `}</style>
       <div
@@ -824,6 +857,26 @@ export default function GameCanvas({
             </div>
           ))}
 
+        {/* Combo indicator — shows when combo >= 2 */}
+        {phase === "playing" && combo >= 2 && (
+          <div
+            key={combo}
+            className="absolute pointer-events-none font-bold"
+            style={{
+              top: "48%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontSize: canvasWidth * 0.048,
+              color: combo >= 6 ? "#ef7d57" : combo >= 4 ? "#ffcd75" : "#a7f070",
+              textShadow: `1px 1px 0 #1a1c2c, 0 0 8px ${combo >= 6 ? "#ef7d57" : combo >= 4 ? "#ffcd75" : "#a7f070"}80`,
+              animation: "comboPop 0.3s ease-out forwards, comboFade 1.5s ease-in 0s forwards",
+              whiteSpace: "nowrap",
+            }}
+          >
+            x{combo} COMBO
+          </div>
+        )}
+
         {/* Coin collection popups */}
         {phase === "playing" &&
           coinPopups.map((popup) => {
@@ -831,6 +884,7 @@ export default function GameCanvas({
               gold: "#ffcd75",
               silver: "#94b0c2",
               diamond: "#73eff7",
+              ruby: "#b13e53",
             };
             return (
               <div

@@ -11,18 +11,22 @@ VisitorProvider (src/lib/visitor-context.tsx)
   ├── Loads profile on mount via getProfile()
   ├── Listens to Supabase auth state changes
   ├── Updates streak on each session load
-  ├── Exposes: awardXP, unlockAchievement, trackEvent, refreshProfile
+  ├── Exposes: profile, isAuthenticated, loading, awardXP, unlockAchievement, trackEvent, refreshProfile
   └── Session-level dedup via module-level Set
 
 use-visitor hook (src/hooks/use-visitor.ts)
   └── Convenience wrapper for VisitorContext
+
+use-easter-egg hook (src/hooks/use-easter-egg.ts)
+  ├── discover(eggId) — awards XP, tracks event, unlocks achievement, calls addDiscovery()
+  └── isDiscovered(eggId) — checks profile.discoveries array
 
 Server actions (src/actions/profiles.ts)
   ├── getProfile — fetch or auto-create profile
   ├── awardXP — update XP + level + log event
   ├── unlockAchievement — append to achievements array + award XP
   ├── trackEvent — insert row into events table
-  ├── addDiscovery — append easter egg ID to discoveries array
+  ├── addDiscovery — append easter egg ID to discoveries array (called directly, not via context)
   └── updateStreak — compare last_visit date, increment or reset
 ```
 

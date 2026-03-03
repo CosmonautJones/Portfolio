@@ -11,7 +11,7 @@ export interface WorldPosition {
 export type Direction = "up" | "down" | "left" | "right";
 export type LaneType = "grass" | "road" | "water" | "railroad";
 export type ObstacleType = "car" | "truck" | "train" | "log";
-export type CoinType = "gold" | "silver" | "diamond";
+export type CoinType = "gold" | "silver" | "diamond" | "ruby";
 export type GamePhase = "menu" | "playing" | "paused" | "game_over";
 export type DeathCause =
   | "vehicle"

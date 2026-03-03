@@ -23,6 +23,67 @@ interface Tool {
 }
 ```
 
+### `Project` (portfolio static data)
+
+```typescript
+interface Project {
+  title: string;
+  description: string;
+  image: string;
+  tags: string[];
+  liveUrl?: string;
+  demoUrl?: string;
+  githubUrl?: string;
+  role: string;
+  featured?: boolean;
+}
+```
+
+Defined in `src/lib/types.ts`; populated from `PROJECTS` constant in `src/lib/constants.ts`. Used by portfolio pages and terminal `projects` command.
+
+### `Note`
+
+```typescript
+interface Note {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+### `TrackerProject`
+
+```typescript
+interface TrackerProject {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string;
+  status: "active" | "completed" | "archived";
+  created_at: string;
+  updated_at: string;
+}
+```
+
+### `TrackerTask`
+
+```typescript
+interface TrackerTask {
+  id: string;
+  project_id: string;
+  user_id: string;
+  title: string;
+  status: "todo" | "in_progress" | "done";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+```
+
 ### `Profile`
 
 ```typescript
@@ -78,19 +139,28 @@ interface GameAchievement {
 }
 ```
 
+### `GameEvent`
+
+```typescript
+interface GameEvent {
+  id: string;
+  user_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+```
+
 ### `LeaderboardEntry`
 
 ```typescript
 interface LeaderboardEntry {
   id: string;
-  user_id: string | null;
-  score: number;
-  death_cause: string;
-  display_name: string | null;
-  game_type: string;
-  coins_collected: number;
-  created_at: string;
   rank: number;
+  score: number;
+  deathCause: string;      // camelCase — transformed from DB snake_case
+  displayName: string | null;
+  createdAt: string;
   isCurrentUser: boolean;
 }
 ```
@@ -240,6 +310,19 @@ interface Particle {
 }
 ```
 
+## Effect Types (`src/lib/game/effects.ts`)
+
+```typescript
+interface ScreenShake {
+  intensity: number;
+  duration: number;
+  elapsed: number;
+  offsetX: number;
+  offsetY: number;
+  active: boolean;
+}
+```
+
 ## Terminal Types (`src/lib/terminal/types.ts`)
 
 ```typescript
@@ -259,6 +342,19 @@ interface CommandContext {
 interface CommandResult {
   output: Array<{ type: "text" | "system" | "error" | "ascii"; content: string }>;
   clear?: boolean;
+}
+```
+
+## Easter Egg Types (`src/lib/easter-eggs/registry.ts`)
+
+```typescript
+interface EasterEgg {
+  id: string;
+  name: string;
+  hint: string;            // teaser hint shown in vault discoveries
+  location: string;        // where on the site to find it
+  icon: string;            // Lucide icon name
+  achievementId?: string;  // achievement to unlock on discovery
 }
 ```
 

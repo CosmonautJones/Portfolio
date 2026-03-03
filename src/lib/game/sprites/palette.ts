@@ -1,4 +1,6 @@
 // Index 0 = transparent. PICO-8 inspired + Claude orange accents.
+// Indices 0-31 maintain backward compatibility with original colors.
+// Indices 32-47 are new extended ramp colors for enhanced shading.
 export const PALETTE: readonly string[] = [
   "transparent", // 0
   "#1a1c2c", //  1  dark navy (outlines)
@@ -32,4 +34,22 @@ export const PALETTE: readonly string[] = [
   "#ffff00", // 29  warning yellow
   "#ff0000", // 30  warning red
   "#000000", // 31  black
+
+  // Extended palette — new shading ramps
+  "#f0c080", // 32  log highlight / warm sand
+  "#7b4a20", // 33  log deep shadow
+  "#c84c39", // 34  lobster red-orange mid
+  "#ff9b7b", // 35  lobster highlight / peach
+  "#6b1f28", // 36  lobster deep shadow
+  "#50d090", // 37  grass bright highlight
+  "#1a4030", // 38  grass very deep shadow
+  "#60c8f0", // 39  water bright highlight / foam
+  "#0d3a6a", // 40  water very deep shadow
+  "#ffa040", // 41  Claude orange deep
+  "#ffe0a0", // 42  gold highlight / bright
+  "#b08020", // 43  gold shadow
+  "#c0d8f0", // 44  sky pale blue
+  "#8090b0", // 45  slate blue mid
+  "#6080ff", // 46  electric blue (train accent)
+  "#e0e8ff", // 47  near-white blue tint (windshield)
 ] as const;

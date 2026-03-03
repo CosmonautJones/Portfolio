@@ -6,7 +6,7 @@ Developer reference for the portfolio site at [travisjohnjones.com](https://trav
 
 - **Framework**: Next.js 15 App Router, React 19, TypeScript
 - **Deployment**: Netlify at `travisjohnjones.com` (Node 20)
-- **Database**: Supabase PostgreSQL (7 tables, 12 migrations)
+- **Database**: Supabase PostgreSQL (7 tables, 13 migrations)
 - **Auth**: GitHub OAuth via Supabase, PKCE flow
 - **UI**: shadcn/ui (new-york) + Tailwind CSS 4 + Lucide icons
 - **Testing**: Vitest + React Testing Library
@@ -33,7 +33,7 @@ npx vitest run src/path/to/file.test.tsx  # Single test file
 | [auth.md](./auth.md) | GitHub OAuth, middleware routing rules, Supabase client factories |
 | [tool-system.md](./tool-system.md) | Tool types (internal/external/embedded), registry, admin CRUD, GitHub import |
 | [progression-system.md](./progression-system.md) | XP awards, levels, achievements, visitor context, optimistic UI |
-| [game-engine.md](./game-engine.md) | ClaudeBot's Adventure — engine, renderer, input, audio, coins, particles |
+| [game-engine.md](./game-engine.md) | ClaudeBot's Adventure — engine, renderer, input, audio, coins, particles, screen shake, isometric 2.5D |
 | [terminal-easter-eggs.md](./terminal-easter-eggs.md) | Terminal commands, easter eggs, vault, color schemes |
 | [database.md](./database.md) | All 7 tables, migration index, RLS policy summary |
 | [server-actions.md](./server-actions.md) | All server actions, signatures, return types, admin guard pattern |
@@ -124,3 +124,12 @@ See [architecture/overview.md](./architecture/overview.md)
 
 ### "What HTTP endpoints exist?"
 See [api/endpoints.md](./api/endpoints.md)
+
+### "How does easter egg discovery work?"
+See [terminal-easter-eggs.md](./terminal-easter-eggs.md), [guides/adding-easter-eggs.md](./guides/adding-easter-eggs.md), and `src/hooks/use-easter-egg.ts`
+
+### "What are the in-game achievement conditions?"
+See [game-engine.md — In-Game Achievement System](./game-engine.md#in-game-achievement-system-srclibgameachievement-trackerts)
+
+### "How does screen shake work?"
+See [game-engine.md — Screen Shake](./game-engine.md#screen-shake-srclibgameeffectsts) and [reference/configuration.md](./reference/configuration.md#screen-shake-on-death)

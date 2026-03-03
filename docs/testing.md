@@ -35,7 +35,8 @@ Tests are co-located with their source files using `__tests__/` subdirectories o
 | `src/lib/game/__tests__/engine.test.ts` | Game engine logic (tick, collisions, movement) |
 | `src/lib/game/__tests__/renderer.test.ts` | Canvas renderer |
 | `src/lib/game/__tests__/achievement-tracker.test.ts` | In-game achievement tracker |
-| `src/lib/game/__tests__/effects.test.ts` | Visual effects helpers |
+| `src/lib/game/__tests__/coins.test.ts` | Coin spawning, collection, and movement |
+| `src/lib/game/__tests__/effects.test.ts` | Screen shake system |
 | `src/lib/game/__tests__/lobster.test.ts` | Player sprite data |
 | `src/lib/game/__tests__/particles.test.ts` | Particle system |
 | `src/lib/game/__tests__/scaling.test.ts` | Responsive scaling logic |

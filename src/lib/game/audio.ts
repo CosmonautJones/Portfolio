@@ -92,6 +92,7 @@ export class GameAudio {
       gold: 523,
       silver: 700,
       diamond: 880,
+      ruby: 622,
     };
     this.playTone(freqs[type], freqs[type] * 1.5, 0.1, "triangle");
   }

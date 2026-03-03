@@ -19,7 +19,7 @@ src/lib/game/
   coins.ts            # Coin spawning, movement, and collection
   achievement-tracker.ts   # In-game achievement checks (class)
   achievements.ts     # In-game achievement definitions
-  effects.ts          # Visual effect helpers
+  effects.ts          # Screen shake system
   sprites/
     palette.ts        # Color palette (indexed)
     lobster.ts        # Player (lobster) sprite data
@@ -276,9 +276,44 @@ tracker.flushPendingUnlocks()        // Drain pending queue
 
 Separate from the visitor XP system. 6 levels, defined by `LEVEL_THRESHOLDS` in `constants.ts`. `getLevelForScore(score)` returns 1–6. Level-ups trigger `callbacks.onLevelUp(level)` and increase difficulty.
 
+## Screen Shake (`src/lib/game/effects.ts`)
+
+A screen shake effect is applied on death. The effect uses exponential decay so the shake starts strong and fades out smoothly.
+
+```typescript
+interface ScreenShake {
+  intensity: number;
+  duration: number;
+  elapsed: number;
+  offsetX: number;
+  offsetY: number;
+  active: boolean;
+}
+```
+
+| Function | Description |
+|---|---|
+| `createScreenShake()` | Returns a new inactive ScreenShake |
+| `triggerScreenShake(shake, intensity, duration)` | Starts a shake effect |
+| `updateScreenShake(shake, dt)` | Advances shake each tick, returns `{ offsetX, offsetY }` |
+| `getShakeParams(deathCause)` | Returns intensity/duration tuned by death cause |
+
+Death-cause intensities: `train` = 6px / 0.5s, `vehicle` = 4px / 0.35s, `water` = 2px / 0.4s.
+
+## Isometric 2.5D Depth
+
+Objects are drawn with depth offsets to create a 2.5D isometric look. Constants in `src/lib/game/constants.ts`:
+
+| Constant | Purpose |
+|---|---|
+| `OBJECT_HEIGHT` | Per-obstacle-type pixel height (for depth sorting) |
+| `TILE_DEPTH` | Per-lane-type tile depth value |
+| `SHADOW_OFFSET` | `{ x: 3, y: 2 }` pixels for shadow drawing |
+| `SHADOW_ALPHA` | `0.3` — shadow opacity |
+
 ## Renderer (`src/lib/game/renderer.ts`)
 
-Canvas 2D renderer with a `SpriteCache` backed by `OffscreenCanvas`. Palette-indexed pixel sprites are pre-rendered once to `OffscreenCanvas` instances for performance.
+Canvas 2D renderer with a `SpriteCache` backed by `OffscreenCanvas`. Palette-indexed pixel sprites are pre-rendered once to `OffscreenCanvas` instances for performance. The renderer applies screen shake offsets from `effects.ts` and draws drop shadows under objects using `SHADOW_OFFSET` and `SHADOW_ALPHA`.
 
 ## Input (`src/lib/game/input.ts`)
 
@@ -325,9 +360,10 @@ After game over, `GameCanvas` submits the score. The leaderboard panel (`src/com
 
 ## Related Files
 
-- `src/lib/game/` — All engine files
+- `src/lib/game/` — All engine files (engine, renderer, input, audio, coins, effects, achievement-tracker, achievements, types, constants)
 - `src/components/adventure/` — React integration
 - `src/app/(adventure)/adventure/page.tsx` — Page route
 - `src/actions/game-scores.ts` — Leaderboard server actions
 - `supabase/migrations/008_create_game_scores.sql` — Schema
 - `supabase/migrations/011_add_game_type.sql` — game_type column
+- `supabase/migrations/012_add_coins_to_scores.sql` — coins_collected column

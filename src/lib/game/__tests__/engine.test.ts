@@ -15,6 +15,7 @@ function makeCallbacks(): GameCallbacks {
     onDeath: vi.fn(),
     onHop: vi.fn(),
     onLevelUp: vi.fn(),
+    onCoinCollect: vi.fn(),
   };
 }
 

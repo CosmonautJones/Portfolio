@@ -94,6 +94,32 @@ Weighted random probabilities for lane type generation:
 
 Speed multiplier interpolates linearly from min to max as score goes from 0 to maxScoreThreshold, plus a per-level bonus.
 
+### Isometric 2.5D Rendering
+
+| Constant | Value | Description |
+|---|---|---|
+| `SHADOW_OFFSET` | `{ x: 3, y: 2 }` | Pixel offset for drop shadows |
+| `SHADOW_ALPHA` | `0.3` | Shadow opacity |
+| `OBJECT_HEIGHT.car` | 4px | Isometric height for car |
+| `OBJECT_HEIGHT.truck` | 5px | Isometric height for truck |
+| `OBJECT_HEIGHT.train` | 6px | Isometric height for train |
+| `OBJECT_HEIGHT.log` | 2px | Isometric height for log |
+| `TILE_DEPTH.grass` | 3 | Depth value for grass tiles |
+| `TILE_DEPTH.road` | 2 | Depth value for road tiles |
+| `TILE_DEPTH.railroad` | 2 | Depth value for railroad tiles |
+| `TILE_DEPTH.water` | 0 | Depth value for water tiles |
+
+### Screen Shake (on death)
+
+Shake intensity and duration per death cause (defined in `src/lib/game/effects.ts`):
+
+| Death Cause | Intensity | Duration |
+|---|---|---|
+| `train` | 6px | 0.5s |
+| `vehicle` | 4px | 0.35s |
+| `water` | 2px | 0.4s |
+| other | 3px | 0.3s |
+
 ## XP System Constants (`src/lib/xp.ts`)
 
 See [../progression-system.md](../progression-system.md) for the full XP awards table and level thresholds.

@@ -83,9 +83,10 @@ Easter eggs are registered in `src/lib/easter-eggs/registry.ts`.
 interface EasterEgg {
   id: string;
   name: string;
-  description: string;
+  hint: string;            // teaser hint displayed in vault discoveries
+  location: string;        // plain-text description of where to find it
+  icon: string;            // Lucide icon name
   achievementId?: string;  // achievement to unlock on discovery
-  xpAction?: XPAction;     // XP action to award
 }
 ```
 
@@ -97,9 +98,10 @@ Add an entry to the `EASTER_EGGS` array in `src/lib/easter-eggs/registry.ts`:
 {
   id: "my_egg",
   name: "My Easter Egg",
-  description: "Found the secret thing",
+  hint: "Something is hidden here...",
+  location: "Where the user finds it",
+  icon: "Star",
   achievementId: "my_achievement",  // optional
-  xpAction: "find_easter_egg",      // optional
 }
 ```
 

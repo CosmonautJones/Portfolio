@@ -85,14 +85,14 @@ interface CommandResult {
 
 Defined in `src/lib/easter-eggs/registry.ts`. 6 easter eggs total.
 
-| ID | Name | Location | Achievement |
-|---|---|---|---|
-| `konami_code` | Konami Code | Anywhere on site | `konami` |
-| `hidden_terminal` | The Red Pill | Home page | `red_pill` |
-| `vault_complete` | Halliday's Egg | The Vault | `halliday_egg` |
-| `cosmonaut_cocktail` | The Cosmonaut | Cocktail Mixer | — |
-| `hitchhiker_42` | The Answer | ClaudeBot's Adventure | — |
-| `vaporwave` | A E S T H E T I C | Terminal | — |
+| ID | Name | Location | Achievement | Icon |
+|---|---|---|---|---|
+| `konami_code` | Konami Code | Anywhere on site | `konami` | Joystick |
+| `hidden_terminal` | The Red Pill | Home page | `red_pill` | Terminal |
+| `vault_complete` | Halliday's Egg | The Vault | `halliday_egg` | Egg |
+| `cosmonaut_cocktail` | The Cosmonaut | Cocktail Mixer | — | Rocket |
+| `hitchhiker_42` | The Answer | ClaudeBot's Adventure | — | Compass |
+| `vaporwave` | A E S T H E T I C | Terminal | — | Palette |
 
 ### Konami Code
 

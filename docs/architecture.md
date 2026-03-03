@@ -40,7 +40,7 @@ src/
   middleware.ts      # Next.js middleware entry point
   test/setup.ts      # Vitest global setup
 supabase/
-  migrations/        # SQL migration files (11 files)
+  migrations/        # SQL migration files (13 files)
 ```
 
 ## Route Groups

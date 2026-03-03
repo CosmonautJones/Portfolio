@@ -557,47 +557,90 @@ function updateLogRiding(
 function spawnSplashParticles(state: GameState, config: GameConfig): void {
   const { player } = state;
   const cellHalf = config.cellSize / 2;
-  const count = 3 + Math.floor(Math.random() * 3); // 3-5
+  const count = 6 + Math.floor(Math.random() * 4); // 6-9 — bigger splash
   for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 20 + Math.random() * 30;
+    // Ring pattern with upward bias
+    const angle = (i / count) * Math.PI * 2;
+    const speed = 25 + Math.random() * 40;
+    const vy = Math.sin(angle) * speed - 20; // upward bias
     state.particles.push({
       x: player.worldPos.x + cellHalf,
       y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 0.15 + Math.random() * 0.1,
-      maxLife: 0.25,
-      color: pickRandom(["#41a6f6", "#2d6aa5", "#73eff7"]),
+      vy,
+      life: 0.2 + Math.random() * 0.15,
+      maxLife: 0.35,
+      color: pickRandom(["#41a6f6", "#2d6aa5", "#73eff7", "#60c8f0"]),
       size: 1 + Math.floor(Math.random() * 2),
+      shape: "circle",
+    });
+  }
+  // Central foam burst — small white droplets
+  for (let i = 0; i < 4; i++) {
+    const angle = (i / 4) * Math.PI * 2;
+    state.particles.push({
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 4,
+      y: player.worldPos.y + cellHalf,
+      vx: Math.cos(angle) * 10,
+      vy: Math.sin(angle) * 10 - 15,
+      life: 0.12,
+      maxLife: 0.12,
+      color: "#e0e8ff",
+      size: 1,
+      shape: "circle",
     });
   }
 }
 
-/** Spawn 2-3 tiny dust particles on hop landing. Colors match terrain type. */
+/** Spawn dust particles on hop landing. Colors match terrain type. */
 function spawnHopDust(state: GameState, config: GameConfig): void {
   const { player } = state;
   const cellHalf = config.cellSize / 2;
   const lane = state.lanes.find((l) => l.y === player.gridPos.y);
   const terrainColors: Record<string, string[]> = {
-    grass: ["#38b764", "#265c42"],
-    road: ["#566c86", "#333c57"],
-    water: ["#41a6f6", "#2d6aa5"],
-    railroad: ["#566c86", "#333c57"],
+    grass: ["#38b764", "#265c42", "#50d090"],
+    road: ["#566c86", "#333c57", "#94b0c2"],
+    water: ["#41a6f6", "#2d6aa5", "#73eff7"],
+    railroad: ["#566c86", "#333c57", "#94b0c2"],
   };
   const colors = terrainColors[lane?.type ?? "grass"] ?? terrainColors.grass;
-  const count = 2 + Math.floor(Math.random() * 2); // 2-3
+  const count = 4 + Math.floor(Math.random() * 3); // 4-6 — stronger landing burst
   for (let i = 0; i < count; i++) {
-    const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1.2; // spread below
-    const speed = 8 + Math.random() * 15;
+    // Fan pattern outward from landing point
+    const angle = Math.PI * 0.5 + (Math.random() - 0.5) * Math.PI * 0.9;
+    const speed = 12 + Math.random() * 20;
     state.particles.push({
-      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 4,
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 6,
       y: player.worldPos.y + config.cellSize - 2,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed * 0.5,
-      life: 0.15 + Math.random() * 0.1,
-      maxLife: 0.25,
+      vy: Math.sin(angle) * speed * 0.6,
+      life: 0.18 + Math.random() * 0.12,
+      maxLife: 0.3,
       color: pickRandom(colors),
+      size: 1,
+      shape: "circle",
+    });
+  }
+}
+
+/** Spawn log wake particles when player lands on a log */
+function spawnLogWakeParticles(state: GameState, config: GameConfig): void {
+  const { player } = state;
+  const cellHalf = config.cellSize / 2;
+  // Water droplets fanning behind player
+  const count = 5 + Math.floor(Math.random() * 3); // 5-7
+  for (let i = 0; i < count; i++) {
+    const side = i % 2 === 0 ? 1 : -1;
+    const angle = (Math.PI * 0.5 + side * (0.3 + Math.random() * 0.5));
+    const speed = 15 + Math.random() * 25;
+    state.particles.push({
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 8,
+      y: player.worldPos.y + cellHalf,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 8,
+      life: 0.18 + Math.random() * 0.12,
+      maxLife: 0.3,
+      color: pickRandom(["#41a6f6", "#73eff7", "#60c8f0"]),
       size: 1,
       shape: "circle",
     });
@@ -801,6 +844,7 @@ function updatePlayer(
         if (log) {
           player.ridingLogId = log.id;
           spawnSplashParticles(state, config);
+          spawnLogWakeParticles(state, config);
         } else {
           killPlayer(state, "water", config, callbacks);
         }
@@ -910,26 +954,50 @@ function killPlayer(
     state.highScore = totalScore;
   }
 
-  // Spawn death particles with per-cause colors
+  // Spawn death particles with per-cause colors and directional bias
   const colors = DEATH_COLORS_BY_CAUSE[cause] ?? DEFAULT_DEATH_COLORS;
-  const particleCount = 8 + Math.floor(Math.random() * 5); // 8-12
-  const speedMult = cause === "train" ? 1.5 : 1;
+  const particleCount = 14 + Math.floor(Math.random() * 6); // 14-19
+  const speedMult = cause === "train" ? 1.8 : cause === "vehicle" ? 1.3 : 1;
   for (let i = 0; i < particleCount; i++) {
-    // Water deaths use a ring pattern; others radiate outward
-    const angle =
-      cause === "water"
-        ? (i / particleCount) * Math.PI * 2
-        : Math.random() * Math.PI * 2;
-    const speed = (30 + Math.random() * 60) * speedMult;
+    // Water deaths use a ring pattern; vehicle/train add directional bias
+    let angle: number;
+    if (cause === "water") {
+      angle = (i / particleCount) * Math.PI * 2;
+    } else {
+      angle = Math.random() * Math.PI * 2;
+    }
+    const speed = (35 + Math.random() * 70) * speedMult;
+    // Vehicle/train: bias particles to fly upward and in impact direction
+    const biasVx = cause === "vehicle" ? 15 : cause === "train" ? 30 : 0;
+    const biasVy = (cause === "vehicle" || cause === "train") ? -20 : 0;
+    state.particles.push({
+      x: player.worldPos.x + cellHalf,
+      y: player.worldPos.y + cellHalf,
+      vx: Math.cos(angle) * speed + biasVx,
+      vy: Math.sin(angle) * speed + biasVy,
+      life: 0.5 + Math.random() * 0.5,
+      maxLife: 1.0,
+      color: pickRandom(colors),
+      size: 1 + Math.floor(Math.random() * 3),
+      shape: "circle",
+    });
+  }
+  // Secondary burst — small fast fragments
+  const fragCount = cause === "train" ? 8 : 4;
+  for (let i = 0; i < fragCount; i++) {
+    const angle = (i / fragCount) * Math.PI * 2;
+    const speed = (60 + Math.random() * 40) * speedMult;
     state.particles.push({
       x: player.worldPos.x + cellHalf,
       y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 0.4 + Math.random() * 0.4,
-      maxLife: 0.8,
+      vy: Math.sin(angle) * speed - 15,
+      life: 0.25 + Math.random() * 0.15,
+      maxLife: 0.4,
       color: pickRandom(colors),
-      size: 1 + Math.floor(Math.random() * 3),
+      size: 1,
+      shape: "circle",
+      trail: true,
     });
   }
 

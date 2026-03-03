@@ -87,7 +87,7 @@ describe("Coin spawning", () => {
   it("spawns coins with valid types", () => {
     const lane = createMockLane("grass");
     const nextId = { value: 1 };
-    const validTypes = ["gold", "silver", "diamond"];
+    const validTypes = ["gold", "silver", "diamond", "ruby"];
     for (let i = 0; i < 50; i++) {
       const coins = spawnCoinsForLane(lane, DEFAULT_CONFIG, nextId);
       for (const coin of coins) {
