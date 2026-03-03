@@ -3,7 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import type { LeaderboardEntry } from "@/lib/types";
 
-export async function submitScore(score: number, deathCause: string, gameType = "adventure") {
+export async function submitScore(
+  score: number,
+  deathCause: string,
+  gameType = "adventure",
+  coinsCollected = 0,
+  coinBonus = 0,
+) {
   try {
     const supabase = await createClient();
     const {
@@ -20,6 +26,8 @@ export async function submitScore(score: number, deathCause: string, gameType = 
       death_cause: deathCause,
       game_type: gameType,
       display_name: displayName,
+      coins_collected: coinsCollected,
+      coin_bonus: coinBonus,
     });
     if (error) return { error: error.message };
     return { success: true };
@@ -78,7 +86,7 @@ export async function getPlayerStats(gameType = "adventure") {
 
     const { data, error } = await supabase
       .from("game_scores")
-      .select("score, death_cause, created_at")
+      .select("score, death_cause, created_at, coins_collected, coin_bonus")
       .eq("game_type", gameType)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -90,6 +98,10 @@ export async function getPlayerStats(gameType = "adventure") {
     const bestScore = Math.max(...scores);
     const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
     const totalDistance = scores.reduce((a, b) => a + b, 0);
+    const totalCoins = data.reduce(
+      (sum, d) => sum + ((d.coins_collected as number) ?? 0),
+      0,
+    );
 
     // Most common death cause
     const deathCounts: Record<string, number> = {};
@@ -112,6 +124,7 @@ export async function getPlayerStats(gameType = "adventure") {
         bestScore,
         avgScore,
         totalDistance,
+        totalCoins,
         favoriteDeath,
         lastPlayed: data[0].created_at,
       },

@@ -11,6 +11,7 @@ export interface WorldPosition {
 export type Direction = "up" | "down" | "left" | "right";
 export type LaneType = "grass" | "road" | "water" | "railroad";
 export type ObstacleType = "car" | "truck" | "train" | "log";
+export type CoinType = "gold" | "silver" | "diamond";
 export type GamePhase = "menu" | "playing" | "paused" | "game_over";
 export type DeathCause =
   | "vehicle"
@@ -76,6 +77,16 @@ export interface Particle {
   prevY?: number;
 }
 
+export interface Coin {
+  id: number;
+  type: CoinType;
+  gridX: number;
+  laneY: number;
+  worldX: number;
+  collected: boolean;
+  logId: number | null;
+}
+
 export type SpritePixels = number[][];
 
 export interface SpriteData {
@@ -106,6 +117,9 @@ export interface GameState {
   nextEntityId: number;
   timeAccumulator: number;
   animationTime: number;
+  coins: Coin[];
+  coinsCollected: number;
+  coinBonusScore: number;
 }
 
 export interface GameCallbacks {
@@ -114,6 +128,7 @@ export interface GameCallbacks {
   onDeath: (cause: DeathCause, finalScore: number) => void;
   onHop: () => void;
   onLevelUp: (level: number) => void;
+  onCoinCollect: (coin: Coin, bonusPoints: number) => void;
 }
 
 export interface GameConfig {

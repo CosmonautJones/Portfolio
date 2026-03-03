@@ -10,7 +10,14 @@ import type {
   Direction,
   DeathCause,
   InputAction,
+  Coin,
 } from "./types";
+import {
+  spawnCoinsForLane,
+  updateCoins,
+  checkCoinCollection,
+  pruneCoins,
+} from "./coins";
 import {
   SAFE_START_LANES,
   LANE_WEIGHTS,
@@ -199,6 +206,7 @@ function generateLanes(
   nextId: { value: number },
   score: number,
   existingLanes: Lane[],
+  coins?: Coin[],
 ): Lane[] {
   const newLanes: Lane[] = [];
 
@@ -266,6 +274,13 @@ function generateLanes(
     };
 
     spawnObstaclesForLane(lane, config, nextId, score);
+
+    // Spawn coins after obstacles so we know where gaps are
+    if (coins) {
+      const newCoins = spawnCoinsForLane(lane, config, nextId);
+      coins.push(...newCoins);
+    }
+
     newLanes.push(lane);
   }
 
@@ -297,10 +312,11 @@ export function createInitialState(
   }
 
   const nextId = { value: 1 };
+  const coins: Coin[] = [];
 
   // Generate procedural lanes ahead (negative y direction)
   const targetY = -generateAhead;
-  const generated = generateLanes(0, targetY, config, nextId, 0, lanes);
+  const generated = generateLanes(0, targetY, config, nextId, 0, lanes, coins);
   lanes.push(...generated);
 
   const player: Player = {
@@ -340,6 +356,9 @@ export function createInitialState(
     nextEntityId: nextId.value,
     timeAccumulator: 0,
     animationTime: 0,
+    coins,
+    coinsCollected: 0,
+    coinBonusScore: 0,
   };
 }
 
@@ -644,6 +663,53 @@ export function spawnTrainWarning(state: GameState, config: GameConfig): void {
   }
 }
 
+/** Spawn ambient dust motes on visible grass lanes */
+export function spawnAmbientParticles(state: GameState, config: GameConfig): void {
+  const { camera, lanes } = state;
+  const { cellSize, gridColumns } = config;
+
+  for (const lane of lanes) {
+    const screenY = lane.y * cellSize - camera.y;
+    if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize) continue;
+
+    if (lane.type === "grass") {
+      // ~1 dust mote per visible grass lane per second → probability per tick at 60fps
+      if (Math.random() < 0.016) {
+        state.particles.push({
+          x: Math.random() * gridColumns * cellSize,
+          y: lane.y * cellSize + Math.random() * cellSize,
+          vx: (Math.random() - 0.5) * 3,
+          vy: -(1 + Math.random() * 2),
+          life: 2 + Math.random(),
+          maxLife: 3,
+          color: pickRandom(["#a7f070", "#38b764"]),
+          size: 1,
+          shape: "circle",
+        });
+      }
+    } else if (lane.type === "road") {
+      // Tiny exhaust puffs near moving cars
+      for (const obs of lane.obstacles) {
+        if (obs.type === "log" || obs.type === "train") continue;
+        if (Math.random() < 0.008) {
+          const tailX = obs.speed > 0 ? obs.worldX : obs.worldX + obs.widthCells * cellSize;
+          state.particles.push({
+            x: tailX,
+            y: lane.y * cellSize + cellSize * 0.7,
+            vx: -obs.speed * 0.1 + (Math.random() - 0.5) * 5,
+            vy: -(2 + Math.random() * 3),
+            life: 0.4 + Math.random() * 0.3,
+            maxLife: 0.7,
+            color: pickRandom(["#566c86", "#333c57"]),
+            size: 1,
+            shape: "circle",
+          });
+        }
+      }
+    }
+  }
+}
+
 /** Spawn periodic water ripple ring particles on visible water lanes */
 export function spawnWaterRipples(state: GameState, config: GameConfig): void {
   const { camera, lanes } = state;
@@ -839,8 +905,9 @@ function killPlayer(
   state.phase = "game_over";
   state.deathCause = cause;
 
-  if (state.score > state.highScore) {
-    state.highScore = state.score;
+  const totalScore = state.score + state.coinBonusScore;
+  if (totalScore > state.highScore) {
+    state.highScore = totalScore;
   }
 
   // Spawn death particles with per-cause colors
@@ -866,7 +933,7 @@ function killPlayer(
     });
   }
 
-  callbacks.onDeath(cause, state.score);
+  callbacks.onDeath(cause, totalScore);
   callbacks.onPhaseChange("game_over");
 }
 
@@ -961,6 +1028,7 @@ function generateLanesIfNeeded(
     nextId,
     state.score,
     state.lanes,
+    state.coins,
   );
 
   state.lanes.push(...newLanes);
@@ -975,6 +1043,7 @@ function pruneLanesBehindPlayer(state: GameState, config: GameConfig): void {
       state.lanes.splice(i, 1);
     }
   }
+  pruneCoins(state, pruneY);
 }
 
 // ---------------------------------------------------------------------------
@@ -998,6 +1067,8 @@ export function tick(
       updatePlayer(state, config, callbacks);
       updateLogRiding(state, config, callbacks);
       updateObstacles(state, config);
+      updateCoins(state, config);
+      checkCoinCollection(state, config, callbacks);
       checkCollisions(state, config, callbacks);
       checkIdleTimeout(state, config, callbacks);
       checkBackDeath(state, config, callbacks);
@@ -1006,6 +1077,7 @@ export function tick(
       pruneLanesBehindPlayer(state, config);
       spawnTrainWarning(state, config);
       spawnWaterRipples(state, config);
+      spawnAmbientParticles(state, config);
     }
 
     // Always update particles and animation time
@@ -1026,8 +1098,9 @@ export function resetForNewGame(
   const { cellSize, gridColumns, generateAhead } = config;
   const startY = SAFE_START_LANES - 1;
 
-  // Clear lanes and regenerate
+  // Clear lanes and coins, regenerate
   state.lanes.length = 0;
+  state.coins.length = 0;
   for (let y = 0; y < SAFE_START_LANES; y++) {
     state.lanes.push({
       y,
@@ -1041,7 +1114,7 @@ export function resetForNewGame(
 
   const nextId = { value: 1 };
   const targetY = -generateAhead;
-  const generated = generateLanes(0, targetY, config, nextId, 0, state.lanes);
+  const generated = generateLanes(0, targetY, config, nextId, 0, state.lanes, state.coins);
   state.lanes.push(...generated);
 
   // Reset player
@@ -1073,6 +1146,8 @@ export function resetForNewGame(
   state.nextEntityId = nextId.value;
   state.timeAccumulator = 0;
   state.animationTime = 0;
+  state.coinsCollected = 0;
+  state.coinBonusScore = 0;
 
   if (callbacks) {
     callbacks.onPhaseChange("playing");

@@ -15,6 +15,8 @@ import { createInputHandler } from "@/lib/game/input";
 import { LOBSTER_SPRITES, LOBSTER_FLIP_KEYS } from "@/lib/game/sprites/lobster";
 import { TILE_SPRITES } from "@/lib/game/sprites/tiles";
 import { OBSTACLE_SPRITES } from "@/lib/game/sprites/obstacles";
+import { COIN_SPRITES, COIN_GLOW_COLORS } from "@/lib/game/sprites/coins";
+import type { Coin, CoinType } from "@/lib/game/types";
 import { GameAudio } from "@/lib/game/audio";
 import {
   createScreenShake,
@@ -113,6 +115,7 @@ interface GameCanvasProps {
   onScoreUpdate?: (score: number, level: number) => void;
   onPhaseChange?: (phase: GamePhase) => void;
   onDeath?: (score: number, deathCause: DeathCause) => void;
+  onCoinUpdate?: (coinsCollected: number, coinBonus: number) => void;
   hasSidebars?: boolean;
 }
 
@@ -120,6 +123,7 @@ export default function GameCanvas({
   onScoreUpdate,
   onPhaseChange: onPhaseChangeExternal,
   onDeath: onDeathExternal,
+  onCoinUpdate: onCoinUpdateExternal,
   hasSidebars = false,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -138,6 +142,9 @@ export default function GameCanvas({
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [scorePopups, setScorePopups] = useState<number[]>([]);
+  const [coinPopups, setCoinPopups] = useState<{ id: number; value: number; type: CoinType }[]>([]);
+  const [coinsCollected, setCoinsCollected] = useState(0);
+  const [coinBonus, setCoinBonus] = useState(0);
   const popupIdRef = useRef(0);
   const audioRef = useRef<GameAudio | null>(null);
   const screenShakeRef = useRef(createScreenShake());
@@ -156,6 +163,8 @@ export default function GameCanvas({
   onPhaseChangeExternalRef.current = onPhaseChangeExternal;
   const onDeathExternalRef = useRef(onDeathExternal);
   onDeathExternalRef.current = onDeathExternal;
+  const onCoinUpdateExternalRef = useRef(onCoinUpdateExternal);
+  onCoinUpdateExternalRef.current = onCoinUpdateExternal;
 
   const callbacksRef = useRef<GameCallbacks | null>(null);
 
@@ -251,6 +260,19 @@ export default function GameCanvas({
     for (const [key, pixels] of Object.entries(OBSTACLE_SPRITES)) {
       spriteCache.prerender(key, pixels);
       spriteCache.prerender(key + "_flip", pixels, true);
+      // 2.5D shadow and side-face variants
+      spriteCache.prerenderShadow(key + "_shadow", pixels);
+      spriteCache.prerenderShadow(key + "_flip_shadow", pixels, true);
+      spriteCache.prerenderDark(key + "_side", pixels);
+      spriteCache.prerenderDark(key + "_flip_side", pixels, true);
+    }
+    // Coin sprites
+    for (const [key, pixels] of Object.entries(COIN_SPRITES)) {
+      spriteCache.prerender(key, pixels);
+    }
+    // Coin glow circles
+    for (const [type, color] of Object.entries(COIN_GLOW_COLORS)) {
+      spriteCache.prerenderGlow(`glow_${type}`, color, 16);
     }
 
     // Create renderer and initial state
@@ -315,6 +337,8 @@ export default function GameCanvas({
           audio.playStart();
           setLevel(1);
           setIsNewHighScore(false);
+          setCoinsCollected(0);
+          setCoinBonus(0);
 
           // Reset tracker for new game
           const t = achievementTrackerRef.current;
@@ -369,7 +393,14 @@ export default function GameCanvas({
         }
 
         // Submit score to leaderboard (fire-and-forget)
-        submitScore(finalScore, cause).catch(() => {});
+        const gs = gameStateRef.current;
+        submitScore(
+          finalScore,
+          cause,
+          "adventure",
+          gs?.coinsCollected ?? 0,
+          gs?.coinBonusScore ?? 0,
+        ).catch(() => {});
         // Refresh leaderboard
         getLeaderboard()
           .then((result) => {
@@ -381,6 +412,31 @@ export default function GameCanvas({
       },
       onHop: () => {
         audio.playHop();
+      },
+      onCoinCollect: (coin: Coin, bonusPoints: number) => {
+        setCoinsCollected((prev) => {
+          const next = prev + 1;
+          const gs = gameStateRef.current;
+          onCoinUpdateExternalRef.current?.(next, (gs?.coinBonusScore ?? 0));
+
+          // Achievement tracking for coins
+          const t = achievementTrackerRef.current;
+          if (t) {
+            const unlocks = t.onCoinCollect(coin.type, next, gs?.score ?? 0);
+            if (unlocks.length > 0) processUnlocks(unlocks);
+          }
+
+          return next;
+        });
+        setCoinBonus((prev) => prev + bonusPoints);
+        audio.playCoinCollect(coin.type);
+
+        // Coin score popup
+        const id = popupIdRef.current++;
+        setCoinPopups((prev) => [...prev, { id, value: bonusPoints, type: coin.type }]);
+        setTimeout(() => {
+          setCoinPopups((prev) => prev.filter((p) => p.id !== id));
+        }, 800);
       },
       onLevelUp: (newLevel) => {
         setLevel(newLevel);
@@ -482,6 +538,7 @@ export default function GameCanvas({
         }
 
         renderer.renderLanes(gameStateRef.current);
+        renderer.renderCoins(gameStateRef.current);
         renderer.renderPlayer(gameStateRef.current);
         renderer.renderParticles(
           gameStateRef.current.particles,
@@ -563,6 +620,11 @@ export default function GameCanvas({
           15% { opacity: 1; transform: translateY(0); }
           85% { opacity: 1; transform: translateY(0); }
           100% { opacity: 0; transform: translateY(-100%); }
+        }
+        @keyframes coinPopup {
+          0% { opacity: 1; transform: translateY(0) scale(1.2); }
+          30% { opacity: 1; transform: translateY(-8px) scale(1); }
+          100% { opacity: 0; transform: translateY(-25px) scale(0.9); }
         }
       `}</style>
       <div
@@ -704,6 +766,18 @@ export default function GameCanvas({
               >
                 LVL {level}
               </span>
+              {coinsCollected > 0 && (
+                <span
+                  className="font-bold font-mono"
+                  style={{
+                    fontSize: canvasWidth * 0.05,
+                    color: "#ffcd75",
+                    textShadow: "1px 1px 0 #1a1c2c, -1px -1px 0 #1a1c2c",
+                  }}
+                >
+                  {coinsCollected}
+                </span>
+              )}
             </div>
             <button
               onClick={toggleMute}
@@ -749,6 +823,33 @@ export default function GameCanvas({
               +1
             </div>
           ))}
+
+        {/* Coin collection popups */}
+        {phase === "playing" &&
+          coinPopups.map((popup) => {
+            const colors: Record<CoinType, string> = {
+              gold: "#ffcd75",
+              silver: "#94b0c2",
+              diamond: "#73eff7",
+            };
+            return (
+              <div
+                key={popup.id}
+                className="absolute pointer-events-none font-bold font-mono"
+                style={{
+                  top: "35%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  fontSize: canvasWidth * 0.055,
+                  color: colors[popup.type],
+                  textShadow: `1px 1px 0 #1a1c2c, 0 0 6px ${colors[popup.type]}80`,
+                  animation: "coinPopup 0.8s ease-out forwards",
+                }}
+              >
+                +{popup.value}
+              </div>
+            );
+          })}
 
         {/* Level up flash text */}
         {levelUpText !== null && (
@@ -824,6 +925,20 @@ export default function GameCanvas({
               >
                 SCORE: {padScore(score)}
               </div>
+
+              {/* Coin breakdown */}
+              {coinsCollected > 0 && (
+                <div
+                  className="font-mono mb-1"
+                  style={{
+                    fontSize: canvasWidth * 0.04,
+                    color: "#ffcd75",
+                    textShadow: "1px 1px 0 #000",
+                  }}
+                >
+                  COINS: {coinsCollected} (+{coinBonus})
+                </div>
+              )}
 
               <div
                 className="font-mono mb-1"

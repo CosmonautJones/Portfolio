@@ -9,6 +9,8 @@ interface CurrentRunPanelProps {
   level: number;
   phase: GamePhase;
   startTime: number | null; // timestamp when playing started
+  coinsCollected?: number;
+  coinBonus?: number;
 }
 
 function formatTime(seconds: number): string {
@@ -17,7 +19,7 @@ function formatTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export function CurrentRunPanel({ score, level, phase, startTime }: CurrentRunPanelProps) {
+export function CurrentRunPanel({ score, level, phase, startTime, coinsCollected = 0, coinBonus = 0 }: CurrentRunPanelProps) {
   const isPlaying = phase === "playing" || phase === "paused";
 
   // Progress to next level
@@ -88,6 +90,16 @@ export function CurrentRunPanel({ score, level, phase, startTime }: CurrentRunPa
               <span>{nextThreshold > currentThreshold ? nextThreshold : "MAX"}</span>
             </div>
           </div>
+
+          {/* Coins */}
+          {coinsCollected > 0 && (
+            <div className="flex items-center justify-between font-mono text-[11px]">
+              <span style={{ color: "#566c86" }}>Coins</span>
+              <span style={{ color: "#ffcd75" }}>
+                {coinsCollected} (+{coinBonus})
+              </span>
+            </div>
+          )}
 
           {/* Time alive */}
           <div className="flex items-center justify-between font-mono text-[11px]">

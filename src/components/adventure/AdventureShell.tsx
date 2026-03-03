@@ -17,6 +17,8 @@ export function AdventureShell() {
   const [level, setLevel] = useState(1);
   const [phase, setPhase] = useState<GamePhase>("menu");
   const [deathCount, setDeathCount] = useState(0);
+  const [coinsCollected, setCoinsCollected] = useState(0);
+  const [coinBonus, setCoinBonus] = useState(0);
   const [playStartTime, setPlayStartTime] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [, setTick] = useState(0); // force re-render for timer
@@ -35,6 +37,8 @@ export function AdventureShell() {
     setPhase(newPhase);
     if (newPhase === "playing") {
       setPlayStartTime(Date.now());
+      setCoinsCollected(0);
+      setCoinBonus(0);
       // Start timer for live time display
       timerRef.current = setInterval(() => setTick((t) => t + 1), 1000);
     } else {
@@ -50,6 +54,11 @@ export function AdventureShell() {
     // Refresh leaderboard immediately after death
     refresh();
   }, [refresh]);
+
+  const handleCoinUpdate = useCallback((coins: number, bonus: number) => {
+    setCoinsCollected(coins);
+    setCoinBonus(bonus);
+  }, []);
 
   return (
     <div className="flex w-full h-full items-stretch justify-center">
@@ -67,6 +76,8 @@ export function AdventureShell() {
           level={level}
           phase={phase}
           startTime={playStartTime}
+          coinsCollected={coinsCollected}
+          coinBonus={coinBonus}
         />
         <StatsPanel refreshKey={deathCount} />
         <ControlsPanel />
@@ -81,6 +92,7 @@ export function AdventureShell() {
           onScoreUpdate={handleScoreUpdate}
           onPhaseChange={handlePhaseChange}
           onDeath={handleDeath}
+          onCoinUpdate={handleCoinUpdate}
           hasSidebars
         />
       </div>

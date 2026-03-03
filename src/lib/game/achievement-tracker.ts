@@ -1,5 +1,5 @@
 import { ALL_DEATH_CAUSES } from "./achievements";
-import type { DeathCause } from "./types";
+import type { CoinType, DeathCause } from "./types";
 
 export interface AchievementUnlock {
   achievementId: string;
@@ -14,6 +14,7 @@ export class AchievementTracker {
   private waterTouched = false;
   private previousHighScore = 0;
   private deathCausesSeen: Set<string>;
+  private coinsThisGame = 0;
 
   constructor(
     alreadyUnlocked: string[] = [],
@@ -51,6 +52,17 @@ export class AchievementTracker {
     return this.pending.slice(before);
   }
 
+  onCoinCollect(coinType: CoinType, totalCoins: number, score: number): AchievementUnlock[] {
+    this.coinsThisGame = totalCoins;
+    const before = this.pending.length;
+
+    this.unlock("first_coin", score);
+    if (coinType === "diamond") this.unlock("diamond_hunter", score);
+    if (totalCoins >= 20) this.unlock("coin_hoarder", score);
+
+    return this.pending.slice(before);
+  }
+
   onLogRide(score: number): AchievementUnlock[] {
     this.waterTouched = true;
     const before = this.pending.length;
@@ -83,6 +95,7 @@ export class AchievementTracker {
   resetForNewGame(previousHighScore: number): void {
     this.waterTouched = false;
     this.previousHighScore = previousHighScore;
+    this.coinsThisGame = 0;
     // Keep unlocked set and deathCausesSeen — they persist across games
   }
 

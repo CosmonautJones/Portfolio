@@ -1,3 +1,5 @@
+import type { CoinType } from "./types";
+
 export class GameAudio {
   private ctx: AudioContext | null = null;
   private muted: boolean = false;
@@ -83,6 +85,15 @@ export class GameAudio {
 
   playLogLand(): void {
     this.playTone(300, 350, 0.08, "triangle");
+  }
+
+  playCoinCollect(type: CoinType): void {
+    const freqs: Record<CoinType, number> = {
+      gold: 523,
+      silver: 700,
+      diamond: 880,
+    };
+    this.playTone(freqs[type], freqs[type] * 1.5, 0.1, "triangle");
   }
 
   playAchievement(): void {

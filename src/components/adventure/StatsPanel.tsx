@@ -24,6 +24,7 @@ interface PlayerStats {
   bestScore: number;
   avgScore: number;
   totalDistance: number;
+  totalCoins: number;
   favoriteDeath: string;
   lastPlayed: string;
 }
@@ -52,6 +53,7 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
     { label: "Best", value: String(stats.bestScore).padStart(4, "0") },
     { label: "Average", value: String(stats.avgScore).padStart(4, "0") },
     { label: "Total Dist", value: String(stats.totalDistance) },
+    { label: "Coins", value: String(stats.totalCoins), color: "#ffcd75" },
     { label: "Nemesis", value: `${getDeathIcon(stats.favoriteDeath)} ${stats.favoriteDeath}` },
   ];
 
@@ -64,7 +66,7 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
             className="flex items-center justify-between font-mono text-[11px]"
           >
             <span style={{ color: "#566c86" }}>{row.label}</span>
-            <span style={{ color: "#94b0c2" }}>{row.value}</span>
+            <span style={{ color: "color" in row && row.color ? row.color : "#94b0c2" }}>{row.value}</span>
           </div>
         ))}
       </div>

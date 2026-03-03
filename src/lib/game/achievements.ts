@@ -73,6 +73,24 @@ export const ACHIEVEMENTS: GameAchievement[] = [
     description: "Beat your previous high score",
     emoji: "\u{1F525}",
   },
+  {
+    id: "first_coin",
+    name: "Shiny!",
+    description: "Collect your first coin",
+    emoji: "\u{1FA99}",
+  },
+  {
+    id: "diamond_hunter",
+    name: "Diamond Hunter",
+    description: "Collect a diamond coin",
+    emoji: "\u{1F48E}",
+  },
+  {
+    id: "coin_hoarder",
+    name: "Coin Hoarder",
+    description: "Collect 20+ coins in a single game",
+    emoji: "\u{1F4B0}",
+  },
 ];
 
 export const ACHIEVEMENT_MAP = new Map(
