@@ -100,7 +100,7 @@ Leaderboard management.
 
 | Action | Signature | Description |
 |---|---|---|
-| `submitScore` | `(score, deathCause, gameType, displayName?)` | Inserts score record |
+| `submitScore` | `(score, deathCause, gameType, displayName?, coinsCollected?)` | Inserts score record including coins collected |
 | `getLeaderboard` | `(gameType: string, limit?: number)` | Top N scores with rank |
 | `getRecentScores` | `(gameType: string, limit?: number)` | Current user's recent scores |
 

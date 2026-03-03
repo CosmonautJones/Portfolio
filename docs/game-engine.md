@@ -16,7 +16,8 @@ src/lib/game/
   audio.ts            # Web Audio API (procedural sounds)
   types.ts            # All type definitions
   constants.ts        # Tuning constants
-  achievement-tracker.ts   # In-game achievement checks
+  coins.ts            # Coin spawning, movement, and collection
+  achievement-tracker.ts   # In-game achievement checks (class)
   achievements.ts     # In-game achievement definitions
   effects.ts          # Visual effect helpers
   sprites/
@@ -24,6 +25,7 @@ src/lib/game/
     lobster.ts        # Player (lobster) sprite data
     obstacles.ts      # Car, truck, train, log sprite data
     tiles.ts          # Terrain tile sprite data
+    coins.ts          # Coin sprite data and particle colors
 ```
 
 ## Game Types (`src/lib/game/types.ts`)
@@ -59,6 +61,9 @@ src/lib/game/
   nextEntityId: number;
   timeAccumulator: number;
   animationTime: number;
+  coins: Coin[];           // Active collectible coins
+  coinsCollected: number;  // Count for current run
+  coinBonusScore: number;  // Bonus points from coins
 }
 ```
 
@@ -84,6 +89,20 @@ src/lib/game/
   onDeath: (cause: DeathCause, finalScore: number) => void;
   onHop: () => void;
   onLevelUp: (level: number) => void;
+  onCoinCollect: (coin: Coin, bonusPoints: number) => void;
+}
+```
+
+**`Coin`** — Collectible coin entity:
+```typescript
+{
+  id: number;
+  type: CoinType;     // "gold" | "silver" | "diamond"
+  gridX: number;
+  laneY: number;
+  worldX: number;
+  collected: boolean;
+  logId: number | null;  // non-null if riding a log
 }
 ```
 
@@ -176,6 +195,82 @@ Particles have gravity (`PARTICLE_GRAVITY`), velocity, life, and optionally rota
 | `water` | Landing on water with no log, or drifting off log |
 | `idle_timeout` | Player idle longer than `idleTimeout` config |
 | `off_screen` | Player falls too far behind camera (`backDeathDistance`) |
+
+## Coin System (`src/lib/game/coins.ts`)
+
+Coins are collectible items that spawn on lanes and award bonus score points when collected.
+
+### Coin Types
+
+| Type | Value | Rarity Weight |
+|---|---|---|
+| `gold` | 5 pts | 82% |
+| `silver` | 15 pts | 15% |
+| `diamond` | 50 pts | 3% |
+
+### Spawn Rules
+
+| Lane Type | Spawn Chance | Behavior |
+|---|---|---|
+| `grass` | 40% | Single coin or gold trail (3-5 coins, 30% trail chance) |
+| `road` | 25% | 1-2 coins placed in gaps between obstacles |
+| `water` | 30% | Coin on middle cell of each log (50% per log) |
+| `railroad` | 0% | No coins |
+
+### Movement
+
+Coins placed on logs move with the log each tick (`coins.ts: updateCoins()`). If the log disappears (pruned), the coin is marked collected and removed.
+
+### Collection
+
+`checkCoinCollection()` runs each tick during play. Uses a circular proximity check with radius = `COIN_COLLECT_RADIUS * cellSize` (0.75 cells). On collection:
+1. `coin.collected = true`
+2. `state.coinsCollected++`
+3. `state.coinBonusScore += COIN_VALUES[type]`
+4. Burst of 6-12 particles (colors from `sprites/coins.ts`)
+5. `callbacks.onCoinCollect(coin, bonus)` fires
+
+### Database
+
+`supabase/migrations/012_add_coins_to_scores.sql` adds `coins_collected INTEGER DEFAULT 0` to `game_scores` table. `submitScore()` in `src/actions/game-scores.ts` now records coins collected per run.
+
+## In-Game Achievement System (`src/lib/game/achievement-tracker.ts`)
+
+Separate from the visitor XP system. In-game achievements are tracked by the `AchievementTracker` class, which persists unlock state across runs within a session and stores death cause history in `localStorage` key `adventure_death_history`.
+
+### In-Game Achievements (`src/lib/game/achievements.ts`)
+
+15 achievements total:
+
+| ID | Name | Condition |
+|---|---|---|
+| `first_hop` | First Steps | Score ≥ 1 |
+| `score_25` | Getting Somewhere | Score ≥ 25 |
+| `score_100` | Century Club | Score ≥ 100 |
+| `score_200` | Maximum Overdrive | Score ≥ 200 |
+| `log_rider` | Log Rider | Successfully ride a log |
+| `level_3` | Halfway There | Reach level 3 |
+| `level_6` | Master Explorer | Reach level 6 |
+| `death_water` | Splashdown | Die from water |
+| `death_train` | Wrong Track | Die from train |
+| `death_all` | Equal Opportunity | Die from all 5 causes |
+| `score_no_water` | Aquaphobe | Score ≥ 50 without touching water |
+| `comeback` | Never Give Up | Beat your previous high score |
+| `first_coin` | Shiny! | Collect first coin |
+| `diamond_hunter` | Diamond Hunter | Collect a diamond coin |
+| `coin_hoarder` | Coin Hoarder | Collect 20+ coins in a single game |
+
+### AchievementTracker API
+
+```typescript
+tracker.onScoreChange(score)         // Returns newly unlocked achievements
+tracker.onLevelUp(level, score)      // Returns newly unlocked achievements
+tracker.onCoinCollect(type, total, score) // Returns newly unlocked achievements
+tracker.onLogRide(score)             // Returns newly unlocked achievements
+tracker.onDeath(cause, finalScore)   // Returns newly unlocked achievements
+tracker.resetForNewGame(highScore)   // Reset per-run state, keep persistent
+tracker.flushPendingUnlocks()        // Drain pending queue
+```
 
 ## In-Game Level System
 

@@ -92,7 +92,7 @@ RLS: Same per-user pattern as `notes`.
 
 ### `game_scores`
 
-Created: `008_create_game_scores.sql`, extended in `009_achievements_and_scoreboard.sql`, `011_add_game_type.sql`.
+Created: `008_create_game_scores.sql`, extended in `009_achievements_and_scoreboard.sql`, `011_add_game_type.sql`, `012_add_coins_to_scores.sql`.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -102,6 +102,7 @@ Created: `008_create_game_scores.sql`, extended in `009_achievements_and_scorebo
 | `death_cause` | TEXT | DeathCause enum value |
 | `display_name` | TEXT | Optional display name for leaderboard |
 | `game_type` | TEXT | e.g. `'adventure'` — supports multiple games |
+| `coins_collected` | INTEGER | Number of coins collected in run, default 0 |
 | `created_at` | TIMESTAMPTZ | |
 
 RLS:
@@ -194,6 +195,7 @@ Indexes:
 | `009_create_profiles.sql` | `profiles` table + triggers |
 | `010_create_events.sql` | `events` audit table |
 | `011_add_game_type.sql` | `game_type` column on `game_scores` |
+| `012_add_coins_to_scores.sql` | `coins_collected` column on `game_scores` |
 
 ---
 
