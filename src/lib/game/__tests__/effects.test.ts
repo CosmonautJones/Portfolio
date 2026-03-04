@@ -106,7 +106,7 @@ describe("triggerMicroShake", () => {
     const shake = createScreenShake();
     triggerMicroShake(shake);
     expect(shake.active).toBe(true);
-    expect(shake.intensity).toBe(1.5);
+    expect(shake.intensity).toBe(3);
     expect(shake.duration).toBe(0.1);
   });
 
@@ -129,8 +129,8 @@ describe("triggerMicroShake", () => {
     const shake = createScreenShake();
     triggerScreenShake(shake, 1, 0.05);
     triggerMicroShake(shake);
-    // Micro-shake intensity (1.5) > 1, so it overrides
-    expect(shake.intensity).toBe(1.5);
+    // Micro-shake intensity (3) > 1, so it overrides
+    expect(shake.intensity).toBe(3);
   });
 });
 

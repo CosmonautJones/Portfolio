@@ -25,10 +25,10 @@ describe("lobster sprites", () => {
     { name: "DOWN_BLINK", sprite: LOBSTER_DOWN_BLINK },
   ];
 
-  it.each(allSprites)("$name is 16x16", ({ sprite }) => {
-    expect(sprite.length).toBe(16);
+  it.each(allSprites)("$name is 32x32", ({ sprite }) => {
+    expect(sprite.length).toBe(32);
     for (const row of sprite) {
-      expect(row.length).toBe(16);
+      expect(row.length).toBe(32);
     }
   });
 

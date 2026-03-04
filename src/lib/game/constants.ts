@@ -1,7 +1,7 @@
 import type { GameConfig, CoinType, LaneType } from "./types";
 
 export const DEFAULT_CONFIG: GameConfig = {
-  cellSize: 16,
+  cellSize: 32,
   gridColumns: 13,
   hopDuration: 0.12,
   idleTimeout: 7,
@@ -28,10 +28,10 @@ export const MAX_CONSECUTIVE = {
 export const SAFE_START_LANES = 4;
 
 export const SPEED_RANGES = {
-  car: { min: 30, max: 70 },
-  truck: { min: 20, max: 50 },
-  train: { min: 120, max: 180 },
-  log: { min: 15, max: 40 },
+  car: { min: 60, max: 140 },
+  truck: { min: 40, max: 100 },
+  train: { min: 240, max: 360 },
+  log: { min: 30, max: 80 },
 } as const;
 
 export const DIFFICULTY = {
@@ -46,9 +46,9 @@ export const LEVEL_THRESHOLDS = [0, 25, 50, 100, 150, 200] as const;
 export const COLLISION_MARGIN = 0.1; // fraction of cellSize for forgiving hitbox
 export const LOG_LANDING_MARGIN = 0.4; // fraction of cellSize for log landing tolerance
 export const CAMERA_DEAD_ZONE = 0.65; // fraction of viewport height for camera target
-export const PARTICLE_GRAVITY = 50; // px/s^2
+export const PARTICLE_GRAVITY = 100; // px/s^2
 export const SWIPE_THRESHOLD = 30; // px minimum for swipe detection
-export const WATER_FLOW_SPEED = 8; // tile-offsets per second for water animation
+export const WATER_FLOW_SPEED = 16; // tile-offsets per second for water animation
 export const GRASS_SHIMMER_SPEED = 1.5; // variant flips per second
 
 // Coin system
@@ -79,21 +79,21 @@ export const COIN_COLLECT_RADIUS = 0.75; // fraction of cellSize
 
 // Isometric 2.5D depth
 export const OBJECT_HEIGHT: Record<string, number> = {
-  car: 4,
-  car_blue: 4,
-  car_yellow: 4,
-  truck: 5,
-  train: 6,
-  log: 2,
+  car: 8,
+  car_blue: 8,
+  car_yellow: 8,
+  truck: 10,
+  train: 12,
+  log: 4,
   coin: 0,
 };
 
 export const TILE_DEPTH: Record<LaneType, number> = {
-  grass: 3,
-  road: 2,
+  grass: 6,
+  road: 4,
   water: 0,
-  railroad: 2,
+  railroad: 4,
 };
 
-export const SHADOW_OFFSET = { x: 3, y: 2 };
+export const SHADOW_OFFSET = { x: 6, y: 4 };
 export const SHADOW_ALPHA = 0.3;

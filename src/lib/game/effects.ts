@@ -44,8 +44,8 @@ export function triggerScreenShake(
 /** Trigger a small, brief micro-shake (landing, coin collect, etc.) */
 export function triggerMicroShake(shake: ScreenShake, biasX = 0, biasY = 0): void {
   // Only override if current shake is weaker
-  if (shake.active && shake.intensity > 1.5) return;
-  shake.intensity = 1.5;
+  if (shake.active && shake.intensity > 3) return;
+  shake.intensity = 3;
   shake.duration = 0.1;
   shake.elapsed = 0;
   shake.active = true;
@@ -93,13 +93,13 @@ export function getShakeParams(deathCause: string): {
 } {
   switch (deathCause) {
     case "train":
-      return { intensity: 6, duration: 0.5, biasX: 1, biasY: 0 };
+      return { intensity: 12, duration: 0.5, biasX: 1, biasY: 0 };
     case "vehicle":
-      return { intensity: 4, duration: 0.35, biasX: 0.5, biasY: -0.3 };
+      return { intensity: 8, duration: 0.35, biasX: 0.5, biasY: -0.3 };
     case "water":
-      return { intensity: 2, duration: 0.4, biasX: 0, biasY: 1 };
+      return { intensity: 4, duration: 0.4, biasX: 0, biasY: 1 };
     default:
-      return { intensity: 3, duration: 0.3, biasX: 0, biasY: 0 };
+      return { intensity: 6, duration: 0.3, biasX: 0, biasY: 0 };
   }
 }
 

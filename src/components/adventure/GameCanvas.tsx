@@ -43,8 +43,8 @@ import {
 import { CRTOverlay } from "./CRTOverlay";
 import { Volume2, VolumeX } from "lucide-react";
 
-const VIEWPORT_WIDTH = 208; // 13 * 16
-const VIEWPORT_HEIGHT = 320; // 20 * 16
+const VIEWPORT_WIDTH = 416; // 13 * 32
+const VIEWPORT_HEIGHT = 640; // 20 * 32
 
 function getDeathIcon(cause: DeathCause | null): string {
   switch (cause) {
@@ -278,7 +278,7 @@ export default function GameCanvas({
     }
     // Coin glow circles
     for (const [type, color] of Object.entries(COIN_GLOW_COLORS)) {
-      spriteCache.prerenderGlow(`glow_${type}`, color, 16);
+      spriteCache.prerenderGlow(`glow_${type}`, color, 32);
     }
 
     // Create renderer and initial state

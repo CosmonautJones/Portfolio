@@ -38,9 +38,9 @@ describe("Car yellow obstacle variant", () => {
     expect(OBSTACLE_SPRITES).toHaveProperty("car_yellow");
   });
 
-  it("car_yellow sprite is 16x32 (2 cells wide, 1 tall)", () => {
+  it("car_yellow sprite is 32x64 (2 cells wide, 1 tall)", () => {
     const sprite = OBSTACLE_SPRITES.car_yellow;
-    expect(sprite.length).toBe(16); // 16 rows
-    expect(sprite[0].length).toBe(32); // 32 cols = 2 * 16
+    expect(sprite.length).toBe(32); // 32 rows
+    expect(sprite[0].length).toBe(64); // 64 cols = 2 * 32
   });
 });

@@ -8,6 +8,8 @@ import {
 import type { Lane, GameState, GameCallbacks, Coin } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
 
+const CELL = DEFAULT_CONFIG.cellSize;
+
 function createMockLane(type: Lane["type"], y = -5): Lane {
   return {
     y,
@@ -24,7 +26,7 @@ function createMockState(coins: Coin[] = []): GameState {
     phase: "playing",
     player: {
       gridPos: { x: 6, y: -5 },
-      worldPos: { x: 96, y: -80 },
+      worldPos: { x: 6 * CELL, y: -5 * CELL },
       facing: "up",
       animation: "idle",
       hopProgress: 0,
@@ -34,7 +36,7 @@ function createMockState(coins: Coin[] = []): GameState {
       ridingLogId: null,
     },
     lanes: [],
-    camera: { y: 0, targetY: 0, viewportWidth: 208, viewportHeight: 320 },
+    camera: { y: 0, targetY: 0, viewportWidth: 13 * CELL, viewportHeight: 20 * CELL },
     particles: [],
     actionQueue: [],
     score: 10,
@@ -101,8 +103,8 @@ describe("Coin spawning", () => {
   it("spawns water coins with logId", () => {
     const lane = createMockLane("water");
     lane.obstacles = [
-      { id: 10, type: "log", laneY: -5, worldX: 48, widthCells: 3, speed: 20 },
-      { id: 11, type: "log", laneY: -5, worldX: 128, widthCells: 3, speed: 20 },
+      { id: 10, type: "log", laneY: -5, worldX: 3 * CELL, widthCells: 3, speed: 20 },
+      { id: 11, type: "log", laneY: -5, worldX: 8 * CELL, widthCells: 3, speed: 20 },
     ];
     const nextId = { value: 1 };
     let waterCoinsWithLog = 0;
@@ -123,7 +125,7 @@ describe("Coin collection", () => {
       type: "gold",
       gridX: 6,
       laneY: -5,
-      worldX: 96,
+      worldX: 6 * CELL,
       collected: false,
       logId: null,
     };
@@ -164,7 +166,7 @@ describe("Coin collection", () => {
       type: "silver",
       gridX: 6,
       laneY: -5,
-      worldX: 96,
+      worldX: 6 * CELL,
       collected: true,
       logId: null,
     };
@@ -183,7 +185,7 @@ describe("Coin collection", () => {
       type: "diamond",
       gridX: 6,
       laneY: -5,
-      worldX: 96,
+      worldX: 6 * CELL,
       collected: false,
       logId: null,
     };
@@ -204,13 +206,13 @@ describe("Coin update", () => {
       type: "gold",
       gridX: 3,
       laneY: -5,
-      worldX: 48,
+      worldX: 3 * CELL,
       collected: false,
       logId: 10,
     };
     const lane = createMockLane("water", -5);
     lane.obstacles = [
-      { id: 10, type: "log", laneY: -5, worldX: 32, widthCells: 3, speed: 30 },
+      { id: 10, type: "log", laneY: -5, worldX: 2 * CELL, widthCells: 3, speed: 30 },
     ];
     const state = createMockState([coin]);
     state.lanes = [lane];
@@ -227,7 +229,7 @@ describe("Coin update", () => {
       type: "gold",
       gridX: 3,
       laneY: -5,
-      worldX: 48,
+      worldX: 3 * CELL,
       collected: false,
       logId: 99, // non-existent log
     };
@@ -244,8 +246,8 @@ describe("Coin update", () => {
 describe("Coin pruning", () => {
   it("removes collected coins", () => {
     const coins: Coin[] = [
-      { id: 1, type: "gold", gridX: 5, laneY: -5, worldX: 80, collected: true, logId: null },
-      { id: 2, type: "silver", gridX: 6, laneY: -3, worldX: 96, collected: false, logId: null },
+      { id: 1, type: "gold", gridX: 5, laneY: -5, worldX: 5 * CELL, collected: true, logId: null },
+      { id: 2, type: "silver", gridX: 6, laneY: -3, worldX: 6 * CELL, collected: false, logId: null },
     ];
     const state = createMockState(coins);
 
@@ -257,8 +259,8 @@ describe("Coin pruning", () => {
 
   it("removes coins behind prune boundary", () => {
     const coins: Coin[] = [
-      { id: 1, type: "gold", gridX: 5, laneY: 15, worldX: 80, collected: false, logId: null },
-      { id: 2, type: "silver", gridX: 6, laneY: -3, worldX: 96, collected: false, logId: null },
+      { id: 1, type: "gold", gridX: 5, laneY: 15, worldX: 5 * CELL, collected: false, logId: null },
+      { id: 2, type: "silver", gridX: 6, laneY: -3, worldX: 6 * CELL, collected: false, logId: null },
     ];
     const state = createMockState(coins);
 

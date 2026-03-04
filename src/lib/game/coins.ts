@@ -188,8 +188,8 @@ export function checkCoinCollection(
   for (const coin of state.coins) {
     if (coin.collected) continue;
 
-    const coinCenterX = coin.worldX + 4; // 8x8 sprite centered in cell
-    const coinCenterY = coin.laneY * cellSize + 4;
+    const coinCenterX = coin.worldX + 8; // 16x16 sprite centered in cell
+    const coinCenterY = coin.laneY * cellSize + 8;
 
     const dx = playerCenterX - coinCenterX;
     const dy = playerCenterY - coinCenterY;
@@ -220,8 +220,8 @@ function spawnCoinCollectParticles(
   config: GameConfig,
 ): void {
   const { cellSize } = config;
-  const cx = coin.worldX + 4;
-  const cy = coin.laneY * cellSize + 4;
+  const cx = coin.worldX + 8;
+  const cy = coin.laneY * cellSize + 8;
   const colors = COIN_PARTICLE_COLORS[coin.type] ?? COIN_PARTICLE_COLORS.gold;
 
   const count = 6 + Math.floor(Math.random() * 7); // 6-12
