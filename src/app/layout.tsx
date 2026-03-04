@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
@@ -9,7 +8,6 @@ import { TerminalSheet } from "@/components/terminal/terminal-sheet";
 import { KonamiEffects } from "@/components/easter-eggs/konami-effects";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://travisjohnjones.com"),
@@ -43,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans`}>
+      <body className="font-sans" style={{ ["--font-inter" as string]: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" } as React.CSSProperties}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <VisitorProvider>
             <TerminalProvider>
