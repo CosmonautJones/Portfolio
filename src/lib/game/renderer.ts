@@ -1,14 +1,18 @@
 import { PALETTE } from "./sprites/palette";
-import type { SpritePixels, Lane, GameState, Particle, LaneType } from "./types";
+import type { SpritePixels, Lane, GameState, Particle } from "./types";
 import {
   DEFAULT_CONFIG,
   WATER_FLOW_SPEED,
   GRASS_SHIMMER_SPEED,
   OBJECT_HEIGHT,
+  OBJECT_TOP_FACE,
   TILE_DEPTH,
+  GROUND_COLORS,
+  TOP_FACE_COLORS,
   SHADOW_OFFSET,
   SHADOW_ALPHA,
 } from "./constants";
+import { DECORATION_HEIGHTS } from "./sprites/decorations";
 
 export function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
@@ -289,27 +293,26 @@ export class GameRenderer {
       this.renderLaneBackground(lane, screenY, state);
       this.renderAmbientParticles(lane, screenY, state);
 
-      // Ground depth strip (2.5D) — enhanced with gradient fade
+      // Ground depth strip (Crossy Road style) — thick colored ground layers
       const depth = TILE_DEPTH[lane.type];
       if (depth > 0) {
-        const depthColors: Record<LaneType, [string, string]> = {
-          grass: ["#1e4d2e", "#152e1e"],
-          road: ["#2a2a3a", "#1c1c28"],
-          water: ["#1a1c2c", "#0d0e18"],
-          railroad: ["#2a2233", "#1a1527"],
-        };
-        const [topColor, botColor] = depthColors[lane.type];
-        const depthGrad = this.ctx.createLinearGradient(0, screenY + cellSize, 0, screenY + cellSize + depth);
-        depthGrad.addColorStop(0, topColor);
-        depthGrad.addColorStop(1, botColor);
-        this.ctx.fillStyle = depthGrad;
-        this.ctx.fillRect(0, screenY + cellSize, cols * cellSize, depth);
+        const gc = GROUND_COLORS[lane.type];
 
-        // Thin highlight at the top of the depth strip (ledge glint)
-        this.ctx.globalAlpha = (laneAlpha < 1 ? laneAlpha : 1) * 0.18;
-        this.ctx.fillStyle = "#f4f4f4";
+        // 2px bright top edge highlight
+        this.ctx.fillStyle = gc.top;
         this.ctx.fillRect(0, screenY + cellSize, cols * cellSize, 2);
-        this.ctx.globalAlpha = laneAlpha < 1 ? laneAlpha : 1;
+
+        // Front face gradient (depth - 2)px
+        if (depth > 2) {
+          const depthGrad = this.ctx.createLinearGradient(
+            0, screenY + cellSize + 2,
+            0, screenY + cellSize + depth,
+          );
+          depthGrad.addColorStop(0, gc.front);
+          depthGrad.addColorStop(1, gc.frontDark);
+          this.ctx.fillStyle = depthGrad;
+          this.ctx.fillRect(0, screenY + cellSize + 2, cols * cellSize, depth - 2);
+        }
       }
 
       // Lane transitions — wider and softened
@@ -340,15 +343,21 @@ export class GameRenderer {
         }
       }
 
+      // Render decorations (behind obstacles)
+      this.renderDecorations(lane, screenY, laneAlpha);
+
       // Render obstacles with 2.5D depth
       for (const obs of lane.obstacles) {
         let spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
+        let colorKey: string = obs.type;
         if (obs.type === "car") {
           const variant = obs.id % 3;
           if (variant === 0) {
             spriteKey = obs.speed < 0 ? "car_blue_flip" : "car_blue";
+            colorKey = "car_blue";
           } else if (variant === 1) {
             spriteKey = obs.speed < 0 ? "car_yellow_flip" : "car_yellow";
+            colorKey = "car_yellow";
           }
         }
 
@@ -377,6 +386,34 @@ export class GameRenderer {
 
         // 3. Main sprite shifted up by height
         this.sprites.draw(this.ctx, spriteKey, obs.worldX, screenY - height);
+
+        // 4. Top face (roof) — colored rectangle with highlight
+        const topFace = OBJECT_TOP_FACE[colorKey] ?? 0;
+        const topColor = TOP_FACE_COLORS[colorKey];
+        if (topFace > 0 && topColor) {
+          const obsWidth = obs.widthCells * cellSize;
+          const inset = 4;
+          const topY = screenY - height - topFace;
+
+          this.ctx.fillStyle = topColor;
+          this.ctx.fillRect(
+            Math.round(obs.worldX + inset),
+            Math.round(topY),
+            obsWidth - inset * 2,
+            topFace,
+          );
+
+          // 1px white highlight on top edge
+          this.ctx.globalAlpha = (laneAlpha < 1 ? laneAlpha : 1) * 0.3;
+          this.ctx.fillStyle = "#ffffff";
+          this.ctx.fillRect(
+            Math.round(obs.worldX + inset),
+            Math.round(topY),
+            obsWidth - inset * 2,
+            1,
+          );
+          this.ctx.globalAlpha = laneAlpha < 1 ? laneAlpha : 1;
+        }
       }
 
       // Restore alpha after lane fade-in
@@ -435,6 +472,37 @@ export class GameRenderer {
         this.ctx.fillStyle = "#ffff00";
         this.ctx.fillRect(sparkX, screenY + cellSize / 2, 4, 2);
         this.ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  /** Render decorations (trees, bushes, rocks, stumps) on grass lanes */
+  private renderDecorations(lane: Lane, screenY: number, laneAlpha: number): void {
+    if (!lane.decorations || lane.decorations.length === 0) return;
+
+    const cellSize = DEFAULT_CONFIG.cellSize;
+
+    for (const deco of lane.decorations) {
+      const spriteKey = `${deco.type}_${deco.variant}`;
+      const shadowKey = `${spriteKey}_shadow`;
+      const decoHeight = DECORATION_HEIGHTS[deco.type] ?? 0;
+      const x = deco.gridX * cellSize;
+
+      // Shadow silhouette at ground level
+      if (this.sprites.has(shadowKey)) {
+        this.ctx.globalAlpha = (laneAlpha < 1 ? laneAlpha : 1) * SHADOW_ALPHA * 0.7;
+        this.sprites.draw(
+          this.ctx,
+          shadowKey,
+          x + SHADOW_OFFSET.x,
+          screenY + SHADOW_OFFSET.y,
+        );
+        this.ctx.globalAlpha = laneAlpha < 1 ? laneAlpha : 1;
+      }
+
+      // Main decoration sprite lifted by decoration height
+      if (this.sprites.has(spriteKey)) {
+        this.sprites.draw(this.ctx, spriteKey, x, screenY - decoHeight);
       }
     }
   }
@@ -517,7 +585,7 @@ export class GameRenderer {
     const cellSize = DEFAULT_CONFIG.cellSize;
     const screenX = player.worldPos.x;
     let screenY = player.worldPos.y - camera.y;
-    const elevation = 6; // 2.5D elevation offset
+    const elevation = 10; // 2.5D elevation offset (Crossy Road style)
 
     // Hop arc — bob upward during hop
     let arcOffset = 0;
@@ -535,7 +603,7 @@ export class GameRenderer {
     this.ctx.ellipse(
       Math.round(screenX + cellSize / 2) + SHADOW_OFFSET.x,
       Math.round(shadowY + 1) + SHADOW_OFFSET.y,
-      10 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2,
+      12 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2,
     );
     this.ctx.fill();
     this.ctx.globalAlpha = 1;

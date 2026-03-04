@@ -77,6 +77,7 @@ function insertWaterLaneNearStart(state: GameState): Lane {
     type: "water",
     variant: 0,
     obstacles: [],
+    decorations: [],
     flowDirection: 1,
     speedMultiplier: 1,
   };

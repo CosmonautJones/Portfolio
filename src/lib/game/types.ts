@@ -20,6 +20,13 @@ export type DeathCause =
   | "idle_timeout"
   | "off_screen";
 export type PlayerAnimation = "idle" | "hop" | "death";
+export type DecorationType = "tree" | "bush" | "rock" | "stump";
+
+export interface Decoration {
+  type: DecorationType;
+  gridX: number;
+  variant: number;
+}
 
 export interface Player {
   gridPos: GridPosition;
@@ -47,6 +54,7 @@ export interface Lane {
   type: LaneType;
   variant: number;
   obstacles: Obstacle[];
+  decorations: Decoration[];
   flowDirection: -1 | 1;
   speedMultiplier: number;
 }

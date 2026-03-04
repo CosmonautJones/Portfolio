@@ -11,6 +11,8 @@ import type {
   DeathCause,
   InputAction,
   Coin,
+  Decoration,
+  DecorationType,
 } from "./types";
 import {
   spawnCoinsForLane,
@@ -29,7 +31,10 @@ import {
   LOG_LANDING_MARGIN,
   CAMERA_DEAD_ZONE,
   PARTICLE_GRAVITY,
+  DECORATION_CHANCE,
+  DECORATIONS_PER_LANE,
 } from "./constants";
+import { DECORATION_VARIANTS } from "./sprites/decorations";
 
 // ---------------------------------------------------------------------------
 // Obstacle width lookup (cells)
@@ -196,6 +201,63 @@ function spawnObstaclesForLane(
 }
 
 // ---------------------------------------------------------------------------
+// Decoration spawning (grass lanes only, non-collidable)
+// ---------------------------------------------------------------------------
+
+const DECORATION_WEIGHTS: { type: DecorationType; weight: number }[] = [
+  { type: "tree", weight: 35 },
+  { type: "bush", weight: 25 },
+  { type: "rock", weight: 20 },
+  { type: "stump", weight: 20 },
+];
+
+function pickDecorationType(): DecorationType {
+  const total = DECORATION_WEIGHTS.reduce((s, w) => s + w.weight, 0);
+  let roll = Math.random() * total;
+  for (const entry of DECORATION_WEIGHTS) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry.type;
+  }
+  return DECORATION_WEIGHTS[DECORATION_WEIGHTS.length - 1].type;
+}
+
+export function spawnDecorationsForLane(
+  lane: Lane,
+  config: GameConfig,
+): void {
+  if (lane.type !== "grass") return;
+  if (Math.random() > DECORATION_CHANCE) return;
+
+  const { gridColumns } = config;
+  const count =
+    DECORATIONS_PER_LANE.min +
+    Math.floor(
+      Math.random() * (DECORATIONS_PER_LANE.max - DECORATIONS_PER_LANE.min + 1),
+    );
+
+  // Pick unique columns
+  const usedColumns = new Set<number>();
+  const decorations: Decoration[] = [];
+  let attempts = 0;
+  while (decorations.length < count && attempts < count * 3) {
+    attempts++;
+    const col = Math.floor(Math.random() * gridColumns);
+    if (usedColumns.has(col)) continue;
+    usedColumns.add(col);
+
+    const type = pickDecorationType();
+    const maxVariant = DECORATION_VARIANTS[type] ?? 1;
+    decorations.push({
+      type,
+      gridX: col,
+      variant: Math.floor(Math.random() * maxVariant),
+    });
+  }
+
+  lane.decorations = decorations;
+}
+
+// ---------------------------------------------------------------------------
 // Lane generation
 // ---------------------------------------------------------------------------
 
@@ -269,11 +331,13 @@ function generateLanes(
       type,
       variant,
       obstacles: [],
+      decorations: [],
       flowDirection,
       speedMultiplier: 1,
     };
 
     spawnObstaclesForLane(lane, config, nextId, score);
+    spawnDecorationsForLane(lane, config);
 
     // Spawn coins after obstacles so we know where gaps are
     if (coins) {
@@ -301,14 +365,17 @@ export function createInitialState(
   // Safe starting grass lanes at y=0,1,2,3
   const lanes: Lane[] = [];
   for (let y = 0; y < SAFE_START_LANES; y++) {
-    lanes.push({
+    const lane: Lane = {
       y,
       type: "grass",
       variant: Math.floor(Math.random() * 2),
       obstacles: [],
+      decorations: [],
       flowDirection: Math.random() < 0.5 ? -1 : 1,
       speedMultiplier: 1,
-    });
+    };
+    spawnDecorationsForLane(lane, config);
+    lanes.push(lane);
   }
 
   const nextId = { value: 1 };
@@ -572,7 +639,7 @@ function spawnSplashParticles(state: GameState, config: GameConfig): void {
       maxLife: 0.35,
       color: pickRandom(["#41a6f6", "#2d6aa5", "#73eff7", "#60c8f0"]),
       size: 2 + Math.floor(Math.random() * 4),
-      shape: "circle",
+      shape: "square",
     });
   }
   // Central foam burst — small white droplets
@@ -587,7 +654,7 @@ function spawnSplashParticles(state: GameState, config: GameConfig): void {
       maxLife: 0.12,
       color: "#e0e8ff",
       size: 2,
-      shape: "circle",
+      shape: "square",
     });
   }
 }
@@ -618,7 +685,7 @@ function spawnHopDust(state: GameState, config: GameConfig): void {
       maxLife: 0.3,
       color: pickRandom(colors),
       size: 2,
-      shape: "circle",
+      shape: "square",
     });
   }
 }
@@ -642,7 +709,7 @@ function spawnLogWakeParticles(state: GameState, config: GameConfig): void {
       maxLife: 0.3,
       color: pickRandom(["#41a6f6", "#73eff7", "#60c8f0"]),
       size: 2,
-      shape: "circle",
+      shape: "square",
     });
   }
 }
@@ -979,7 +1046,7 @@ function killPlayer(
       maxLife: 1.0,
       color: pickRandom(colors),
       size: 2 + Math.floor(Math.random() * 4),
-      shape: "circle",
+      shape: "square",
     });
   }
   // Secondary burst — small fast fragments
@@ -996,7 +1063,7 @@ function killPlayer(
       maxLife: 0.4,
       color: pickRandom(colors),
       size: 2,
-      shape: "circle",
+      shape: "square",
       trail: true,
     });
   }
@@ -1170,14 +1237,17 @@ export function resetForNewGame(
   state.lanes.length = 0;
   state.coins.length = 0;
   for (let y = 0; y < SAFE_START_LANES; y++) {
-    state.lanes.push({
+    const lane: Lane = {
       y,
       type: "grass",
       variant: Math.floor(Math.random() * 2),
       obstacles: [],
+      decorations: [],
       flowDirection: Math.random() < 0.5 ? -1 : 1,
       speedMultiplier: 1,
-    });
+    };
+    spawnDecorationsForLane(lane, config);
+    state.lanes.push(lane);
   }
 
   const nextId = { value: 1 };

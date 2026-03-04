@@ -16,6 +16,7 @@ function createMockLane(type: Lane["type"], y = -5): Lane {
     type,
     variant: 0,
     obstacles: [],
+    decorations: [],
     flowDirection: 1,
     speedMultiplier: 1,
   };

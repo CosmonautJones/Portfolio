@@ -77,23 +77,52 @@ export const COIN_TRAIL_CHANCE = 0.3; // grass only, always gold
 export const COIN_TRAIL_LENGTH = { min: 3, max: 5 };
 export const COIN_COLLECT_RADIUS = 0.75; // fraction of cellSize
 
-// Isometric 2.5D depth
+// Isometric 2.5D depth — Crossy Road style thick ground layers
 export const OBJECT_HEIGHT: Record<string, number> = {
-  car: 8,
-  car_blue: 8,
-  car_yellow: 8,
-  truck: 10,
-  train: 12,
-  log: 4,
+  car: 14,
+  car_blue: 14,
+  car_yellow: 14,
+  truck: 16,
+  train: 18,
+  log: 8,
   coin: 0,
 };
 
-export const TILE_DEPTH: Record<LaneType, number> = {
-  grass: 6,
-  road: 4,
-  water: 0,
-  railroad: 4,
+export const OBJECT_TOP_FACE: Record<string, number> = {
+  car: 5,
+  car_blue: 5,
+  car_yellow: 5,
+  truck: 6,
+  train: 7,
+  log: 4,
 };
 
-export const SHADOW_OFFSET = { x: 6, y: 4 };
-export const SHADOW_ALPHA = 0.3;
+export const TILE_DEPTH: Record<LaneType, number> = {
+  grass: 14,
+  road: 10,
+  water: 6,
+  railroad: 10,
+};
+
+export const GROUND_COLORS: Record<LaneType, { top: string; front: string; frontDark: string }> = {
+  grass: { top: "#4ebb6a", front: "#2d8a48", frontDark: "#1e6030" },
+  road: { top: "#4a4a5e", front: "#353548", frontDark: "#252535" },
+  water: { top: "#2288bb", front: "#1a6699", frontDark: "#0e4470" },
+  railroad: { top: "#5a4860", front: "#3d2d48", frontDark: "#2a1d35" },
+};
+
+export const TOP_FACE_COLORS: Record<string, string> = {
+  car: "#e8505a",
+  car_blue: "#5577dd",
+  car_yellow: "#ffdd88",
+  truck: "#4ec86a",
+  train: "#b8c0d0",
+  log: "#d8b870",
+};
+
+export const SHADOW_OFFSET = { x: 8, y: 6 };
+export const SHADOW_ALPHA = 0.4;
+
+// Decoration system
+export const DECORATION_CHANCE = 0.7;
+export const DECORATIONS_PER_LANE = { min: 2, max: 5 };

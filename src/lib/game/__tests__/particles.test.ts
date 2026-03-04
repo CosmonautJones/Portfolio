@@ -167,7 +167,9 @@ describe("Enhanced death particles", () => {
       type: "road",
       variant: 0,
       obstacles: [car],
+      decorations: [],
       flowDirection: 1,
+      speedMultiplier: 1,
     };
     state.lanes.push(roadLane);
 
@@ -208,7 +210,9 @@ describe("Enhanced death particles", () => {
       type: "railroad",
       variant: 0,
       obstacles: [train],
+      decorations: [],
       flowDirection: 1,
+      speedMultiplier: 1,
     };
     state.lanes.push(railLane);
 

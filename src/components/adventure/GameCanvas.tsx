@@ -16,6 +16,7 @@ import { LOBSTER_SPRITES, LOBSTER_FLIP_KEYS } from "@/lib/game/sprites/lobster";
 import { TILE_SPRITES } from "@/lib/game/sprites/tiles";
 import { OBSTACLE_SPRITES } from "@/lib/game/sprites/obstacles";
 import { COIN_SPRITES, COIN_GLOW_COLORS } from "@/lib/game/sprites/coins";
+import { DECORATION_SPRITES } from "@/lib/game/sprites/decorations";
 import type { Coin, CoinType } from "@/lib/game/types";
 import { GameAudio } from "@/lib/game/audio";
 import {
@@ -271,6 +272,11 @@ export default function GameCanvas({
       spriteCache.prerenderShadow(key + "_flip_shadow", pixels, true);
       spriteCache.prerenderDark(key + "_side", pixels);
       spriteCache.prerenderDark(key + "_flip_side", pixels, true);
+    }
+    // Decoration sprites
+    for (const [key, pixels] of Object.entries(DECORATION_SPRITES)) {
+      spriteCache.prerender(key, pixels);
+      spriteCache.prerenderShadow(key + "_shadow", pixels);
     }
     // Coin sprites
     for (const [key, pixels] of Object.entries(COIN_SPRITES)) {
