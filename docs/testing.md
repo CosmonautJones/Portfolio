@@ -35,11 +35,13 @@ Tests are co-located with their source files using `__tests__/` subdirectories o
 | `src/lib/game/__tests__/engine.test.ts` | Game engine logic (tick, collisions, movement) |
 | `src/lib/game/__tests__/renderer.test.ts` | Canvas renderer |
 | `src/lib/game/__tests__/achievement-tracker.test.ts` | In-game achievement tracker |
-| `src/lib/game/__tests__/coins.test.ts` | Coin spawning, collection, and movement |
-| `src/lib/game/__tests__/effects.test.ts` | Screen shake system |
-| `src/lib/game/__tests__/lobster.test.ts` | Player sprite data |
+| `src/lib/game/__tests__/coins.test.ts` | Coin spawning, collection, movement (gold/silver/ruby/diamond) |
+| `src/lib/game/__tests__/effects.test.ts` | Screen shake (directional bias, micro-shake) and combo system |
+| `src/lib/game/__tests__/lobster.test.ts` | Player sprite data — all 9 frames including UP_LAND and DOWN_BLINK |
 | `src/lib/game/__tests__/particles.test.ts` | Particle system |
 | `src/lib/game/__tests__/scaling.test.ts` | Responsive scaling logic |
+
+**Total: 158 tests across 12 test files** (35 tests added in the graphics enhancement release).
 
 ### Middleware Tests
 

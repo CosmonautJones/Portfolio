@@ -33,7 +33,7 @@ npx vitest run src/path/to/file.test.tsx  # Single test file
 | [auth.md](./auth.md) | GitHub OAuth, middleware routing rules, Supabase client factories |
 | [tool-system.md](./tool-system.md) | Tool types (internal/external/embedded), registry, admin CRUD, GitHub import |
 | [progression-system.md](./progression-system.md) | XP awards, levels, achievements, visitor context, optimistic UI |
-| [game-engine.md](./game-engine.md) | ClaudeBot's Adventure — engine, renderer, input, audio, coins, particles, screen shake, isometric 2.5D |
+| [game-engine.md](./game-engine.md) | ClaudeBot's Adventure — engine, renderer, input, audio, coins, particles, screen shake, combo system, ambient effects, isometric 2.5D |
 | [terminal-easter-eggs.md](./terminal-easter-eggs.md) | Terminal commands, easter eggs, vault, color schemes |
 | [database.md](./database.md) | All 7 tables, migration index, RLS policy summary |
 | [server-actions.md](./server-actions.md) | All server actions, signatures, return types, admin guard pattern |
@@ -132,4 +132,7 @@ See [terminal-easter-eggs.md](./terminal-easter-eggs.md), [guides/adding-easter-
 See [game-engine.md — In-Game Achievement System](./game-engine.md#in-game-achievement-system-srclibgameachievement-trackerts)
 
 ### "How does screen shake work?"
-See [game-engine.md — Screen Shake](./game-engine.md#screen-shake-srclibgameeffectsts) and [reference/configuration.md](./reference/configuration.md#screen-shake-on-death)
+See [game-engine.md — Screen Shake](./game-engine.md#screen-shake-srclibgameeffectsts) and [reference/configuration.md](./reference/configuration.md#screen-shake)
+
+### "How does the combo system work?"
+See [game-engine.md — Combo System](./game-engine.md#combo-system-srclibgameeffectsts) and [reference/configuration.md](./reference/configuration.md#combo-system)

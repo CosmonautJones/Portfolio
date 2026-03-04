@@ -77,7 +77,9 @@ Weighted random probabilities for lane type generation:
 |---|---|---|
 | `COIN_VALUES.gold` | 5 pts | Gold coin score bonus |
 | `COIN_VALUES.silver` | 15 pts | Silver coin score bonus |
+| `COIN_VALUES.ruby` | 25 pts | Ruby coin score bonus |
 | `COIN_VALUES.diamond` | 50 pts | Diamond coin score bonus |
+| `COIN_RARITY` | gold 75%, silver 13%, ruby 9%, diamond 3% | Weighted rarity table |
 | `COIN_SPAWN_CHANCE.grass` | 40% | Coin spawn rate on grass |
 | `COIN_SPAWN_CHANCE.road` | 25% | Coin spawn rate on road |
 | `COIN_SPAWN_CHANCE.water` | 30% | Coin spawn rate on water |
@@ -109,16 +111,37 @@ Speed multiplier interpolates linearly from min to max as score goes from 0 to m
 | `TILE_DEPTH.railroad` | 2 | Depth value for railroad tiles |
 | `TILE_DEPTH.water` | 0 | Depth value for water tiles |
 
-### Screen Shake (on death)
+### Screen Shake
 
-Shake intensity and duration per death cause (defined in `src/lib/game/effects.ts`):
+Defined in `src/lib/game/effects.ts`. Death shakes carry a **directional bias** (biasX/biasY) in addition to intensity and duration. A separate micro-shake (1.5px / 0.1s) fires on landing and coin collection.
 
-| Death Cause | Intensity | Duration |
+| Death Cause | Intensity | Duration | BiasX | BiasY |
+|---|---|---|---|---|
+| `train` | 6px | 0.5s | +1 (right) | 0 |
+| `vehicle` | 4px | 0.35s | +0.5 | -0.3 (up) |
+| `water` | 2px | 0.4s | 0 | +1 (down) |
+| other | 3px | 0.3s | 0 | 0 |
+
+### Combo System
+
+Defined in `src/lib/game/effects.ts`:
+
+| Constant | Value | Description |
 |---|---|---|
-| `train` | 6px | 0.5s |
-| `vehicle` | 4px | 0.35s |
-| `water` | 2px | 0.4s |
-| other | 3px | 0.3s |
+| `ComboState.windowSec` | 0.8s | Time window for consecutive hops to count |
+| Max combo | 8 | Combo count cap |
+
+### Isometric 2.5D Rendering (updated)
+
+Car obstacle now has three sprite variants selected by `obstacle.id % 3`:
+
+| Variant | Sprite Key |
+|---|---|
+| 0 | `car_blue` |
+| 1 | `car_yellow` |
+| 2 | `car` (default red) |
+
+`OBJECT_HEIGHT` entries: `car`, `car_blue`, `car_yellow` = 4px; `truck` = 5px; `train` = 6px; `log` = 2px; `coin` = 0px.
 
 ## XP System Constants (`src/lib/xp.ts`)
 

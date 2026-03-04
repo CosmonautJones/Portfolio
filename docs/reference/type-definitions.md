@@ -173,7 +173,7 @@ interface LeaderboardEntry {
 type Direction = "up" | "down" | "left" | "right";
 type LaneType = "grass" | "road" | "water" | "railroad";
 type ObstacleType = "car" | "truck" | "train" | "log";
-type CoinType = "gold" | "silver" | "diamond";
+type CoinType = "gold" | "silver" | "ruby" | "diamond";
 type GamePhase = "menu" | "playing" | "paused" | "game_over";
 type DeathCause = "vehicle" | "train" | "water" | "idle_timeout" | "off_screen";
 type PlayerAnimation = "idle" | "hop" | "death";
@@ -280,7 +280,7 @@ interface Obstacle {
 ```typescript
 interface Coin {
   id: number;
-  type: CoinType;
+  type: CoinType;  // "gold" | "silver" | "ruby" | "diamond"
   gridX: number;
   laneY: number;
   worldX: number;
@@ -320,6 +320,14 @@ interface ScreenShake {
   offsetX: number;
   offsetY: number;
   active: boolean;
+  biasX: number;  // directional bias: positive = right, negative = left
+  biasY: number;  // directional bias: positive = down, negative = up
+}
+
+interface ComboState {
+  count: number;       // current hop streak (0 when inactive, 1–8 when active)
+  lastHopTime: number; // animationTime of the most recent forward hop
+  windowSec: number;   // combo window in seconds (default 0.8)
 }
 ```
 

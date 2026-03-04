@@ -19,14 +19,45 @@ src/lib/game/
   coins.ts            # Coin spawning, movement, and collection
   achievement-tracker.ts   # In-game achievement checks (class)
   achievements.ts     # In-game achievement definitions
-  effects.ts          # Screen shake system
+  effects.ts          # Screen shake and combo system
   sprites/
-    palette.ts        # Color palette (indexed)
-    lobster.ts        # Player (lobster) sprite data
-    obstacles.ts      # Car, truck, train, log sprite data
+    palette.ts        # Color palette — 48 colors (32 base + 16 extended shading ramps)
+    lobster.ts        # Player (lobster) sprite data — 9 named frames
+    obstacles.ts      # Car, truck, train, log sprite data (+ car_yellow variant)
     tiles.ts          # Terrain tile sprite data
-    coins.ts          # Coin sprite data and particle colors
+    coins.ts          # Coin sprite data and particle colors (gold, silver, ruby, diamond)
 ```
+
+### Sprite Palette (`src/lib/game/sprites/palette.ts`)
+
+The palette has 48 indexed colors (index 0 = transparent):
+
+- **Indices 0–31**: Original PICO-8-inspired colors preserved for backward compatibility.
+- **Indices 32–47**: Extended shading ramps added for enhanced sprite depth:
+  - Log highlight / warm sand, log deep shadow
+  - Lobster red-orange mid, lobster highlight peach, lobster deep shadow
+  - Grass bright highlight, grass very deep shadow
+  - Water bright highlight / foam, water very deep shadow
+  - Claude orange deep, gold highlight, gold shadow
+  - Sky pale blue, slate blue mid, electric blue (train accent), near-white blue tint (windshield)
+
+### Lobster Sprite Frames (`src/lib/game/sprites/lobster.ts`)
+
+9 named sprite frames exported in `LOBSTER_SPRITES`:
+
+| Key | Frame |
+|---|---|
+| `lobster_up_idle` | Facing up, idle pose |
+| `lobster_up_hop` | Facing up, mid-hop (legs tucked) |
+| `lobster_up_land` | Facing up, landing squash (wide, flattened) |
+| `lobster_down_idle` | Facing down, idle (eyes open) |
+| `lobster_down_blink` | Facing down, idle blink (eyes half-closed) |
+| `lobster_down_hop` | Facing down, mid-hop |
+| `lobster_right_idle` | Facing right, idle |
+| `lobster_right_hop` | Facing right, mid-hop |
+| `lobster_death` | Death splat (shared across all facing directions) |
+
+Left-facing sprites are generated at runtime as horizontal flips of the right-facing frames.
 
 ## Game Types (`src/lib/game/types.ts`)
 
@@ -36,6 +67,7 @@ src/lib/game/
 |---|---|
 | `LaneType` | `"grass" \| "road" \| "water" \| "railroad"` |
 | `ObstacleType` | `"car" \| "truck" \| "train" \| "log"` |
+| `CoinType` | `"gold" \| "silver" \| "ruby" \| "diamond"` |
 | `GamePhase` | `"menu" \| "playing" \| "paused" \| "game_over"` |
 | `DeathCause` | `"vehicle" \| "train" \| "water" \| "idle_timeout" \| "off_screen"` |
 | `PlayerAnimation` | `"idle" \| "hop" \| "death"` |
@@ -97,7 +129,7 @@ src/lib/game/
 ```typescript
 {
   id: number;
-  type: CoinType;     // "gold" | "silver" | "diamond"
+  type: CoinType;     // "gold" | "silver" | "ruby" | "diamond"
   gridX: number;
   laneY: number;
   worldX: number;
@@ -177,7 +209,7 @@ Smooth follow camera with a dead zone. `targetY` leads the player; actual `y` le
 ### Particles
 
 Particle system for:
-- **Death**: 8–12 particles, color by death cause
+- **Death**: 14–19 main burst particles + additional trail burst particles, color by death cause
 - **Hop dust**: 2–3 particles on landing, color by terrain
 - **Score sparkle**: 2–3 gold particles on score increment
 - **Water splash**: 3–5 particles on log landing
@@ -204,8 +236,9 @@ Coins are collectible items that spawn on lanes and award bonus score points whe
 
 | Type | Value | Rarity Weight |
 |---|---|---|
-| `gold` | 5 pts | 82% |
-| `silver` | 15 pts | 15% |
+| `gold` | 5 pts | 75% |
+| `silver` | 15 pts | 13% |
+| `ruby` | 25 pts | 9% |
 | `diamond` | 50 pts | 3% |
 
 ### Spawn Rules
@@ -278,7 +311,7 @@ Separate from the visitor XP system. 6 levels, defined by `LEVEL_THRESHOLDS` in 
 
 ## Screen Shake (`src/lib/game/effects.ts`)
 
-A screen shake effect is applied on death. The effect uses exponential decay so the shake starts strong and fades out smoothly.
+Screen shake is applied on death and as a micro-shake on landing or coin collection. The effect uses exponential decay so it starts strong and fades smoothly. Each death cause also carries a **directional bias** so the shake feels physically motivated.
 
 ```typescript
 interface ScreenShake {
@@ -288,17 +321,45 @@ interface ScreenShake {
   offsetX: number;
   offsetY: number;
   active: boolean;
+  biasX: number;  // positive = bias right, negative = bias left
+  biasY: number;  // positive = bias down, negative = bias up
 }
 ```
 
 | Function | Description |
 |---|---|
 | `createScreenShake()` | Returns a new inactive ScreenShake |
-| `triggerScreenShake(shake, intensity, duration)` | Starts a shake effect |
+| `triggerScreenShake(shake, intensity, duration, biasX?, biasY?)` | Starts a shake; only overrides if new intensity is stronger |
+| `triggerMicroShake(shake, biasX?, biasY?)` | Brief 1.5px / 0.1s shake for landing or coin collect |
 | `updateScreenShake(shake, dt)` | Advances shake each tick, returns `{ offsetX, offsetY }` |
-| `getShakeParams(deathCause)` | Returns intensity/duration tuned by death cause |
+| `getShakeParams(deathCause)` | Returns intensity, duration, and directional bias per death cause |
 
-Death-cause intensities: `train` = 6px / 0.5s, `vehicle` = 4px / 0.35s, `water` = 2px / 0.4s.
+Death-cause params (intensity / duration / biasX / biasY):
+
+| Death Cause | Intensity | Duration | BiasX | BiasY |
+|---|---|---|---|---|
+| `train` | 6px | 0.5s | +1 (right) | 0 |
+| `vehicle` | 4px | 0.35s | +0.5 | -0.3 (up) |
+| `water` | 2px | 0.4s | 0 | +1 (down) |
+| other | 3px | 0.3s | 0 | 0 |
+
+## Combo System (`src/lib/game/effects.ts`)
+
+Rapid forward hops within a 0.8-second window build a combo. At combo ≥ 2 the renderer shows an overlay label (`"x2 COMBO"`, `"x3 COMBO"`, etc.). Combo caps at 8 and resets on death, idle, or backward movement.
+
+```typescript
+interface ComboState {
+  count: number;
+  lastHopTime: number;
+  windowSec: number;  // 0.8s default
+}
+```
+
+| Function | Description |
+|---|---|
+| `createComboState()` | Returns initial combo with count 0 |
+| `updateCombo(combo, now)` | Records a hop; returns current count (1–8) |
+| `resetCombo(combo)` | Sets count to 0 (death, idle, backward hop) |
 
 ## Isometric 2.5D Depth
 
@@ -314,6 +375,48 @@ Objects are drawn with depth offsets to create a 2.5D isometric look. Constants 
 ## Renderer (`src/lib/game/renderer.ts`)
 
 Canvas 2D renderer with a `SpriteCache` backed by `OffscreenCanvas`. Palette-indexed pixel sprites are pre-rendered once to `OffscreenCanvas` instances for performance. The renderer applies screen shake offsets from `effects.ts` and draws drop shadows under objects using `SHADOW_OFFSET` and `SHADOW_ALPHA`.
+
+### Background & Atmosphere
+
+- **Aurora shimmer** — three animated radial gradients drawn with `screen` blend mode across the upper sky area. Hue cycles between cyan (`#73eff7`) and medium blue (`#3b5dc9`) with a slow drift.
+- **Star field** — 8 stars limited to the top 35% of the canvas. Stars have variable sizes (1px or 2px) and **twinkle** via a sinusoidal opacity modulation each frame.
+- **Enhanced vignette** — two-layer post effect: an amber inner glow (`rgba(239,125,87,…)`) at the gameplay center that breathes at 0.4 Hz, plus a dark radial outer shadow that softens edges.
+
+### Ambient Lane Particles
+
+Each visible lane gets low-opacity ambient particles drawn before obstacles:
+
+| Lane Type | Effect |
+|---|---|
+| `grass` | 6 drifting dust motes (1×1px, `#a7f070`, alpha 6–10%) |
+| `road` | Horizontal heat shimmer streaks (`#566c86`, alpha 4–6%) |
+| `water` | 3 rising bubble dots (`#73eff7`, alpha up to 12%) |
+| `railroad` | Occasional 2×1px spark (`#ffff00`, alpha ≤ 50%) |
+
+### Water Reflections
+
+Water lanes render scrolling reflection strips using `lighter` composite blending. Four strips per lane shift with the flow direction and pulse in opacity (3.5–5.5% alpha).
+
+### Player Animation
+
+- **Squash & stretch** — during a hop, the lobster sprite is scaled via `ctx.save/translate/scale/restore`:
+  - Anticipation (0–15% of hop): squash wide (+20% X, -15% Y)
+  - Peak stretch (15–70%): elongate vertical (-12% X, +18% Y)
+  - Landing squash (70–100%): flatten (+15% X, -12% Y)
+- **Idle breathing** — when idle, a gentle sinusoidal scale pulse (±2.5% Y, ±1.25% X) runs at 1.8 Hz.
+- **Eye blink cycle** — when facing down and idle, the sprite switches to `LOBSTER_DOWN_BLINK` for 0.1s every 3.5s.
+
+### Car Variants
+
+Road obstacles select a sprite variant by `obstacle.id % 3`:
+- Variant 0: `car_blue` / `car_blue_flip`
+- Variant 1: `car_yellow` / `car_yellow_flip`
+- Variant 2 (default): `car` / `car_flip`
+
+### Log Riding Effects
+
+- **Bob animation** — coins on logs have a gentle vertical oscillation (±1.5px at 2.5 Hz).
+- **Coin wake particles** — coins on logs emit trailing particle effects on movement.
 
 ## Input (`src/lib/game/input.ts`)
 
