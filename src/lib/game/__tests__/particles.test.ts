@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { createInitialState, tick } from "../engine";
 import { DEFAULT_CONFIG } from "../constants";
-import type { GameCallbacks, GameState, LaneType } from "../types";
+import type { GameCallbacks, GameState } from "../types";
 
-const VIEWPORT_HEIGHT = 320;
+const VIEWPORT_HEIGHT = 640; // 20 * 32
 const DT = DEFAULT_CONFIG.fixedTimestep;
 const HOP_TICKS = Math.ceil(DEFAULT_CONFIG.hopDuration / DT) + 2;
 

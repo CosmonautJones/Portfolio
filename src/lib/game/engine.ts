@@ -571,7 +571,7 @@ function spawnSplashParticles(state: GameState, config: GameConfig): void {
       life: 0.2 + Math.random() * 0.15,
       maxLife: 0.35,
       color: pickRandom(["#41a6f6", "#2d6aa5", "#73eff7", "#60c8f0"]),
-      size: 1 + Math.floor(Math.random() * 2),
+      size: 2 + Math.floor(Math.random() * 4),
       shape: "circle",
     });
   }
@@ -579,14 +579,14 @@ function spawnSplashParticles(state: GameState, config: GameConfig): void {
   for (let i = 0; i < 4; i++) {
     const angle = (i / 4) * Math.PI * 2;
     state.particles.push({
-      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 4,
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 8,
       y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * 10,
       vy: Math.sin(angle) * 10 - 15,
       life: 0.12,
       maxLife: 0.12,
       color: "#e0e8ff",
-      size: 1,
+      size: 2,
       shape: "circle",
     });
   }
@@ -610,14 +610,14 @@ function spawnHopDust(state: GameState, config: GameConfig): void {
     const angle = Math.PI * 0.5 + (Math.random() - 0.5) * Math.PI * 0.9;
     const speed = 12 + Math.random() * 20;
     state.particles.push({
-      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 6,
-      y: player.worldPos.y + config.cellSize - 2,
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 12,
+      y: player.worldPos.y + config.cellSize - 4,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed * 0.6,
       life: 0.18 + Math.random() * 0.12,
       maxLife: 0.3,
       color: pickRandom(colors),
-      size: 1,
+      size: 2,
       shape: "circle",
     });
   }
@@ -634,14 +634,14 @@ function spawnLogWakeParticles(state: GameState, config: GameConfig): void {
     const angle = (Math.PI * 0.5 + side * (0.3 + Math.random() * 0.5));
     const speed = 15 + Math.random() * 25;
     state.particles.push({
-      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 8,
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 16,
       y: player.worldPos.y + cellHalf,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 8,
+      vy: Math.sin(angle) * speed - 16,
       life: 0.18 + Math.random() * 0.12,
       maxLife: 0.3,
       color: pickRandom(["#41a6f6", "#73eff7", "#60c8f0"]),
-      size: 1,
+      size: 2,
       shape: "circle",
     });
   }
@@ -656,14 +656,14 @@ function spawnScoreSparkle(state: GameState, config: GameConfig): void {
     const angle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.8; // upward
     const speed = 20 + Math.random() * 25;
     state.particles.push({
-      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 6,
+      x: player.worldPos.x + cellHalf + (Math.random() - 0.5) * 12,
       y: player.worldPos.y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 0.3 + Math.random() * 0.2,
       maxLife: 0.5,
       color: pickRandom(["#ffcd75", "#ef7d57", "#a7f070"]),
-      size: 1 + Math.floor(Math.random() * 2),
+      size: 2 + Math.floor(Math.random() * 4),
       shape: "circle",
     });
   }
@@ -698,7 +698,7 @@ export function spawnTrainWarning(state: GameState, config: GameConfig): void {
           life: 0.1 + Math.random() * 0.15,
           maxLife: 0.25,
           color: pickRandom(["#ffff00", "#ef7d57", "#d4513b"]),
-          size: 1,
+          size: 2,
           shape: "circle",
         });
       }
@@ -726,7 +726,7 @@ export function spawnAmbientParticles(state: GameState, config: GameConfig): voi
           life: 2 + Math.random(),
           maxLife: 3,
           color: pickRandom(["#a7f070", "#38b764"]),
-          size: 1,
+          size: 2,
           shape: "circle",
         });
       }
@@ -744,7 +744,7 @@ export function spawnAmbientParticles(state: GameState, config: GameConfig): voi
             life: 0.4 + Math.random() * 0.3,
             maxLife: 0.7,
             color: pickRandom(["#566c86", "#333c57"]),
-            size: 1,
+            size: 2,
             shape: "circle",
           });
         }
@@ -766,7 +766,7 @@ export function spawnWaterRipples(state: GameState, config: GameConfig): void {
     // ~1 ripple per 2-3s per lane → probability per tick at 60fps
     if (Math.random() < 0.008) {
       const rx = Math.random() * gridColumns * cellSize;
-      const baseSize = 1;
+      const baseSize = 2;
       state.particles.push({
         x: rx,
         y: lane.y * cellSize + cellSize * 0.5,
@@ -978,7 +978,7 @@ function killPlayer(
       life: 0.5 + Math.random() * 0.5,
       maxLife: 1.0,
       color: pickRandom(colors),
-      size: 1 + Math.floor(Math.random() * 3),
+      size: 2 + Math.floor(Math.random() * 4),
       shape: "circle",
     });
   }
@@ -995,7 +995,7 @@ function killPlayer(
       life: 0.25 + Math.random() * 0.15,
       maxLife: 0.4,
       color: pickRandom(colors),
-      size: 1,
+      size: 2,
       shape: "circle",
       trail: true,
     });

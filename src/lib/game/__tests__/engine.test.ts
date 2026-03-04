@@ -3,8 +3,8 @@ import { createInitialState, tick, resetForNewGame } from "../engine";
 import { DEFAULT_CONFIG, MAX_CONSECUTIVE } from "../constants";
 import type { GameCallbacks, GameState, Obstacle, Lane, LaneType } from "../types";
 
-const VIEWPORT_HEIGHT = 320;
-const CELL = DEFAULT_CONFIG.cellSize; // 16
+const VIEWPORT_HEIGHT = 640;
+const CELL = DEFAULT_CONFIG.cellSize; // 32
 const DT = DEFAULT_CONFIG.fixedTimestep; // 1/60
 const HOP_TICKS = Math.ceil(DEFAULT_CONFIG.hopDuration / DT); // ~8
 

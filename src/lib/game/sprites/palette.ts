@@ -52,4 +52,22 @@ export const PALETTE: readonly string[] = [
   "#8090b0", // 45  slate blue mid
   "#6080ff", // 46  electric blue (train accent)
   "#e0e8ff", // 47  near-white blue tint (windshield)
+
+  // Extended palette 2 — 2x resolution shading ramps
+  "#d08060", // 48  lobster warm mid (shell side)
+  "#f5b090", // 49  lobster pale highlight (specular)
+  "#4a1520", // 50  lobster darkest shadow (deep undercarriage)
+  "#1896c8", // 51  water mid-light (wave crests)
+  "#0a2850", // 52  water deepest (abyss)
+  "#a07838", // 53  log warm mid (bark mid-tone)
+  "#604020", // 54  log bark dark (deep crevice)
+  "#d0d8e0", // 55  vehicle chrome light
+  "#707890", // 56  vehicle chrome shadow
+  "#a8c8a0", // 57  grass sage (mid-light)
+  "#183820", // 58  grass moss dark
+  "#505868", // 59  road surface warm
+  "#282830", // 60  road surface deep
+  "#c0a870", // 61  warm sand mid
+  "#f8f0d0", // 62  warm highlight cream
+  "#404060", // 63  neutral dark cool
 ] as const;

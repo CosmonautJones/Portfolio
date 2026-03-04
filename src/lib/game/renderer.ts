@@ -168,7 +168,7 @@ function createStarField(count: number, width: number, height: number): Star[] {
       y: Math.random() * height * 0.35, // top 35% only
       speed: 0.05 + Math.random() * 0.2,
       opacity: 0.12 + Math.random() * 0.3,
-      size: Math.random() < 0.15 ? 2 : 1, // occasional 2x2 star
+      size: Math.random() < 0.15 ? 4 : 2, // occasional 4x4 star
     });
   }
   return stars;
@@ -308,7 +308,7 @@ export class GameRenderer {
         // Thin highlight at the top of the depth strip (ledge glint)
         this.ctx.globalAlpha = (laneAlpha < 1 ? laneAlpha : 1) * 0.18;
         this.ctx.fillStyle = "#f4f4f4";
-        this.ctx.fillRect(0, screenY + cellSize, cols * cellSize, 1);
+        this.ctx.fillRect(0, screenY + cellSize, cols * cellSize, 2);
         this.ctx.globalAlpha = laneAlpha < 1 ? laneAlpha : 1;
       }
 
@@ -330,13 +330,13 @@ export class GameRenderer {
         const key = `${lane.type}_${nextLane.type}`;
         const color = transitionColors[key];
         if (color) {
-          // 3-pixel gradient transition strip
-          const tGrad = this.ctx.createLinearGradient(0, screenY, 0, screenY + 3);
+          // 6-pixel gradient transition strip
+          const tGrad = this.ctx.createLinearGradient(0, screenY, 0, screenY + 6);
           tGrad.addColorStop(0, color + "00");
           tGrad.addColorStop(0.5, color + "80");
           tGrad.addColorStop(1, color + "00");
           this.ctx.fillStyle = tGrad;
-          this.ctx.fillRect(0, screenY, cols * cellSize, 3);
+          this.ctx.fillRect(0, screenY, cols * cellSize, 6);
         }
       }
 
@@ -398,11 +398,11 @@ export class GameRenderer {
       for (let i = 0; i < this.dustMotes.length; i++) {
         const mote = this.dustMotes[i];
         const x = ((mote.x * laneWidth + t * mote.speed * 8 + lane.y * 31) % laneWidth + laneWidth) % laneWidth;
-        const y = screenY + mote.y * cellSize + Math.sin(t * mote.speed + mote.phase) * 2;
+        const y = screenY + mote.y * cellSize + Math.sin(t * mote.speed + mote.phase) * 4;
         const alpha = 0.06 + 0.04 * Math.sin(t * 1.5 + mote.phase);
         this.ctx.globalAlpha = alpha;
         this.ctx.fillStyle = "#a7f070";
-        this.ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
+        this.ctx.fillRect(Math.round(x), Math.round(y), 2, 2);
       }
       this.ctx.globalAlpha = 1;
     } else if (lane.type === "road") {
@@ -411,7 +411,7 @@ export class GameRenderer {
       const shimmerAlpha = 0.04 + 0.02 * Math.sin(t * 4 + lane.y);
       this.ctx.globalAlpha = shimmerAlpha;
       this.ctx.fillStyle = "#566c86";
-      this.ctx.fillRect(Math.round(shimmerX), screenY + 7, cellSize * 3, 1);
+      this.ctx.fillRect(Math.round(shimmerX), screenY + 14, cellSize * 3, 2);
       this.ctx.globalAlpha = 1;
     } else if (lane.type === "water") {
       // Bubble particles — small rising dots
@@ -422,7 +422,7 @@ export class GameRenderer {
         const alpha = 0.12 * (1 - ((phase * 4) % cellSize) / cellSize);
         this.ctx.globalAlpha = Math.max(0, alpha);
         this.ctx.fillStyle = "#73eff7";
-        this.ctx.fillRect(Math.round(bx), Math.round(by), 1, 1);
+        this.ctx.fillRect(Math.round(bx), Math.round(by), 2, 2);
       }
       this.ctx.globalAlpha = 1;
     } else if (lane.type === "railroad") {
@@ -433,7 +433,7 @@ export class GameRenderer {
         const sparkAlpha = (0.04 - sparkPhase) / 0.04;
         this.ctx.globalAlpha = sparkAlpha * 0.5;
         this.ctx.fillStyle = "#ffff00";
-        this.ctx.fillRect(sparkX, screenY + cellSize / 2, 2, 1);
+        this.ctx.fillRect(sparkX, screenY + cellSize / 2, 4, 2);
         this.ctx.globalAlpha = 1;
       }
     }
@@ -450,7 +450,7 @@ export class GameRenderer {
       if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize) continue;
 
       // Bob animation — gentle vertical oscillation
-      const bobOffset = Math.sin(state.animationTime * 2.5 + coin.id * 0.7) * 1.5;
+      const bobOffset = Math.sin(state.animationTime * 2.5 + coin.id * 0.7) * 3;
 
       // Animation frame (toggle every 0.3s)
       const frame = Math.floor(state.animationTime / 0.3) % 2;
@@ -465,8 +465,8 @@ export class GameRenderer {
         this.ctx.globalAlpha = 1;
       }
 
-      // Draw coin sprite centered (8x8 in 16x16 cell → offset by 4)
-      this.sprites.draw(this.ctx, spriteKey, coin.worldX + 4, screenY + 4 + bobOffset);
+      // Draw coin sprite centered (16x16 in 32x32 cell → offset by 8)
+      this.sprites.draw(this.ctx, spriteKey, coin.worldX + 8, screenY + 8 + bobOffset);
     }
   }
 
@@ -490,7 +490,7 @@ export class GameRenderer {
         const alpha = 0.035 + 0.02 * Math.sin(state.animationTime * 2.2 + i * 1.1);
         this.ctx.globalAlpha = alpha;
         this.ctx.fillStyle = "#73eff7";
-        this.ctx.fillRect(Math.round(stripX), screenY + 2 + i * 3, cellSize * 2 + 4, 1);
+        this.ctx.fillRect(Math.round(stripX), screenY + 4 + i * 6, cellSize * 2 + 8, 2);
       }
       this.ctx.globalCompositeOperation = "source-over";
       this.ctx.globalAlpha = 1;
@@ -517,25 +517,25 @@ export class GameRenderer {
     const cellSize = DEFAULT_CONFIG.cellSize;
     const screenX = player.worldPos.x;
     let screenY = player.worldPos.y - camera.y;
-    const elevation = 3; // 2.5D elevation offset
+    const elevation = 6; // 2.5D elevation offset
 
     // Hop arc — bob upward during hop
     let arcOffset = 0;
     if (player.animation === "hop" && player.hopTarget !== null) {
-      arcOffset = Math.sin(player.hopProgress * Math.PI) * 4;
+      arcOffset = Math.sin(player.hopProgress * Math.PI) * 8;
     }
 
     // Shadow — ellipse at feet, stays grounded, squishes during landing
     const shadowScale = 1 + arcOffset * 0.02;
     const shadowAlpha = Math.max(0.12, 0.28 - arcOffset * 0.015);
-    const shadowY = player.worldPos.y - camera.y + cellSize - 3;
+    const shadowY = player.worldPos.y - camera.y + cellSize - 6;
     this.ctx.globalAlpha = shadowAlpha;
     this.ctx.fillStyle = "#1a1c2c";
     this.ctx.beginPath();
     this.ctx.ellipse(
       Math.round(screenX + cellSize / 2) + SHADOW_OFFSET.x,
       Math.round(shadowY + 1) + SHADOW_OFFSET.y,
-      5 * shadowScale, 2 * shadowScale, 0, 0, Math.PI * 2,
+      10 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2,
     );
     this.ctx.fill();
     this.ctx.globalAlpha = 1;
