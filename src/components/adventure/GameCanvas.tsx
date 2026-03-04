@@ -555,18 +555,18 @@ export default function GameCanvas({
         // Update screen shake
         const shake = updateScreenShake(screenShakeRef.current, cappedDt);
 
-        renderer.clear();
+        // WebGL2 rendering pipeline
+        renderer.beginFrame();
         renderer.renderBackground(gameStateRef.current.animationTime);
-        renderer.renderStarField(gameStateRef.current.animationTime);
 
-        // Apply screen shake offset
+        // Screen shake is applied as a camera offset in the game state
+        // (WebGL handles this through the projection matrix)
         if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          const ctx = canvas.getContext("2d")!;
-          ctx.save();
-          ctx.translate(Math.round(shake.offsetX), Math.round(shake.offsetY));
+          gameStateRef.current.camera.y -= shake.offsetY;
         }
 
         renderer.renderLanes(gameStateRef.current);
+        renderer.renderAmbientEffects(gameStateRef.current);
         renderer.renderCoins(gameStateRef.current);
         renderer.renderPlayer(gameStateRef.current);
         renderer.renderParticles(
@@ -574,13 +574,13 @@ export default function GameCanvas({
           gameStateRef.current.camera.y,
         );
 
-        // Restore from screen shake
+        // Undo screen shake offset
         if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          const ctx = canvas.getContext("2d")!;
-          ctx.restore();
+          gameStateRef.current.camera.y += shake.offsetY;
         }
 
-        renderer.renderVignette(gameStateRef.current.animationTime);
+        // Post-processing: bloom, vignette, chromatic aberration
+        renderer.endFrame(gameStateRef.current.animationTime);
       }
 
       rafId = requestAnimationFrame(loop);
@@ -600,6 +600,7 @@ export default function GameCanvas({
       }
       inputHandler.destroy();
       audio.destroy();
+      renderer.destroy();
     };
   }, [updateScale, processUnlocks]);
 
@@ -680,6 +681,7 @@ export default function GameCanvas({
             height: canvasHeight,
             imageRendering: "pixelated",
             touchAction: "none",
+            backgroundColor: "#1a1c2c",
           }}
           tabIndex={0}
         />
