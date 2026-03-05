@@ -5,6 +5,11 @@ import {
   checkCoinCollection,
   pruneCoins,
 } from "../coins";
+import {
+  COIN_SPRITES,
+  COIN_GLOW_COLORS,
+  COIN_PARTICLE_COLORS,
+} from "../sprites/coins";
 import type { Lane, GameState, GameCallbacks, Coin } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
 
@@ -269,5 +274,84 @@ describe("Coin pruning", () => {
 
     expect(state.coins.length).toBe(1);
     expect(state.coins[0].id).toBe(2);
+  });
+});
+
+// --- Coin sprite data tests ---
+
+const COIN_TYPES = ["gold", "silver", "diamond", "ruby"] as const;
+
+describe("Coin sprite dimensions", () => {
+  it("all coin sprites are 16x16", () => {
+    for (const [name, sprite] of Object.entries(COIN_SPRITES)) {
+      expect(sprite.length, `${name} row count`).toBe(16);
+      for (let r = 0; r < sprite.length; r++) {
+        expect(sprite[r].length, `${name} row ${r} col count`).toBe(16);
+      }
+    }
+  });
+});
+
+describe("Coin sprite palette constraint", () => {
+  it("each coin frame uses at most 4 unique non-zero indices", () => {
+    for (const [name, sprite] of Object.entries(COIN_SPRITES)) {
+      const nonZero = new Set<number>();
+      for (const row of sprite) {
+        for (const idx of row) {
+          if (idx !== 0) nonZero.add(idx);
+        }
+      }
+      expect(
+        nonZero.size,
+        `${name} has ${nonZero.size} non-zero indices: ${[...nonZero].join(", ")}`
+      ).toBeLessThanOrEqual(4);
+    }
+  });
+});
+
+describe("Coin sprite 2x2 block convention", () => {
+  it("every pixel appears in 2x2 blocks", () => {
+    for (const [name, sprite] of Object.entries(COIN_SPRITES)) {
+      for (let r = 0; r < 16; r += 2) {
+        for (let c = 0; c < 16; c += 2) {
+          const tl = sprite[r][c];
+          const tr = sprite[r][c + 1];
+          const bl = sprite[r + 1][c];
+          const br = sprite[r + 1][c + 1];
+          expect(
+            tl === tr && tl === bl && tl === br,
+            `${name} block at (${r},${c}): [${tl},${tr},${bl},${br}] not uniform`
+          ).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+describe("Coin sprite completeness", () => {
+  it("COIN_SPRITES has all 4 types x 2 frames", () => {
+    for (const type of COIN_TYPES) {
+      expect(COIN_SPRITES).toHaveProperty(`coin_${type}_0`);
+      expect(COIN_SPRITES).toHaveProperty(`coin_${type}_1`);
+    }
+  });
+});
+
+describe("COIN_GLOW_COLORS completeness", () => {
+  it("has all 4 types with valid hex colors", () => {
+    for (const type of COIN_TYPES) {
+      expect(COIN_GLOW_COLORS).toHaveProperty(type);
+      expect(COIN_GLOW_COLORS[type]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+  });
+});
+
+describe("COIN_PARTICLE_COLORS completeness", () => {
+  it("has all 4 types with non-empty arrays", () => {
+    for (const type of COIN_TYPES) {
+      expect(COIN_PARTICLE_COLORS).toHaveProperty(type);
+      expect(Array.isArray(COIN_PARTICLE_COLORS[type])).toBe(true);
+      expect(COIN_PARTICLE_COLORS[type].length).toBeGreaterThan(0);
+    }
   });
 });
