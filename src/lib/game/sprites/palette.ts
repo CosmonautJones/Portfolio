@@ -71,30 +71,45 @@ export const PALETTE: readonly string[] = [
   "#f8f0d0", // 62  warm highlight cream
   "#404060", // 63  neutral dark cool
 
-  // Extended palette 3 — reserved slots for future use (64-87)
-  "#303040", // 64  reserved
-  "#303040", // 65  reserved
-  "#303040", // 66  reserved
-  "#303040", // 67  reserved
-  "#303040", // 68  reserved
-  "#303040", // 69  reserved
-  "#303040", // 70  reserved
-  "#303040", // 71  reserved
-  "#303040", // 72  reserved
-  "#303040", // 73  reserved
-  "#303040", // 74  reserved
-  "#303040", // 75  reserved
-  "#303040", // 76  reserved
-  "#303040", // 77  reserved
-  "#303040", // 78  reserved
-  "#303040", // 79  reserved
-  "#303040", // 80  reserved
-  "#303040", // 81  reserved
-  "#303040", // 82  reserved
-  "#303040", // 83  reserved
-  "#303040", // 84  reserved
-  "#303040", // 85  reserved
-  "#303040", // 86  reserved
-  "#303040", // 87  reserved
-  "#00ffff", // 88  emissive cyan (lobster eyes — bloom-reactive)
+  // HLD atmosphere — cool shadow ramp (deep indigo → muted blue-violet)
+  "#0a0618", // 64  void black (deepest shadow)
+  "#120e28", // 65  abyss indigo
+  "#1a1440", // 66  deep shadow violet
+  "#251e58", // 67  shadow indigo
+  "#332a6e", // 68  mid shadow blue-violet
+  "#443878", // 69  muted blue-violet
+  "#584a90", // 70  light shadow violet
+  "#6e5ea8", // 71  pale violet shadow
+
+  // HLD atmosphere — warm accent ramp (magenta → salmon)
+  "#8b1860", // 72  deep magenta
+  "#a82868", // 73  mid magenta
+  "#c84080", // 74  bright magenta
+  "#e05898", // 75  light magenta
+  "#e87898", // 76  warm pink
+  "#f098a8", // 77  salmon pink
+  "#f8b8b8", // 78  pale salmon
+  "#ffd0c8", // 79  light warm rose
+
+  // HLD atmosphere — atmospheric ramp (fog blue → pale atmosphere)
+  "#182838", // 80  deep fog
+  "#283848", // 81  dark fog blue
+  "#384858", // 82  mid fog
+  "#506878", // 83  light fog blue
+  "#688898", // 84  pale fog
+  "#80a0b0", // 85  atmosphere blue
+  "#98b8c8", // 86  pale atmosphere
+  "#b0d0e0", // 87  near-white atmosphere
+
+  // HLD atmosphere — emissive ramp
+  "#00ffff", // 88  emissive cyan (eyes, pickups)
+  "#40ffd0", // 89  emissive teal
+  "#80ffe0", // 90  soft emissive cyan
+  "#ff6040", // 91  warm glow core
+  "#ff9060", // 92  warm glow mid
+  "#ffc080", // 93  warm glow soft
+
+  // HLD atmosphere — environment darks & accent pairs
+  "#060210", // 94  absolute void
+  "#0e0620", // 95  terrain shadow
 ] as const;

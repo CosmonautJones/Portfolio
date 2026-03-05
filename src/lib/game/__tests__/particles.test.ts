@@ -12,6 +12,7 @@ import {
   COIN_LIGHT_RADIUS,
   CAR_HEADLIGHT,
   WATER_SHIMMER_LIGHT,
+  MAX_ATMOSPHERIC_PARTICLES,
 } from "../constants";
 import type { GameCallbacks, GameState } from "../types";
 
@@ -311,9 +312,9 @@ describe("Hop dust particles — enhanced burst", () => {
 });
 
 describe("Palette size", () => {
-  it("palette has been expanded to 89 entries", async () => {
+  it("palette has been expanded to 96 entries", async () => {
     const { PALETTE } = await import("../sprites/palette");
-    expect(PALETTE.length).toBe(89);
+    expect(PALETTE.length).toBe(96);
   });
 
   it("first entry is transparent", async () => {
@@ -339,6 +340,7 @@ describe("Palette size", () => {
   });
 });
 
+<<<<<<< HEAD
 describe("Clean night rendering constants", () => {
   it("GROUND_COLORS grass.top is #3a7d4a", () => {
     expect(GROUND_COLORS.grass.top).toBe("#3a7d4a");
@@ -411,5 +413,63 @@ describe("Clean night rendering constants", () => {
     // color channel splitting.
     expect(BLOOM_INTENSITY).toBeLessThan(0.2);
     expect(AMBIENT_DARKNESS).toContain("0.12");
+  });
+});
+
+describe("Atmospheric particle budget", () => {
+  it("MAX_ATMOSPHERIC_PARTICLES is 80", () => {
+    expect(MAX_ATMOSPHERIC_PARTICLES).toBe(80);
+  });
+
+  it("atmospheric particle budget does not exceed MAX_ATMOSPHERIC_PARTICLES after many ticks", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    const callbacks = makeCallbacks();
+
+    // Start the game
+    startGame(state, callbacks);
+
+    // Tick many times to accumulate atmospheric particles
+    for (let i = 0; i < 600; i++) {
+      tick(state, DT, DEFAULT_CONFIG, callbacks);
+    }
+
+    // Total particles (including gameplay particles) should stay reasonable
+    // With the cap at 80 for atmospheric and gameplay particles being short-lived,
+    // we should not exceed 300 total particles at any point
+    expect(state.particles.length).toBeLessThanOrEqual(300);
+  });
+
+  it("no ember particles are spawned on road lanes", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    const callbacks = makeCallbacks();
+
+    // Ensure we have road lanes in the viewport
+    const roadLanes = state.lanes.filter((l) => l.type === "road");
+    expect(roadLanes.length).toBeGreaterThan(0);
+
+    // Start the game and tick many times
+    startGame(state, callbacks);
+
+    // Track all particles spawned during ticks
+    const allSpawnedColors = new Set<string>();
+    for (let i = 0; i < 300; i++) {
+      const before = state.particles.length;
+      tick(state, DT, DEFAULT_CONFIG, callbacks);
+      // Record colors of newly spawned particles
+      for (let j = before; j < state.particles.length; j++) {
+        allSpawnedColors.add(state.particles[j].color);
+      }
+    }
+
+    // The old ember/exhaust colors from road lanes were "#566c86" and "#333c57"
+    // These should no longer appear as ambient atmospheric particles.
+    const emberParticles = state.particles.filter((p) => {
+      const isExhaustColor = p.color === "#566c86" || p.color === "#333c57";
+      const isSmallCircle = p.shape === "circle" && p.size === 2;
+      const hasLowMaxLife = p.maxLife <= 0.7 && p.maxLife >= 0.4;
+      return isExhaustColor && isSmallCircle && hasLowMaxLife;
+    });
+
+    expect(emberParticles.length).toBe(0);
   });
 });

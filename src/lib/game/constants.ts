@@ -131,6 +131,9 @@ export const COIN_LIGHT_RADIUS = 24;
 export const CAR_HEADLIGHT = { radius: 48, color: "#ffe8a0", intensity: 0.35 };
 export const WATER_SHIMMER_LIGHT = { radius: 80, color: "#4080c0", intensity: 0.2 };
 
+// Atmospheric particle budget
+export const MAX_ATMOSPHERIC_PARTICLES = 80;
+
 // Decoration system
 export const DECORATION_CHANCE = 0.7;
 export const DECORATIONS_PER_LANE = { min: 2, max: 5 };

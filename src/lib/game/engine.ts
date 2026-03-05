@@ -33,6 +33,7 @@ import {
   PARTICLE_GRAVITY,
   DECORATION_CHANCE,
   DECORATIONS_PER_LANE,
+  MAX_ATMOSPHERIC_PARTICLES,
 } from "./constants";
 import { DECORATION_VARIANTS } from "./sprites/decorations";
 
@@ -778,13 +779,17 @@ export function spawnAmbientParticles(state: GameState, config: GameConfig): voi
   const { camera, lanes } = state;
   const { cellSize, gridColumns } = config;
 
+  // Respect atmospheric particle budget
+  const atmosphericCount = countAtmosphericParticles(state);
+  if (atmosphericCount >= MAX_ATMOSPHERIC_PARTICLES) return;
+
   for (const lane of lanes) {
     const screenY = lane.y * cellSize - camera.y;
     if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize) continue;
 
     if (lane.type === "grass") {
-      // ~1 dust mote per visible grass lane per second → probability per tick at 60fps
-      if (Math.random() < 0.016) {
+      // Light motes — reduced rate for cleaner visual
+      if (Math.random() < 0.006) {
         state.particles.push({
           x: Math.random() * gridColumns * cellSize,
           y: lane.y * cellSize + Math.random() * cellSize,
@@ -797,27 +802,24 @@ export function spawnAmbientParticles(state: GameState, config: GameConfig): voi
           shape: "circle",
         });
       }
-    } else if (lane.type === "road") {
-      // Tiny exhaust puffs near moving cars
-      for (const obs of lane.obstacles) {
-        if (obs.type === "log" || obs.type === "train") continue;
-        if (Math.random() < 0.008) {
-          const tailX = obs.speed > 0 ? obs.worldX : obs.worldX + obs.widthCells * cellSize;
-          state.particles.push({
-            x: tailX,
-            y: lane.y * cellSize + cellSize * 0.7,
-            vx: -obs.speed * 0.1 + (Math.random() - 0.5) * 5,
-            vy: -(2 + Math.random() * 3),
-            life: 0.4 + Math.random() * 0.3,
-            maxLife: 0.7,
-            color: pickRandom(["#566c86", "#333c57"]),
-            size: 2,
-            shape: "circle",
-          });
-        }
-      }
+    }
+    // Road lanes: exhaust/ember particles removed for cleaner visual
+  }
+}
+
+/** Count atmospheric (non-gameplay) particles for budget enforcement. */
+function countAtmosphericParticles(state: GameState): number {
+  // Atmospheric particles are long-lived ambient effects (life > 0.5s)
+  // with low velocity — grass motes, water ripples, etc.
+  // Gameplay particles (death, hop dust, splash, sparkle, train warning)
+  // are short-lived and high-velocity.
+  let count = 0;
+  for (const p of state.particles) {
+    if (p.maxLife >= 0.5 && !p.trail) {
+      count++;
     }
   }
+  return count;
 }
 
 /** Spawn periodic water ripple ring particles on visible water lanes */
@@ -825,13 +827,17 @@ export function spawnWaterRipples(state: GameState, config: GameConfig): void {
   const { camera, lanes } = state;
   const { cellSize, gridColumns } = config;
 
+  // Respect atmospheric particle budget
+  const atmosphericCount = countAtmosphericParticles(state);
+  if (atmosphericCount >= MAX_ATMOSPHERIC_PARTICLES) return;
+
   for (const lane of lanes) {
     if (lane.type !== "water") continue;
     const screenY = lane.y * cellSize - camera.y;
     if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize) continue;
 
-    // ~1 ripple per 2-3s per lane → probability per tick at 60fps
-    if (Math.random() < 0.008) {
+    // Firefly ripples — reduced rate for cleaner visual
+    if (Math.random() < 0.004) {
       const rx = Math.random() * gridColumns * cellSize;
       const baseSize = 2;
       state.particles.push({
