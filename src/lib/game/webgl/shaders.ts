@@ -200,34 +200,25 @@ float hash(vec2 p) {
 void main() {
   vec2 uv = v_uv;
 
-  // Deep sky gradient
-  float pulse = sin(u_time * 0.15) * 0.03;
-  vec3 topColor = vec3(8.0, 5.0, 22.0) / 255.0;
-  vec3 midColor = vec3(15.0, 12.0, 38.0) / 255.0;
-  vec3 baseColor = vec3(26.0, 28.0, 44.0) / 255.0;
+  // Clean navy sky gradient — no purple tint
+  vec3 topColor = vec3(10.0, 22.0, 40.0) / 255.0;   // #0a1628
+  vec3 baseColor = vec3(15.0, 36.0, 64.0) / 255.0;   // #0f2440
 
   float t = uv.y; // 0 = top, 1 = bottom
-  vec3 sky;
-  if (t < 0.3 + pulse) {
-    sky = mix(topColor, midColor, t / (0.3 + pulse));
-  } else if (t < 0.45) {
-    sky = mix(midColor, baseColor, (t - 0.3 - pulse) / (0.15 - pulse));
-  } else {
-    sky = baseColor;
-  }
+  vec3 sky = mix(topColor, baseColor, smoothstep(0.0, 0.5, t));
 
-  // Aurora bands — three horizontal shimmer blobs near top
+  // Aurora — 2 subtle blue bands near top
   if (t < 0.2) {
     float auroraPhase = u_time * 0.08;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
       float fi = float(i);
-      float cx = 0.3 + fi * 0.2 + sin(auroraPhase + fi * 1.2) * 0.15;
+      float cx = 0.35 + fi * 0.3 + sin(auroraPhase + fi * 1.5) * 0.12;
       float dist = length(vec2(uv.x - cx, (uv.y - 0.08) * 4.0));
       float glow = exp(-dist * dist * 8.0);
-      float alpha = 0.015 + 0.01 * sin(auroraPhase * 1.3 + fi);
+      float alpha = 0.012 + 0.006 * sin(auroraPhase * 1.3 + fi);
       vec3 auroraColor = mix(
-        vec3(115.0, 239.0, 247.0) / 255.0,
-        vec3(59.0, 93.0, 201.0) / 255.0,
+        vec3(80.0, 180.0, 220.0) / 255.0,
+        vec3(50.0, 100.0, 180.0) / 255.0,
         dist
       );
       sky += auroraColor * glow * alpha;
@@ -316,31 +307,17 @@ out vec4 fragColor;
 void main() {
   vec2 uv = v_uv;
 
-  // Chromatic aberration — subtle RGB channel offset from center
-  float aberration = 0.001 + 0.0003 * sin(u_time * 0.3);
-  vec2 dir = uv - 0.5;
-  float dist = length(dir);
-  vec2 offset = dir * dist * aberration;
+  // Direct scene sample — no chromatic aberration
+  vec3 scene = texture(u_scene, uv).rgb;
 
-  float r = texture(u_scene, uv + offset).r;
-  float g = texture(u_scene, uv).g;
-  float b = texture(u_scene, uv - offset).b;
-  vec3 scene = vec3(r, g, b);
-
-  // Add bloom
+  // Add bloom (static intensity, no breathing)
   vec3 bloom = texture(u_bloom, uv).rgb;
   scene += bloom * u_bloomIntensity;
 
-  // Warm inner glow — subtle amber bloom at center
-  float glowAlpha = 0.04 + 0.015 * sin(u_time * 0.4);
-  float glowDist = length((uv - vec2(0.5, 0.55)) * vec2(1.0, u_resolution.x / u_resolution.y));
-  float glowMask = exp(-glowDist * glowDist * 12.0);
-  scene += vec3(239.0, 125.0, 87.0) / 255.0 * glowMask * glowAlpha;
-
-  // Vignette — darkens edges
+  // Vignette — static subtle dark corners (alpha ~0.15)
   float vigDist = length(uv - 0.5) * 1.4;
-  float vig = smoothstep(0.3, 0.8, vigDist);
-  scene *= 1.0 - vig * 0.32;
+  float vig = smoothstep(0.4, 0.9, vigDist);
+  scene *= 1.0 - vig * 0.15;
 
   // Scanline hint — very subtle for retro feel
   float scanline = sin(uv.y * u_resolution.y * 1.5) * 0.02 + 1.0;

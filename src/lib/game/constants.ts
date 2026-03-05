@@ -98,17 +98,17 @@ export const OBJECT_TOP_FACE: Record<string, number> = {
 };
 
 export const TILE_DEPTH: Record<LaneType, number> = {
-  grass: 14,
-  road: 10,
-  water: 6,
-  railroad: 10,
+  grass: 8,
+  road: 6,
+  water: 4,
+  railroad: 6,
 };
 
 export const GROUND_COLORS: Record<LaneType, { top: string; front: string; frontDark: string }> = {
-  grass: { top: "#4ebb6a", front: "#2d8a48", frontDark: "#1e6030" },
-  road: { top: "#4a4a5e", front: "#353548", frontDark: "#252535" },
-  water: { top: "#2288bb", front: "#1a6699", frontDark: "#0e4470" },
-  railroad: { top: "#5a4860", front: "#3d2d48", frontDark: "#2a1d35" },
+  grass: { top: "#3a7d4a", front: "#2a6038", frontDark: "#1a4828" },
+  road: { top: "#404858", front: "#303848", frontDark: "#202838" },
+  water: { top: "#2868a8", front: "#1a5090", frontDark: "#104078" },
+  railroad: { top: "#484058", front: "#382848", frontDark: "#281838" },
 };
 
 export const TOP_FACE_COLORS: Record<string, string> = {
@@ -120,8 +120,16 @@ export const TOP_FACE_COLORS: Record<string, string> = {
   log: "#d8b870",
 };
 
-export const SHADOW_OFFSET = { x: 8, y: 6 };
-export const SHADOW_ALPHA = 0.4;
+export const SHADOW_OFFSET = { x: 4, y: 3 };
+export const SHADOW_ALPHA = 0.25;
+
+// Post-processing & lighting
+export const BLOOM_INTENSITY = 0.15;
+export const AMBIENT_DARKNESS = "rgba(0, 5, 15, 0.12)";
+export const PLAYER_LIGHT = { radius: 56, color: "#ff8040", intensity: 0.4 };
+export const COIN_LIGHT_RADIUS = 24;
+export const CAR_HEADLIGHT = { radius: 48, color: "#ffe8a0", intensity: 0.35 };
+export const WATER_SHIMMER_LIGHT = { radius: 80, color: "#4080c0", intensity: 0.2 };
 
 // Decoration system
 export const DECORATION_CHANCE = 0.7;

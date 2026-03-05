@@ -25,6 +25,7 @@ import {
   TOP_FACE_COLORS,
   SHADOW_OFFSET,
   SHADOW_ALPHA,
+  BLOOM_INTENSITY,
 } from "./constants";
 import { DECORATION_HEIGHTS } from "./sprites/decorations";
 import {
@@ -184,7 +185,7 @@ export class GameRenderer {
   /** End the frame — applies post-processing and presents to screen */
   endFrame(animationTime: number): void {
     this.postProcessor.endScene();
-    this.postProcessor.composite(animationTime);
+    this.postProcessor.composite(animationTime, BLOOM_INTENSITY);
   }
 
   renderBackground(animationTime: number): void {
@@ -254,6 +255,33 @@ export class GameRenderer {
             fG,
             fB,
             laneAlpha,
+          );
+        }
+      }
+
+      // --- Road dashed center line ---
+      if (lane.type === "road") {
+        const dashWidth = 6;
+        const dashLength = 10;
+        const gapLength = 10;
+        const centerY = screenY + cellSize / 2 - 1;
+        const [dlR, dlG, dlB] = hexToFloats("#ffdd44");
+        for (
+          let dx = 0;
+          dx < cols * cellSize;
+          dx += dashLength + gapLength
+        ) {
+          const dw = Math.min(dashLength, cols * cellSize - dx);
+          this.batch.drawQuad(
+            this.whiteRegion,
+            dx,
+            centerY,
+            dw,
+            dashWidth,
+            dlR,
+            dlG,
+            dlB,
+            0.6 * laneAlpha,
           );
         }
       }

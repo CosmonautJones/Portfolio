@@ -679,7 +679,7 @@ export default function GameCanvas({
           style={{
             width: canvasWidth,
             height: canvasHeight,
-            imageRendering: "pixelated",
+            imageRendering: "auto",
             touchAction: "none",
             backgroundColor: "#1a1c2c",
           }}

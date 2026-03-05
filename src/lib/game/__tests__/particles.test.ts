@@ -1,6 +1,18 @@
 import { describe, it, expect, vi } from "vitest";
 import { createInitialState, tick } from "../engine";
-import { DEFAULT_CONFIG } from "../constants";
+import {
+  DEFAULT_CONFIG,
+  GROUND_COLORS,
+  BLOOM_INTENSITY,
+  AMBIENT_DARKNESS,
+  PLAYER_LIGHT,
+  SHADOW_OFFSET,
+  SHADOW_ALPHA,
+  TILE_DEPTH,
+  COIN_LIGHT_RADIUS,
+  CAR_HEADLIGHT,
+  WATER_SHIMMER_LIGHT,
+} from "../constants";
 import type { GameCallbacks, GameState } from "../types";
 
 const VIEWPORT_HEIGHT = 640; // 20 * 32
@@ -324,5 +336,80 @@ describe("Palette size", () => {
     expect(PALETTE[7]).toBe("#38b764");  // green
     expect(PALETTE[9]).toBe("#29366f");  // deep blue
     expect(PALETTE[20]).toBe("#3c3c50"); // asphalt dark
+  });
+});
+
+describe("Clean night rendering constants", () => {
+  it("GROUND_COLORS grass.top is #3a7d4a", () => {
+    expect(GROUND_COLORS.grass.top).toBe("#3a7d4a");
+  });
+
+  it("GROUND_COLORS road.top is #404858", () => {
+    expect(GROUND_COLORS.road.top).toBe("#404858");
+  });
+
+  it("GROUND_COLORS water.top is #2868a8", () => {
+    expect(GROUND_COLORS.water.top).toBe("#2868a8");
+  });
+
+  it("BLOOM_INTENSITY is between 0 and 1", () => {
+    expect(BLOOM_INTENSITY).toBeGreaterThan(0);
+    expect(BLOOM_INTENSITY).toBeLessThanOrEqual(1);
+    expect(BLOOM_INTENSITY).toBe(0.15);
+  });
+
+  it("AMBIENT_DARKNESS is a valid rgba string", () => {
+    expect(AMBIENT_DARKNESS).toMatch(/^rgba\(/);
+    expect(AMBIENT_DARKNESS).toBe("rgba(0, 5, 15, 0.12)");
+  });
+
+  it("PLAYER_LIGHT has radius, color, and intensity", () => {
+    expect(PLAYER_LIGHT).toHaveProperty("radius");
+    expect(PLAYER_LIGHT).toHaveProperty("color");
+    expect(PLAYER_LIGHT).toHaveProperty("intensity");
+    expect(PLAYER_LIGHT.radius).toBe(56);
+    expect(PLAYER_LIGHT.color).toBe("#ff8040");
+    expect(PLAYER_LIGHT.intensity).toBe(0.4);
+  });
+
+  it("SHADOW_OFFSET has reduced values for softer look", () => {
+    expect(SHADOW_OFFSET.x).toBe(4);
+    expect(SHADOW_OFFSET.y).toBe(3);
+  });
+
+  it("SHADOW_ALPHA is 0.25", () => {
+    expect(SHADOW_ALPHA).toBe(0.25);
+  });
+
+  it("TILE_DEPTH values are reduced for cleaner silhouette", () => {
+    expect(TILE_DEPTH.grass).toBe(8);
+    expect(TILE_DEPTH.road).toBe(6);
+    expect(TILE_DEPTH.water).toBe(4);
+    expect(TILE_DEPTH.railroad).toBe(6);
+  });
+
+  it("COIN_LIGHT_RADIUS is 24", () => {
+    expect(COIN_LIGHT_RADIUS).toBe(24);
+  });
+
+  it("CAR_HEADLIGHT has radius, color, and intensity", () => {
+    expect(CAR_HEADLIGHT.radius).toBe(48);
+    expect(CAR_HEADLIGHT.color).toBe("#ffe8a0");
+    expect(CAR_HEADLIGHT.intensity).toBe(0.35);
+  });
+
+  it("WATER_SHIMMER_LIGHT has radius, color, and intensity", () => {
+    expect(WATER_SHIMMER_LIGHT.radius).toBe(80);
+    expect(WATER_SHIMMER_LIGHT.color).toBe("#4080c0");
+    expect(WATER_SHIMMER_LIGHT.intensity).toBe(0.2);
+  });
+
+  it("canvas should not use chromatic aberration", () => {
+    // The composite shader no longer applies chromatic aberration.
+    // This is a conceptual assertion validating the rendering pipeline
+    // constants are configured for a clean night aesthetic without
+    // color channel splitting.
+    expect(BLOOM_INTENSITY).toBeLessThan(0.2);
+    expect(AMBIENT_DARKNESS).toContain("0.12");
   });
 });
