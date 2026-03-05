@@ -44,3 +44,30 @@ describe("Car yellow obstacle variant", () => {
     expect(sprite[0].length).toBe(64); // 64 cols = 2 * 32
   });
 });
+
+describe("Cell-shaded obstacle sprites", () => {
+  it("obstacle sprites have correct dimensions", () => {
+    expect(OBSTACLE_SPRITES.car.length).toBe(32);
+    expect(OBSTACLE_SPRITES.car[0].length).toBe(64);
+    expect(OBSTACLE_SPRITES.truck.length).toBe(32);
+    expect(OBSTACLE_SPRITES.truck[0].length).toBe(96);
+    expect(OBSTACLE_SPRITES.train.length).toBe(32);
+    expect(OBSTACLE_SPRITES.train[0].length).toBe(128);
+    expect(OBSTACLE_SPRITES.log.length).toBe(32);
+    expect(OBSTACLE_SPRITES.log[0].length).toBe(96);
+  });
+
+  it("each obstacle uses at most 5 unique non-zero indices", () => {
+    for (const key of ["car", "truck", "train", "log"]) {
+      const indices = new Set(OBSTACLE_SPRITES[key].flat().filter((i: number) => i !== 0));
+      expect(indices.size, key).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it("recolor variants still exist", () => {
+    expect(OBSTACLE_SPRITES.car_blue).toBeDefined();
+    expect(OBSTACLE_SPRITES.car_yellow).toBeDefined();
+    expect(OBSTACLE_SPRITES.car_blue.length).toBe(32);
+    expect(OBSTACLE_SPRITES.car_yellow.length).toBe(32);
+  });
+});
