@@ -340,7 +340,6 @@ describe("Palette size", () => {
   });
 });
 
-<<<<<<< HEAD
 describe("Clean night rendering constants", () => {
   it("GROUND_COLORS grass.top is #3a7d4a", () => {
     expect(GROUND_COLORS.grass.top).toBe("#3a7d4a");
