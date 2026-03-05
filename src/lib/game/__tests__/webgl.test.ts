@@ -4,7 +4,7 @@ import { PALETTE } from "../sprites/palette";
 // Test the sprite atlas builder (CPU-side logic, no GL context needed)
 describe("SpriteAtlas CPU-side", () => {
   it("palette has expected length", () => {
-    expect(PALETTE.length).toBe(64);
+    expect(PALETTE.length).toBe(89);
   });
 
   it("palette index 0 is transparent", () => {

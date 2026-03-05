@@ -70,4 +70,31 @@ export const PALETTE: readonly string[] = [
   "#c0a870", // 61  warm sand mid
   "#f8f0d0", // 62  warm highlight cream
   "#404060", // 63  neutral dark cool
+
+  // Extended palette 3 — reserved slots for future use (64-87)
+  "#303040", // 64  reserved
+  "#303040", // 65  reserved
+  "#303040", // 66  reserved
+  "#303040", // 67  reserved
+  "#303040", // 68  reserved
+  "#303040", // 69  reserved
+  "#303040", // 70  reserved
+  "#303040", // 71  reserved
+  "#303040", // 72  reserved
+  "#303040", // 73  reserved
+  "#303040", // 74  reserved
+  "#303040", // 75  reserved
+  "#303040", // 76  reserved
+  "#303040", // 77  reserved
+  "#303040", // 78  reserved
+  "#303040", // 79  reserved
+  "#303040", // 80  reserved
+  "#303040", // 81  reserved
+  "#303040", // 82  reserved
+  "#303040", // 83  reserved
+  "#303040", // 84  reserved
+  "#303040", // 85  reserved
+  "#303040", // 86  reserved
+  "#303040", // 87  reserved
+  "#00ffff", // 88  emissive cyan (lobster eyes — bloom-reactive)
 ] as const;

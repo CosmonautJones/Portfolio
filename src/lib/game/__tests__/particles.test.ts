@@ -311,9 +311,9 @@ describe("Hop dust particles — enhanced burst", () => {
 });
 
 describe("Palette size", () => {
-  it("palette has been expanded to 64 entries", async () => {
+  it("palette has been expanded to 89 entries", async () => {
     const { PALETTE } = await import("../sprites/palette");
-    expect(PALETTE.length).toBe(64);
+    expect(PALETTE.length).toBe(89);
   });
 
   it("first entry is transparent", async () => {

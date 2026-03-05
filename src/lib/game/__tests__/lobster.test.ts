@@ -8,6 +8,7 @@ import {
   LOBSTER_DEATH,
   LOBSTER_UP_LAND,
   LOBSTER_DOWN_BLINK,
+  LOBSTER_DOWN_HOP,
   LOBSTER_SPRITES,
   LOBSTER_FLIP_KEYS,
 } from "../sprites/lobster";
@@ -18,6 +19,7 @@ describe("lobster sprites", () => {
     { name: "UP_IDLE", sprite: LOBSTER_UP_IDLE },
     { name: "UP_HOP", sprite: LOBSTER_UP_HOP },
     { name: "DOWN_IDLE", sprite: LOBSTER_DOWN_IDLE },
+    { name: "DOWN_HOP", sprite: LOBSTER_DOWN_HOP },
     { name: "RIGHT_IDLE", sprite: LOBSTER_RIGHT_IDLE },
     { name: "RIGHT_HOP", sprite: LOBSTER_RIGHT_HOP },
     { name: "DEATH", sprite: LOBSTER_DEATH },
@@ -44,6 +46,62 @@ describe("lobster sprites", () => {
     },
   );
 
+  it.each(allSprites)(
+    "$name has max 5 unique non-zero indices (cell-shaded constraint)",
+    ({ sprite }) => {
+      const nonZero = new Set<number>();
+      for (const row of sprite) {
+        for (const idx of row) {
+          if (idx !== 0) nonZero.add(idx);
+        }
+      }
+      expect(nonZero.size).toBeLessThanOrEqual(5);
+    },
+  );
+
+  it.each(allSprites)(
+    "$name follows 2x2 block convention",
+    ({ sprite }) => {
+      for (let r = 0; r < 32; r += 2) {
+        for (let c = 0; c < 32; c += 2) {
+          const topLeft = sprite[r][c];
+          const topRight = sprite[r][c + 1];
+          const botLeft = sprite[r + 1][c];
+          const botRight = sprite[r + 1][c + 1];
+          expect(
+            topLeft === topRight &&
+              topLeft === botLeft &&
+              topLeft === botRight,
+          ).toBe(true);
+        }
+      }
+    },
+  );
+
+  const downAndRightSprites = [
+    { name: "DOWN_IDLE", sprite: LOBSTER_DOWN_IDLE },
+    { name: "DOWN_HOP", sprite: LOBSTER_DOWN_HOP },
+    { name: "RIGHT_IDLE", sprite: LOBSTER_RIGHT_IDLE },
+    { name: "RIGHT_HOP", sprite: LOBSTER_RIGHT_HOP },
+  ];
+
+  it.each(downAndRightSprites)(
+    "$name contains emissive cyan (index 88)",
+    ({ sprite }) => {
+      let found = false;
+      for (const row of sprite) {
+        for (const idx of row) {
+          if (idx === 88) {
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+      expect(found).toBe(true);
+    },
+  );
+
   it("LOBSTER_SPRITES has all expected keys including new frames", () => {
     const keys = Object.keys(LOBSTER_SPRITES);
     expect(keys).toContain("lobster_up_idle");
@@ -61,7 +119,6 @@ describe("lobster sprites", () => {
   });
 
   it("LOBSTER_UP_LAND differs from LOBSTER_UP_IDLE (squash frame)", () => {
-    // The landing frame should have distinct pixel data from the idle frame
     let hasDifference = false;
     for (let r = 0; r < LOBSTER_UP_IDLE.length; r++) {
       for (let c = 0; c < LOBSTER_UP_IDLE[r].length; c++) {
