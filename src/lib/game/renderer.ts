@@ -195,6 +195,23 @@ export class GameRenderer {
     // Stars are now rendered by the procedural background shader
   }
 
+  /** Apply screen shake offset to all rendering subsystems */
+  setShakeOffset(offsetX: number, offsetY: number): void {
+    this.batch.setShakeOffset(offsetX, offsetY);
+    this.particleRenderer.setShakeOffset(offsetX, offsetY);
+  }
+
+  /** Clear shake offset — restore normal projection */
+  clearShakeOffset(): void {
+    this.batch.clearShakeOffset();
+    this.particleRenderer.clearShakeOffset();
+  }
+
+  /** Clear per-session render state (call on game reset) */
+  resetState(): void {
+    this.laneFirstVisible.clear();
+  }
+
   renderLanes(state: GameState): void {
     const { camera, lanes } = state;
     const cellSize = DEFAULT_CONFIG.cellSize;

@@ -33,7 +33,7 @@ export class GPUParticleRenderer {
   private instanceVBO: WebGLBuffer;
   private instanceData: Float32Array;
 
-  private uProjection: WebGLUniformLocation;
+  private uProjection: WebGLUniformLocation | null;
 
   constructor(gl: WebGL2RenderingContext) {
     this.gl = gl;
@@ -100,11 +100,32 @@ export class GPUParticleRenderer {
     gl.bindVertexArray(null);
   }
 
+  private viewWidth = 0;
+  private viewHeight = 0;
+
   /** Set the projection matrix */
   setProjection(width: number, height: number): void {
+    this.viewWidth = width;
+    this.viewHeight = height;
     const gl = this.gl;
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.uProjection, false, ortho(0, width, height, 0));
+  }
+
+  /** Apply a screen-space shake offset by shifting the projection matrix */
+  setShakeOffset(offsetX: number, offsetY: number): void {
+    const gl = this.gl;
+    gl.useProgram(this.program);
+    gl.uniformMatrix4fv(
+      this.uProjection,
+      false,
+      ortho(-offsetX, this.viewWidth - offsetX, this.viewHeight - offsetY, -offsetY),
+    );
+  }
+
+  /** Clear the shake offset (restore normal projection) */
+  clearShakeOffset(): void {
+    this.setProjection(this.viewWidth, this.viewHeight);
   }
 
   /** Render all active particles. cameraY offsets particle Y for scrolling. */
@@ -118,13 +139,13 @@ export class GPUParticleRenderer {
     for (let i = 0; i < count; i++) {
       const p = particles[i];
       const offset = i * FLOATS_PER_PARTICLE;
-      const lifeRatio = Math.max(0, p.life / p.maxLife);
+      const lifeRatio = p.maxLife > 0 ? Math.max(0, p.life / p.maxLife) : 0;
       const [r, g, b] = hexToFloats(p.color);
       const shapeVal =
         p.shape === "circle" ? 1 : p.shape === "line" ? 2 : 0;
 
-      this.instanceData[offset] = Math.round(p.x);
-      this.instanceData[offset + 1] = Math.round(p.y - cameraY);
+      this.instanceData[offset] = p.x;
+      this.instanceData[offset + 1] = p.y - cameraY;
       this.instanceData[offset + 2] = p.size;
       this.instanceData[offset + 3] = lifeRatio;
       this.instanceData[offset + 4] = r;
@@ -143,11 +164,11 @@ export class GPUParticleRenderer {
       const ti = count + trailCount;
       if (ti >= MAX_PARTICLES) break;
       const offset = ti * FLOATS_PER_PARTICLE;
-      const lifeRatio = Math.max(0, p.life / p.maxLife) * 0.3;
+      const lifeRatio = (p.maxLife > 0 ? Math.max(0, p.life / p.maxLife) : 0) * 0.3;
       const [r, g, b] = hexToFloats(p.color);
 
-      this.instanceData[offset] = Math.round(p.prevX);
-      this.instanceData[offset + 1] = Math.round(p.prevY - cameraY);
+      this.instanceData[offset] = p.prevX;
+      this.instanceData[offset + 1] = p.prevY - cameraY;
       this.instanceData[offset + 2] = p.size;
       this.instanceData[offset + 3] = lifeRatio;
       this.instanceData[offset + 4] = r;

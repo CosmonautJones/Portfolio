@@ -212,12 +212,13 @@ export class SpriteAtlas {
     this.entries.sort((a, b) => b.height - a.height);
 
     // Calculate atlas size — try to fit in a square, power of two
+    // Use 2x safety margin for shelf packing inefficiency
     const totalPixels = this.entries.reduce(
       (sum, e) => sum + (e.width + 1) * (e.height + 1),
       0,
     );
     let size = 256;
-    while (size * size < totalPixels * 1.3) {
+    while (size * size < totalPixels * 2) {
       size *= 2;
     }
     // Cap at max texture size
@@ -243,11 +244,10 @@ export class SpriteAtlas {
       }
 
       if (shelfY + entry.height > size) {
-        // Atlas is full — expand and retry
-        console.warn(
-          `Atlas overflow: sprite "${entry.key}" doesn't fit in ${size}x${size}`,
+        throw new Error(
+          `Sprite atlas overflow: "${entry.key}" (${entry.width}x${entry.height}) ` +
+          `doesn't fit in ${size}x${size} atlas. Total sprites: ${this.entries.length}`,
         );
-        continue;
       }
 
       // Copy sprite data into atlas

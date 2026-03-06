@@ -1,6 +1,14 @@
 // ============================================================================
 // Post-Processing Pipeline — bloom, vignette, chromatic aberration, scanlines
 // ============================================================================
+//
+// Texture unit allocation:
+//   TEXTURE0 — scene texture (bloom extract, composite)
+//   TEXTURE1 — bloom texture (composite only)
+//
+// The sprite batch uses TEXTURE0 for the atlas during the scene pass, which
+// is safe because all sprite batches are flushed before composite begins.
+// ============================================================================
 
 import { createProgram, createFramebuffer, getUniform } from "./gl-utils";
 import {
@@ -46,26 +54,26 @@ export class PostProcessor {
 
   // Background program
   private bgProgram: WebGLProgram;
-  private bgUTime: WebGLUniformLocation;
-  private bgUResolution: WebGLUniformLocation;
+  private bgUTime: WebGLUniformLocation | null;
+  private bgUResolution: WebGLUniformLocation | null;
 
   // Bloom extract
   private extractProgram: WebGLProgram;
-  private extractUScene: WebGLUniformLocation;
-  private extractUThreshold: WebGLUniformLocation;
+  private extractUScene: WebGLUniformLocation | null;
+  private extractUThreshold: WebGLUniformLocation | null;
 
   // Gaussian blur
   private blurProgram: WebGLProgram;
-  private blurUTexture: WebGLUniformLocation;
-  private blurUDirection: WebGLUniformLocation;
+  private blurUTexture: WebGLUniformLocation | null;
+  private blurUDirection: WebGLUniformLocation | null;
 
   // Final composite
   private compositeProgram: WebGLProgram;
-  private compUScene: WebGLUniformLocation;
-  private compUBloom: WebGLUniformLocation;
-  private compUBloomIntensity: WebGLUniformLocation;
-  private compUTime: WebGLUniformLocation;
-  private compUResolution: WebGLUniformLocation;
+  private compUScene: WebGLUniformLocation | null;
+  private compUBloom: WebGLUniformLocation | null;
+  private compUBloomIntensity: WebGLUniformLocation | null;
+  private compUTime: WebGLUniformLocation | null;
+  private compUResolution: WebGLUniformLocation | null;
 
   // Framebuffers
   private sceneFBO: { fbo: WebGLFramebuffer; texture: WebGLTexture };
@@ -119,7 +127,7 @@ export class PostProcessor {
       "u_resolution",
     );
 
-    // Create framebuffers
+    // Create framebuffers (completeness is validated inside createFramebuffer)
     this.sceneFBO = createFramebuffer(gl, width, height, gl.NEAREST);
 
     // Bloom at half resolution for performance
@@ -161,7 +169,7 @@ export class PostProcessor {
     const bw = Math.floor(this.width / 2);
     const bh = Math.floor(this.height / 2);
 
-    // --- Bloom extract ---
+    // --- Bloom extract (TEXTURE0: scene → bloomFBO1) ---
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomFBO1.fbo);
     gl.viewport(0, 0, bw, bh);
     gl.useProgram(this.extractProgram);
@@ -174,25 +182,29 @@ export class PostProcessor {
 
     // --- Gaussian blur (two-pass ping-pong) ---
     const blurPasses = 2;
+    gl.useProgram(this.blurProgram);
     for (let pass = 0; pass < blurPasses; pass++) {
-      // Horizontal blur: FBO1 → FBO2
+      // Horizontal blur: bloomFBO1 → bloomFBO2
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomFBO2.fbo);
-      gl.useProgram(this.blurProgram);
+      gl.viewport(0, 0, bw, bh);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, this.bloomFBO1.texture);
       gl.uniform1i(this.blurUTexture, 0);
       gl.uniform2f(this.blurUDirection, 1.0 / bw, 0);
+      gl.bindVertexArray(this.fsQuad.vao);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      // Vertical blur: FBO2 → FBO1
+      // Vertical blur: bloomFBO2 → bloomFBO1
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomFBO1.fbo);
+      gl.viewport(0, 0, bw, bh);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, this.bloomFBO2.texture);
       gl.uniform2f(this.blurUDirection, 0, 1.0 / bh);
+      gl.bindVertexArray(this.fsQuad.vao);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
-    // --- Final composite to screen ---
+    // --- Final composite to screen (TEXTURE0: scene, TEXTURE1: bloom) ---
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.width, this.height);
     gl.useProgram(this.compositeProgram);
@@ -209,6 +221,7 @@ export class PostProcessor {
     gl.uniform1f(this.compUTime, time);
     gl.uniform2f(this.compUResolution, this.width, this.height);
 
+    gl.bindVertexArray(this.fsQuad.vao);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
   }

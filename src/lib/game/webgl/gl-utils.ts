@@ -98,6 +98,18 @@ export function createFramebuffer(
     texture,
     0,
   );
+
+  // Validate framebuffer completeness
+  const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+  if (status !== gl.FRAMEBUFFER_COMPLETE) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fbo);
+    gl.deleteTexture(texture);
+    throw new Error(
+      `Framebuffer not complete: 0x${status.toString(16)} (${width}x${height})`,
+    );
+  }
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   return { fbo, texture };
 }
@@ -109,6 +121,7 @@ export function ortho(
   bottom: number,
   top: number,
 ): Float32Array {
+  // Float32Array is zero-initialized, so off-diagonal elements are already 0
   const out = new Float32Array(16);
   out[0] = 2 / (right - left);
   out[5] = 2 / (top - bottom);
@@ -119,19 +132,15 @@ export function ortho(
   return out;
 }
 
-/** Get uniform location with error checking */
+/**
+ * Get uniform location. Returns null if uniform is optimized out by the GLSL
+ * compiler — this is normal and WebGL2 silently ignores null locations passed
+ * to gl.uniform*() calls.
+ */
 export function getUniform(
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
   name: string,
-): WebGLUniformLocation {
-  const loc = gl.getUniformLocation(program, name);
-  if (loc === null) {
-    // Some uniforms may be optimized out — return a dummy that won't crash
-    // We still want to warn in development
-    if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
-      console.warn(`Uniform "${name}" not found (may be optimized out)`);
-    }
-  }
-  return loc!;
+): WebGLUniformLocation | null {
+  return gl.getUniformLocation(program, name);
 }

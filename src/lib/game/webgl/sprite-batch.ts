@@ -23,8 +23,8 @@ export class SpriteBatch {
   private instanceData: Float32Array;
   private instanceCount = 0;
 
-  private uProjection: WebGLUniformLocation;
-  private uAtlas: WebGLUniformLocation;
+  private uProjection: WebGLUniformLocation | null;
+  private uAtlas: WebGLUniformLocation | null;
 
   constructor(gl: WebGL2RenderingContext) {
     this.gl = gl;
@@ -169,15 +169,38 @@ export class SpriteBatch {
     this.instanceCount = 0;
   }
 
+  private viewWidth = 0;
+  private viewHeight = 0;
+
   /** Set the projection matrix */
   setProjection(width: number, height: number): void {
+    this.viewWidth = width;
+    this.viewHeight = height;
     const gl = this.gl;
     gl.useProgram(this.program);
     const proj = ortho(0, width, height, 0); // top-left origin
     gl.uniformMatrix4fv(this.uProjection, false, proj);
   }
 
-  /** Bind the atlas texture to unit 0 */
+  /** Apply a screen-space shake offset by shifting the projection matrix */
+  setShakeOffset(offsetX: number, offsetY: number): void {
+    const gl = this.gl;
+    gl.useProgram(this.program);
+    const proj = ortho(
+      -offsetX,
+      this.viewWidth - offsetX,
+      this.viewHeight - offsetY,
+      -offsetY,
+    );
+    gl.uniformMatrix4fv(this.uProjection, false, proj);
+  }
+
+  /** Clear the shake offset (restore normal projection) */
+  clearShakeOffset(): void {
+    this.setProjection(this.viewWidth, this.viewHeight);
+  }
+
+  /** Bind the atlas texture to unit 0 (TEXTURE0 — shared with post-processor) */
   bindAtlas(texture: WebGLTexture): void {
     const gl = this.gl;
     gl.useProgram(this.program);
