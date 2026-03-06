@@ -33,11 +33,11 @@ void main() {
     corner.x = 1.0 - corner.x;
   }
 
-  // Interpolate UV
-  v_uv = mix(a_uvRect.xy, a_uvRect.zw, a_corner);
+  // Interpolate UV using flipped corner so texture mirrors correctly
+  v_uv = mix(a_uvRect.xy, a_uvRect.zw, corner);
   v_tint = a_tint;
 
-  // World position
+  // World position (uses original corner — flip only affects UV)
   vec2 pos = a_posSize.xy + a_corner * a_posSize.zw;
   gl_Position = u_projection * vec4(pos, 0.0, 1.0);
 }
@@ -114,7 +114,7 @@ uniform mat4 u_projection;
 out vec2 v_corner;
 out vec4 v_color;
 out float v_life;
-out float v_shape;
+flat out float v_shape;  // flat — discrete integer, no interpolation
 
 void main() {
   float size = a_sizeLife.x;
@@ -142,7 +142,7 @@ precision highp float;
 in vec2 v_corner;
 in vec4 v_color;
 in float v_life;
-in float v_shape;
+flat in float v_shape;  // flat — discrete integer, no interpolation
 
 out vec4 fragColor;
 

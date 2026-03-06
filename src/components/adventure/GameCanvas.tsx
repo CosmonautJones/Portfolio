@@ -364,12 +364,13 @@ export default function GameCanvas({
           setCombo(0);
           resetCombo(comboRef.current);
 
-          // Reset tracker for new game
+          // Reset tracker and renderer state for new game
           const t = achievementTrackerRef.current;
           const current = gameStateRef.current;
           if (t && current) {
             t.resetForNewGame(current.highScore);
           }
+          renderer.resetState();
         }
       },
       onDeath: (cause, finalScore) => {
@@ -559,10 +560,12 @@ export default function GameCanvas({
         renderer.beginFrame();
         renderer.renderBackground(gameStateRef.current.animationTime);
 
-        // Screen shake is applied as a camera offset in the game state
-        // (WebGL handles this through the projection matrix)
+        // Apply screen shake via projection matrix offset (both axes)
         if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          gameStateRef.current.camera.y -= shake.offsetY;
+          renderer.setShakeOffset(
+            Math.round(shake.offsetX),
+            Math.round(shake.offsetY),
+          );
         }
 
         renderer.renderLanes(gameStateRef.current);
@@ -574,9 +577,9 @@ export default function GameCanvas({
           gameStateRef.current.camera.y,
         );
 
-        // Undo screen shake offset
+        // Clear shake offset after rendering
         if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          gameStateRef.current.camera.y += shake.offsetY;
+          renderer.clearShakeOffset();
         }
 
         // Post-processing: bloom, vignette, chromatic aberration
