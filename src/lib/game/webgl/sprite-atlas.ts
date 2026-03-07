@@ -170,6 +170,38 @@ export class SpriteAtlas {
     });
   }
 
+  /** Register a pre-rendered raw RGBA sprite (bypasses palette conversion) */
+  addRawSprite(key: string, width: number, height: number, rgba: Uint8Array): void {
+    this.entries.push({ key, width, height, rgba });
+  }
+
+  /** Register a darkened (0.7x brightness) raw RGBA sprite */
+  addRawDarkSprite(key: string, width: number, height: number, rgba: Uint8Array): void {
+    const darkRgba = new Uint8Array(rgba.length);
+    for (let i = 0; i < rgba.length; i += 4) {
+      darkRgba[i] = Math.round(rgba[i] * 0.7);
+      darkRgba[i + 1] = Math.round(rgba[i + 1] * 0.7);
+      darkRgba[i + 2] = Math.round(rgba[i + 2] * 0.7);
+      darkRgba[i + 3] = rgba[i + 3];
+    }
+    this.entries.push({ key, width, height, rgba: darkRgba });
+  }
+
+  /** Register a shadow silhouette from raw RGBA (opaque pixels → solid dark) */
+  addRawShadow(key: string, width: number, height: number, rgba: Uint8Array): void {
+    const shadowRgba = new Uint8Array(width * height * 4);
+    for (let i = 0; i < width * height; i++) {
+      const alpha = rgba[i * 4 + 3];
+      if (alpha === 0) continue;
+      const offset = i * 4;
+      shadowRgba[offset] = SHADOW_RGBA[0];
+      shadowRgba[offset + 1] = SHADOW_RGBA[1];
+      shadowRgba[offset + 2] = SHADOW_RGBA[2];
+      shadowRgba[offset + 3] = alpha;
+    }
+    this.entries.push({ key, width, height, rgba: shadowRgba });
+  }
+
   /** Register a glow circle */
   addGlow(key: string, color: string, size: number): void {
     this.entries.push({

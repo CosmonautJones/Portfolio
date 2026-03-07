@@ -27,6 +27,7 @@ import {
   SHADOW_ALPHA,
   BLOOM_INTENSITY,
 } from "./constants";
+import { resolveSprite, type SpriteStyle } from "./sprites/sprite-style";
 import { DECORATION_HEIGHTS } from "./sprites/decorations";
 import {
   SpriteAtlas,
@@ -84,6 +85,21 @@ export class SpriteCache {
     this.atlas.addGlow(key, color, size);
   }
 
+  /** Register a raw RGBA sprite (e.g., from voxel loader) */
+  prerenderRaw(key: string, width: number, height: number, rgba: Uint8Array): void {
+    this.atlas.addRawSprite(key, width, height, rgba);
+  }
+
+  /** Register a darkened (0.7x brightness) raw RGBA sprite */
+  prerenderRawDark(key: string, width: number, height: number, rgba: Uint8Array): void {
+    this.atlas.addRawDarkSprite(key, width, height, rgba);
+  }
+
+  /** Register a shadow silhouette from raw RGBA */
+  prerenderRawShadow(key: string, width: number, height: number, rgba: Uint8Array): void {
+    this.atlas.addRawShadow(key, width, height, rgba);
+  }
+
   prerenderAmbientGlow(
     ..._args: [key: string, color: string, width: number, height: number]
   ): void {
@@ -132,6 +148,7 @@ export class GameRenderer {
   private laneFirstVisible = new Map<number, number>();
   private width: number;
   private height: number;
+  private spriteStyle: SpriteStyle = "pixel";
 
   constructor(canvas: HTMLCanvasElement, sprites: SpriteCache) {
     const gl = canvas.getContext("webgl2", {
@@ -171,6 +188,17 @@ export class GameRenderer {
     // Enable blending
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  }
+
+  /** Set the active sprite style (pixel or voxel) */
+  setSpriteStyle(style: SpriteStyle): void {
+    this.spriteStyle = style;
+  }
+
+  /** Resolve a game sprite key through the style system, then look up the atlas region */
+  private resolveRegion(gameKey: string): AtlasRegion | undefined {
+    const resolved = resolveSprite(gameKey, this.spriteStyle, (k) => this.atlas.has(k));
+    return this.atlas.getRegion(resolved);
   }
 
   clear(): void {
@@ -355,12 +383,12 @@ export class GameRenderer {
         }
 
         const height = OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[spriteKey] ?? 0;
-        const obsRegion = this.atlas.getRegion(spriteKey);
+        const obsRegion = this.resolveRegion(spriteKey);
         if (!obsRegion) continue;
 
         // 1. Shadow silhouette
         const shadowKey = spriteKey + "_shadow";
-        const shadowRegion = this.atlas.getRegion(shadowKey);
+        const shadowRegion = this.resolveRegion(shadowKey);
         if (shadowRegion) {
           this.batch.draw(
             shadowRegion,
@@ -378,7 +406,7 @@ export class GameRenderer {
         // 2. Side face (dark variant)
         if (height > 0) {
           const sideKey = spriteKey + "_side";
-          const sideRegion = this.atlas.getRegion(sideKey);
+          const sideRegion = this.resolveRegion(sideKey);
           if (sideRegion) {
             this.batch.draw(
               sideRegion,
@@ -577,7 +605,7 @@ export class GameRenderer {
       }
     }
 
-    const region = this.atlas.getRegion(spriteKey);
+    const region = this.resolveRegion(spriteKey);
     if (region) {
       // Apply squash/stretch by adjusting draw size and position
       const w = region.width * scaleX;
@@ -733,7 +761,7 @@ export class GameRenderer {
       const flowOffset = offset * lane.flowDirection;
       for (let x = -1; x <= cols; x++) {
         const key = `${lane.type}_${lane.variant}`;
-        const region = this.atlas.getRegion(key);
+        const region = this.resolveRegion(key);
         if (region) {
           this.batch.draw(
             region,
@@ -782,7 +810,7 @@ export class GameRenderer {
         2;
       for (let x = 0; x < cols; x++) {
         const key = `grass_${shimmerVariant}`;
-        const region = this.atlas.getRegion(key);
+        const region = this.resolveRegion(key);
         if (region) {
           this.batch.draw(
             region,
@@ -803,7 +831,7 @@ export class GameRenderer {
     // Road / Railroad
     for (let x = 0; x < cols; x++) {
       const key = `${lane.type}_${lane.variant}`;
-      const region = this.atlas.getRegion(key);
+      const region = this.resolveRegion(key);
       if (region) {
         this.batch.draw(
           region,

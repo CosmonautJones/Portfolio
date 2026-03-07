@@ -18,6 +18,8 @@ import { OBSTACLE_SPRITES } from "@/lib/game/sprites/obstacles";
 import { COIN_SPRITES, COIN_GLOW_COLORS } from "@/lib/game/sprites/coins";
 import { DECORATION_SPRITES } from "@/lib/game/sprites/decorations";
 import type { Coin, CoinType } from "@/lib/game/types";
+import { loadVoxelSprites, type VoxelSpriteData } from "@/lib/game/sprites/voxel-loader";
+import { loadSpriteStyle, saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { GameAudio } from "@/lib/game/audio";
 import {
   createScreenShake,
@@ -42,7 +44,7 @@ import {
   TOTAL_ACHIEVEMENTS,
 } from "@/lib/game/achievements";
 import { CRTOverlay } from "./CRTOverlay";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Palette } from "lucide-react";
 
 const VIEWPORT_WIDTH = 416; // 13 * 32
 const VIEWPORT_HEIGHT = 640; // 20 * 32
@@ -142,6 +144,8 @@ export default function GameCanvas({
   const [canvasWidth, setCanvasWidth] = useState(VIEWPORT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(VIEWPORT_HEIGHT);
   const [muted, setMuted] = useState(false);
+  const [spriteStyle, setSpriteStyle] = useState<SpriteStyle>("pixel");
+  const [voxelReady, setVoxelReady] = useState(false);
   const [level, setLevel] = useState(1);
   const [levelUpText, setLevelUpText] = useState<number | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -152,6 +156,7 @@ export default function GameCanvas({
   const [coinBonus, setCoinBonus] = useState(0);
   const [combo, setCombo] = useState(0);
   const popupIdRef = useRef(0);
+  const rendererRef = useRef<GameRenderer | null>(null);
   const audioRef = useRef<GameAudio | null>(null);
   const screenShakeRef = useRef(createScreenShake());
   const comboRef = useRef(createComboState());
@@ -196,6 +201,17 @@ export default function GameCanvas({
       audio.setMuted(newMuted);
       setMuted(newMuted);
     }
+  }, []);
+
+  const toggleSpriteStyle = useCallback(() => {
+    setSpriteStyle((prev) => {
+      const next = prev === "pixel" ? "voxel" : "pixel";
+      saveSpriteStyle(next);
+      if (rendererRef.current) {
+        rendererRef.current.setSpriteStyle(next);
+      }
+      return next;
+    });
   }, []);
 
   const showAchievementPopup = useCallback(
@@ -287,8 +303,63 @@ export default function GameCanvas({
       spriteCache.prerenderGlow(`glow_${type}`, color, 32);
     }
 
-    // Create renderer and initial state
-    const renderer = new GameRenderer(canvas, spriteCache);
+    // Register voxel sprite helper
+    function registerVoxelSprites(sprites: Map<string, VoxelSpriteData>) {
+      for (const [, sprite] of sprites) {
+        spriteCache.prerenderRaw(sprite.key, sprite.width, sprite.height, sprite.rgba);
+        // Obstacle sprites get shadow + dark (side face) variants
+        if (
+          sprite.key.includes("car") ||
+          sprite.key.includes("truck") ||
+          sprite.key.includes("log")
+        ) {
+          spriteCache.prerenderRawShadow(
+            `${sprite.key}_shadow`,
+            sprite.width,
+            sprite.height,
+            sprite.rgba,
+          );
+          spriteCache.prerenderRawDark(
+            `${sprite.key}_side`,
+            sprite.width,
+            sprite.height,
+            sprite.rgba,
+          );
+        }
+      }
+    }
+
+    // Async initialization: load voxel sprites, then create renderer
+    let renderer: GameRenderer | null = null;
+    let cancelled = false;
+
+    const initAsync = async () => {
+      // Try to load voxel sprites (non-blocking — game works without them)
+      try {
+        const voxelSprites = await loadVoxelSprites();
+        if (!cancelled) {
+          registerVoxelSprites(voxelSprites);
+          setVoxelReady(true);
+        }
+      } catch {
+        // Voxel sprites failed to load — pixel art only
+      }
+
+      if (cancelled) return;
+
+      // Create renderer (builds atlas with all registered sprites)
+      renderer = new GameRenderer(canvas, spriteCache);
+      rendererRef.current = renderer;
+
+      // Load sprite style preference and apply
+      const savedStyle = loadSpriteStyle();
+      setSpriteStyle(savedStyle);
+      renderer.setSpriteStyle(savedStyle);
+
+      startGameLoop(renderer);
+    };
+
+    // Create initial state immediately
     const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
     gameStateRef.current = state;
 
@@ -370,7 +441,7 @@ export default function GameCanvas({
           if (t && current) {
             t.resetForNewGame(current.highScore);
           }
-          renderer.resetState();
+          rendererRef.current?.resetState();
         }
       },
       onDeath: (cause, finalScore) => {
@@ -529,70 +600,76 @@ export default function GameCanvas({
     let rafId = 0;
     let lastTime = 0;
 
-    const loop = (time: number) => {
-      const dt = lastTime === 0 ? 0 : (time - lastTime) / 1000;
-      lastTime = time;
+    const startGameLoop = (r: GameRenderer) => {
+      const loop = (time: number) => {
+        const dt = lastTime === 0 ? 0 : (time - lastTime) / 1000;
+        lastTime = time;
 
-      const cappedDt = Math.min(dt, 0.1);
+        const cappedDt = Math.min(dt, 0.1);
 
-      if (gameStateRef.current) {
-        const prevRiding = gameStateRef.current.player.ridingLogId;
-        tick(gameStateRef.current, cappedDt, DEFAULT_CONFIG, callbacks);
+        if (gameStateRef.current) {
+          const prevRiding = gameStateRef.current.player.ridingLogId;
+          tick(gameStateRef.current, cappedDt, DEFAULT_CONFIG, callbacks);
 
-        // Detect log landing — play thud when player starts riding a log
-        const nowRiding = gameStateRef.current.player.ridingLogId;
-        if (nowRiding !== null && prevRiding === null) {
-          audio.playLogLand();
-          triggerMicroShake(screenShakeRef.current, 0, 0.5);
+          // Detect log landing — play thud when player starts riding a log
+          const nowRiding = gameStateRef.current.player.ridingLogId;
+          if (nowRiding !== null && prevRiding === null) {
+            audio.playLogLand();
+            triggerMicroShake(screenShakeRef.current, 0, 0.5);
 
-          // Achievement tracking — log ride
-          const t = achievementTrackerRef.current;
-          if (t) {
-            const unlocks = t.onLogRide(gameStateRef.current.score);
-            if (unlocks.length > 0) processUnlocks(unlocks);
+            // Achievement tracking — log ride
+            const t = achievementTrackerRef.current;
+            if (t) {
+              const unlocks = t.onLogRide(gameStateRef.current.score);
+              if (unlocks.length > 0) processUnlocks(unlocks);
+            }
           }
-        }
 
-        // Update screen shake
-        const shake = updateScreenShake(screenShakeRef.current, cappedDt);
+          // Update screen shake
+          const shake = updateScreenShake(screenShakeRef.current, cappedDt);
 
-        // WebGL2 rendering pipeline
-        renderer.beginFrame();
-        renderer.renderBackground(gameStateRef.current.animationTime);
+          // WebGL2 rendering pipeline
+          r.beginFrame();
+          r.renderBackground(gameStateRef.current.animationTime);
 
-        // Apply screen shake via projection matrix offset (both axes)
-        if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          renderer.setShakeOffset(
-            Math.round(shake.offsetX),
-            Math.round(shake.offsetY),
+          // Apply screen shake via projection matrix offset (both axes)
+          if (shake.offsetX !== 0 || shake.offsetY !== 0) {
+            r.setShakeOffset(
+              Math.round(shake.offsetX),
+              Math.round(shake.offsetY),
+            );
+          }
+
+          r.renderLanes(gameStateRef.current);
+          r.renderAmbientEffects(gameStateRef.current);
+          r.renderCoins(gameStateRef.current);
+          r.renderPlayer(gameStateRef.current);
+          r.renderParticles(
+            gameStateRef.current.particles,
+            gameStateRef.current.camera.y,
           );
+
+          // Clear shake offset after rendering
+          if (shake.offsetX !== 0 || shake.offsetY !== 0) {
+            r.clearShakeOffset();
+          }
+
+          // Post-processing: bloom, vignette, chromatic aberration
+          r.endFrame(gameStateRef.current.animationTime);
         }
 
-        renderer.renderLanes(gameStateRef.current);
-        renderer.renderAmbientEffects(gameStateRef.current);
-        renderer.renderCoins(gameStateRef.current);
-        renderer.renderPlayer(gameStateRef.current);
-        renderer.renderParticles(
-          gameStateRef.current.particles,
-          gameStateRef.current.camera.y,
-        );
-
-        // Clear shake offset after rendering
-        if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-          renderer.clearShakeOffset();
-        }
-
-        // Post-processing: bloom, vignette, chromatic aberration
-        renderer.endFrame(gameStateRef.current.animationTime);
-      }
+        rafId = requestAnimationFrame(loop);
+      };
 
       rafId = requestAnimationFrame(loop);
     };
 
-    rafId = requestAnimationFrame(loop);
+    // Start async initialization
+    initAsync();
 
     // Cleanup
     return () => {
+      cancelled = true;
       cancelAnimationFrame(rafId);
       window.removeEventListener("keydown", inputHandler.handleKeyDown);
       canvas.removeEventListener("touchstart", inputHandler.handleTouchStart);
@@ -603,7 +680,8 @@ export default function GameCanvas({
       }
       inputHandler.destroy();
       audio.destroy();
-      renderer.destroy();
+      if (renderer) renderer.destroy();
+      rendererRef.current = null;
     };
   }, [updateScale, processUnlocks]);
 
@@ -754,28 +832,45 @@ export default function GameCanvas({
             >
               WASD or Arrow Keys to move
             </p>
-            <button
-              onClick={toggleMute}
-              className="pointer-events-auto mt-4 p-1.5 rounded hover:bg-white/20 transition-colors"
-            >
-              {muted ? (
-                <VolumeX
-                  className="text-white/50"
-                  style={{
-                    width: canvasWidth * 0.06,
-                    height: canvasWidth * 0.06,
-                  }}
-                />
-              ) : (
-                <Volume2
-                  className="text-white/50"
-                  style={{
-                    width: canvasWidth * 0.06,
-                    height: canvasWidth * 0.06,
-                  }}
-                />
+            <div className="pointer-events-auto flex gap-2 mt-4">
+              <button
+                onClick={toggleMute}
+                className="p-1.5 rounded hover:bg-white/20 transition-colors"
+              >
+                {muted ? (
+                  <VolumeX
+                    className="text-white/50"
+                    style={{
+                      width: canvasWidth * 0.06,
+                      height: canvasWidth * 0.06,
+                    }}
+                  />
+                ) : (
+                  <Volume2
+                    className="text-white/50"
+                    style={{
+                      width: canvasWidth * 0.06,
+                      height: canvasWidth * 0.06,
+                    }}
+                  />
+                )}
+              </button>
+              {voxelReady && (
+                <button
+                  onClick={toggleSpriteStyle}
+                  className="p-1.5 rounded hover:bg-white/20 transition-colors"
+                  title={`Sprite style: ${spriteStyle}`}
+                >
+                  <Palette
+                    className={spriteStyle === "voxel" ? "text-orange-400/80" : "text-white/50"}
+                    style={{
+                      width: canvasWidth * 0.06,
+                      height: canvasWidth * 0.06,
+                    }}
+                  />
+                </button>
               )}
-            </button>
+            </div>
           </div>
         )}
 
