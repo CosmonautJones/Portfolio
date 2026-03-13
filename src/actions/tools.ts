@@ -1,23 +1,13 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { toolSchema } from "@/lib/validations";
-import { isAdminEmail } from "@/lib/utils";
+import { withAdmin } from "@/actions/utils";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) {
-    throw new Error("Unauthorized");
-  }
-  return user;
-}
 
 function githubHeaders(): Record<string, string> {
   const h: Record<string, string> = {
@@ -54,9 +44,7 @@ interface GitHubRepoData {
 export async function importFromGitHub(
   repoUrl: string
 ): Promise<{ data?: GitHubRepoData; error?: string }> {
-  try {
-    await requireAdmin();
-
+  return withAdmin(async () => {
     const parsed = parseGitHubUrl(repoUrl);
     if (!parsed) {
       return { error: "Invalid GitHub URL. Expected: github.com/owner/repo" };
@@ -96,9 +84,7 @@ export async function importFromGitHub(
         homepage: data.homepage || null,
       },
     };
-  } catch {
-    return { error: "Failed to fetch repository data" };
-  }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -114,9 +100,7 @@ async function fetchFileContent(rawUrl: string): Promise<string> {
 export async function fetchRepoHtml(
   repoUrl: string
 ): Promise<{ html?: string; error?: string }> {
-  try {
-    await requireAdmin();
-
+  return withAdmin(async () => {
     const parsed = parseGitHubUrl(repoUrl);
     if (!parsed) {
       return { error: "Invalid GitHub URL" };
@@ -198,9 +182,7 @@ export async function fetchRepoHtml(
     }
 
     return { html };
-  } catch {
-    return { error: "Failed to fetch repository source" };
-  }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -208,8 +190,7 @@ export async function fetchRepoHtml(
 // ---------------------------------------------------------------------------
 
 export async function createTool(formData: FormData) {
-  try {
-    await requireAdmin();
+  return withAdmin(async () => {
     const admin = createAdminClient();
 
     const parsed = toolSchema.safeParse({
@@ -252,14 +233,11 @@ export async function createTool(formData: FormData) {
     revalidatePath("/admin/tools");
     revalidatePath("/tools");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function updateTool(toolId: string, formData: FormData) {
-  try {
-    await requireAdmin();
+  return withAdmin(async () => {
     const admin = createAdminClient();
 
     const parsed = toolSchema.safeParse({
@@ -299,14 +277,11 @@ export async function updateTool(toolId: string, formData: FormData) {
     revalidatePath("/admin/tools");
     revalidatePath("/tools");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function toggleToolStatus(toolId: string, currentStatus: string) {
-  try {
-    await requireAdmin();
+  return withAdmin(async () => {
     const admin = createAdminClient();
     const newStatus = currentStatus === "enabled" ? "disabled" : "enabled";
 
@@ -316,14 +291,11 @@ export async function toggleToolStatus(toolId: string, currentStatus: string) {
     revalidatePath("/admin/tools");
     revalidatePath("/tools");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function deleteTool(toolId: string) {
-  try {
-    await requireAdmin();
+  return withAdmin(async () => {
     const admin = createAdminClient();
 
     const { error } = await admin.from("tools").delete().eq("id", toolId);
@@ -332,7 +304,5 @@ export async function deleteTool(toolId: string) {
     revalidatePath("/admin/tools");
     revalidatePath("/tools");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }

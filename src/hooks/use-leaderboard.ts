@@ -25,7 +25,7 @@ export function useLeaderboard(options: UseLeaderboardOptions = {}) {
 
   const fetchLeaderboard = useCallback(async () => {
     const result = await getLeaderboard(limit, gameType);
-    if (result.scores) {
+    if ("scores" in result && result.scores) {
       const prev = prevEntriesRef.current;
       const prevIds = new Set(prev.map((e) => e.id));
 

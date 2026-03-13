@@ -3,14 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getLevelForXP } from "@/lib/xp";
 import { getAchievement } from "@/lib/achievements";
+import { withAuth } from "@/actions/utils";
 import type { Profile } from "@/lib/types";
 
 export async function getProfile(): Promise<{ profile: Profile | null; error?: string }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { profile: null };
-
+  return withAuth(async (user, supabase) => {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -32,20 +29,14 @@ export async function getProfile(): Promise<{ profile: Profile | null; error?: s
     }
 
     return { profile: data as Profile };
-  } catch (error) {
-    return { profile: null, error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  }) as Promise<{ profile: Profile | null; error?: string }>;
 }
 
 export async function awardXP(
   amount: number,
   reason: string
 ): Promise<{ newXP: number; newLevel: number; newTitle: string; leveledUp: boolean } | { error: string }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     // Get current profile
     const { data: profile, error: fetchError } = await supabase
       .from("profiles")
@@ -83,19 +74,13 @@ export async function awardXP(
       newTitle: levelInfo.title,
       leveledUp: levelInfo.level > oldLevel,
     };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function unlockAchievement(
   achievementId: string
 ): Promise<{ unlocked: boolean; alreadyHad: boolean; xpAwarded: number } | { error: string }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const achievement = getAchievement(achievementId);
     if (!achievement) return { error: "Achievement not found" };
 
@@ -138,20 +123,14 @@ export async function unlockAchievement(
     });
 
     return { unlocked: true, alreadyHad: false, xpAwarded: achievement.xpReward };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function trackEvent(
   eventType: string,
   payload: Record<string, unknown> = {}
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const { error } = await supabase.from("events").insert({
       user_id: user.id,
       event_type: eventType,
@@ -160,9 +139,7 @@ export async function trackEvent(
 
     if (error) return { success: false, error: error.message };
     return { success: true };
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  }) as Promise<{ success: boolean; error?: string }>;
 }
 
 export async function addDiscovery(eggId: string): Promise<void> {
@@ -192,11 +169,7 @@ export async function addDiscovery(eggId: string): Promise<void> {
 }
 
 export async function updateStreak(): Promise<{ streakDays: number } | { error: string }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const { data: profile, error: fetchError } = await supabase
       .from("profiles")
       .select("streak_days, last_visit")
@@ -236,7 +209,5 @@ export async function updateStreak(): Promise<{ streakDays: number } | { error: 
     if (updateError) return { error: updateError.message };
 
     return { streakDays: newStreak };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }

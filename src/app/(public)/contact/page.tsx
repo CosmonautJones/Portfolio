@@ -2,7 +2,10 @@ import { ContactForm } from "@/components/portfolio/contact-form";
 import type { Metadata } from "next";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Get in touch with Travis Jones for collaboration, freelance work, or just to say hello.",
+};
 
 export default function ContactPage() {
   return (

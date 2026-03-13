@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
+              // Note: 'unsafe-inline' is required here because Next.js injects
+              // inline scripts for hydration and chunk loading. A nonce-based
+              // approach would require a custom server or middleware to rewrite
+              // every response, which isn't practical with the App Router.
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",

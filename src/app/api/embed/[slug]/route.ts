@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/utils";
@@ -36,12 +37,19 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return new Response(tool.html_content, {
+  // Generate a per-request nonce for inline scripts instead of 'unsafe-inline'
+  const nonce = crypto.randomUUID();
+
+  // Add nonce attribute to all <script> tags that don't already have one
+  let html = tool.html_content ?? "";
+  html = html.replace(/<script(?!\s+nonce)/gi, `<script nonce="${nonce}"`);
+
+  return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "X-Frame-Options": "SAMEORIGIN",
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none';",
+        `default-src 'self'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none';`,
     },
   });
 }

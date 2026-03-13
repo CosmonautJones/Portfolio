@@ -34,7 +34,7 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
 
   useEffect(() => {
     getPlayerStats().then((result) => {
-      if (result.stats) setStats(result.stats);
+      if ("stats" in result && result.stats) setStats(result.stats);
     });
   }, [refreshKey]);
 

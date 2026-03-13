@@ -43,7 +43,7 @@ export function RecentScoresPanel({ refreshKey }: RecentScoresPanelProps) {
 
   useEffect(() => {
     getRecentScores(5).then((result) => {
-      if (result.scores) setScores(result.scores);
+      if ("scores" in result && result.scores) setScores(result.scores);
     });
   }, [refreshKey]);
 

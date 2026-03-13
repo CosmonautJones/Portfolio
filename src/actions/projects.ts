@@ -1,15 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { projectSchema, taskSchema } from "@/lib/validations";
+import { withAuth } from "@/actions/utils";
 
 export async function createProject(formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = projectSchema.safeParse({
       name: formData.get("name"),
       description: formData.get("description") || "",
@@ -27,17 +23,11 @@ export async function createProject(formData: FormData) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function updateProject(projectId: string, formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = projectSchema.safeParse({
       name: formData.get("name"),
       description: formData.get("description") || "",
@@ -64,17 +54,11 @@ export async function updateProject(projectId: string, formData: FormData) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function deleteProject(projectId: string) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const { error } = await supabase
       .from("projects")
       .delete()
@@ -84,17 +68,11 @@ export async function deleteProject(projectId: string) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function createTask(projectId: string, formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = taskSchema.safeParse({
       title: formData.get("title"),
       priority: formData.get("priority") || undefined,
@@ -115,17 +93,11 @@ export async function createTask(projectId: string, formData: FormData) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function updateTask(taskId: string, formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = taskSchema.safeParse({
       title: formData.get("title"),
       status: formData.get("status") || undefined,
@@ -153,17 +125,11 @@ export async function updateTask(taskId: string, formData: FormData) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function deleteTask(taskId: string) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const { error } = await supabase
       .from("tasks")
       .delete()
@@ -173,7 +139,5 @@ export async function deleteTask(taskId: string) {
 
     revalidatePath("/tools/project-tracker");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }

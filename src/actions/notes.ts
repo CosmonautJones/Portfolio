@@ -1,15 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { noteSchema } from "@/lib/validations";
+import { withAuth } from "@/actions/utils";
 
 export async function createNote(formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = noteSchema.safeParse({
       title: formData.get("title"),
       content: formData.get("content"),
@@ -27,17 +23,11 @@ export async function createNote(formData: FormData) {
 
     revalidatePath("/tools/notes");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function updateNote(noteId: string, formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const parsed = noteSchema.safeParse({
       title: formData.get("title"),
       content: formData.get("content"),
@@ -55,23 +45,15 @@ export async function updateNote(noteId: string, formData: FormData) {
 
     revalidatePath("/tools/notes");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function deleteNote(noteId: string) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-
+  return withAuth(async (user, supabase) => {
     const { error } = await supabase.from("notes").delete().eq("id", noteId).eq("user_id", user.id);
     if (error) return { error: error.message };
 
     revalidatePath("/tools/notes");
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }

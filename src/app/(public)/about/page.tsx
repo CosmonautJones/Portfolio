@@ -7,7 +7,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  title: "About",
+  description: "Learn about Travis Jones — a software developer focused on clean architecture, intuitive interfaces, and shipping products people want to use.",
+};
 
 export default function AboutPage() {
   return (

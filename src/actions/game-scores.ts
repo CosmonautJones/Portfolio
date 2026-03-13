@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { withAuth } from "@/actions/utils";
 import type { LeaderboardEntry } from "@/lib/types";
 
 export async function submitScore(
@@ -10,12 +11,17 @@ export async function submitScore(
   coinsCollected = 0,
   coinBonus = 0,
 ) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
+  return withAuth(async (user, supabase) => {
+    // Rate limit: max 5 score submissions per user per minute
+    const { count } = await supabase
+      .from("game_scores")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", new Date(Date.now() - 60_000).toISOString());
+
+    if ((count ?? 0) > 5) {
+      return { error: "Too many submissions, try again later" };
+    }
 
     const displayName =
       (user.user_metadata?.preferred_username as string) ?? null;
@@ -31,9 +37,7 @@ export async function submitScore(
     });
     if (error) return { error: error.message };
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function getLeaderboard(
@@ -77,13 +81,7 @@ export async function getLeaderboard(
 }
 
 export async function getPlayerStats(gameType = "adventure") {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated", stats: null };
-
+  return withAuth(async (user, supabase) => {
     const { data, error } = await supabase
       .from("game_scores")
       .select("score, death_cause, created_at, coins_collected, coin_bonus")
@@ -129,22 +127,11 @@ export async function getPlayerStats(gameType = "adventure") {
         lastPlayed: data[0].created_at,
       },
     };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stats: null,
-    };
-  }
+  });
 }
 
 export async function getRecentScores(limit = 5, gameType = "adventure") {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated", scores: [] };
-
+  return withAuth(async (user, supabase) => {
     const { data, error } = await supabase
       .from("game_scores")
       .select("id, score, death_cause, created_at")
@@ -163,23 +150,13 @@ export async function getRecentScores(limit = 5, gameType = "adventure") {
     }));
 
     return { scores };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Unknown error",
-      scores: [],
-    };
-  }
+  });
 }
 
 export async function submitAchievements(
   unlocks: Array<{ achievementId: string; score: number }>,
 ) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
+  return withAuth(async (user, supabase) => {
     if (unlocks.length === 0) return { success: true };
 
     const rows = unlocks.map((u) => ({
@@ -194,9 +171,7 @@ export async function submitAchievements(
 
     if (error) return { error: error.message };
     return { success: true };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unknown error" };
-  }
+  });
 }
 
 export async function getUserAchievements(): Promise<{
