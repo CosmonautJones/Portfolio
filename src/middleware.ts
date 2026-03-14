@@ -1,7 +1,18 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
+// Routes that require auth checks (protected, admin, or login redirect logic)
+const AUTH_ROUTES = ["/tools", "/admin", "/login"];
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Only run Supabase session logic on routes that need auth
+  const needsAuth = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  if (!needsAuth) {
+    return NextResponse.next();
+  }
+
   return await updateSession(request);
 }
 
