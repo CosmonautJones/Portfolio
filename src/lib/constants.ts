@@ -51,6 +51,16 @@ export const PROJECTS: Project[] = [
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Game",
   },
+  {
+    title: "Plan'd",
+    description:
+      "A group trip planning app with itineraries, expense splitting, ideas board, accommodations tracking, group chat, and a photo gallery. Plan everything in one place.",
+    image: "/projects/pland.jpg",
+    tags: ["Next.js", "Supabase", "TypeScript", "Real-time"],
+    demoUrl: "/pland",
+    githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
+    role: "Prototype",
+  },
 ];
 
 export const SKILLS = [
