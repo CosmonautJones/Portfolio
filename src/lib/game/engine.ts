@@ -427,6 +427,8 @@ export function createInitialState(
     coins,
     coinsCollected: 0,
     coinBonusScore: 0,
+    dyingTimer: 0,
+    dyingDuration: 0.5,
   };
 }
 
@@ -1019,8 +1021,11 @@ function killPlayer(
   const cellHalf = config.cellSize / 2;
   player.alive = false;
   player.animation = "death";
-  state.phase = "game_over";
   state.deathCause = cause;
+
+  // Enter "dying" sub-phase — 500ms slow-mo before game_over
+  state.dyingTimer = 0;
+  state.phase = "game_over";
 
   const totalScore = state.score + state.coinBonusScore;
   if (totalScore > state.highScore) {
@@ -1144,7 +1149,10 @@ function updateParticles(state: GameState, config: GameConfig): void {
     }
     p.life -= dt;
     if (p.life <= 0) {
-      state.particles.splice(i, 1);
+      // Swap-and-pop: O(1) removal instead of O(n) splice
+      state.particles[i] = state.particles[state.particles.length - 1];
+      state.particles.pop();
+      i--; // re-check swapped element
     }
   }
 }
@@ -1221,9 +1229,20 @@ export function tick(
       spawnAmbientParticles(state, config);
     }
 
+    // Update dying timer (slow-mo: timestep * 0.2 during death animation)
+    if (state.phase === "game_over" && state.dyingTimer < state.dyingDuration) {
+      state.dyingTimer += config.fixedTimestep;
+    }
+
+    // Apply slow-mo multiplier during dying for particle/animation updates
+    const effectiveTimestep =
+      state.phase === "game_over" && state.dyingTimer < state.dyingDuration
+        ? config.fixedTimestep * 0.2
+        : config.fixedTimestep;
+
     // Always update particles and animation time
-    updateParticles(state, config);
-    state.animationTime += config.fixedTimestep;
+    updateParticles(state, { ...config, fixedTimestep: effectiveTimestep });
+    state.animationTime += effectiveTimestep;
   }
 }
 
@@ -1292,6 +1311,7 @@ export function resetForNewGame(
   state.animationTime = 0;
   state.coinsCollected = 0;
   state.coinBonusScore = 0;
+  state.dyingTimer = 0;
 
   if (callbacks) {
     callbacks.onPhaseChange("playing");

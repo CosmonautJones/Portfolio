@@ -128,6 +128,10 @@ export interface GameState {
   coins: Coin[];
   coinsCollected: number;
   coinBonusScore: number;
+  /** Timer for the dying sub-phase (0→500ms slow-mo before game_over) */
+  dyingTimer: number;
+  /** Duration of the dying animation in seconds */
+  dyingDuration: number;
 }
 
 export interface GameCallbacks {

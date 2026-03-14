@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { createInitialState, tick } from "@/lib/game/engine";
+import { createInitialState, tick, resetForNewGame } from "@/lib/game/engine";
 import { DEFAULT_CONFIG } from "@/lib/game/constants";
+import { EngineBridge } from "@/lib/game/engine-bridge";
 import type {
   GameState,
   GamePhase,
@@ -157,6 +158,7 @@ export default function GameCanvas({
   const [combo, setCombo] = useState(0);
   const popupIdRef = useRef(0);
   const rendererRef = useRef<GameRenderer | null>(null);
+  const engineBridgeRef = useRef<EngineBridge | null>(null);
   const audioRef = useRef<GameAudio | null>(null);
   const screenShakeRef = useRef(createScreenShake());
   const comboRef = useRef(createComboState());
@@ -362,6 +364,11 @@ export default function GameCanvas({
     // Create initial state immediately
     const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
     gameStateRef.current = state;
+
+    // Create engine bridge (runs in fallback mode — same main-thread behavior,
+    // but provides the abstraction layer to switch to Web Worker when desired)
+    const bridge = new EngineBridge();
+    engineBridgeRef.current = bridge;
 
     // Load high score from localStorage
     try {
@@ -682,6 +689,10 @@ export default function GameCanvas({
       audio.destroy();
       if (renderer) renderer.destroy();
       rendererRef.current = null;
+      if (engineBridgeRef.current) {
+        engineBridgeRef.current.destroy();
+        engineBridgeRef.current = null;
+      }
     };
   }, [updateScale, processUnlocks]);
 

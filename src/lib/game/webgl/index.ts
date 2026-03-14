@@ -1,7 +1,7 @@
-// WebGL2 Game Engine Modules
-export { SpriteAtlas, WHITE_REGION_KEY } from "./sprite-atlas";
-export type { AtlasRegion } from "./sprite-atlas";
-export { SpriteBatch } from "./sprite-batch";
-export { GPUParticleRenderer } from "./gpu-particles";
+// Backward-compat re-exports — modules now live under renderer/webgl/
+export { SpriteAtlas, WHITE_REGION_KEY } from "../renderer/webgl/sprite-atlas";
+export type { AtlasRegion } from "../renderer/webgl/sprite-atlas";
+export { SpriteBatch } from "../renderer/webgl/sprite-batch";
+export { GPUParticleRenderer } from "../renderer/webgl/gpu-particles";
 export { PostProcessor } from "./post-process";
-export { createProgram, createTexture, createFramebuffer, ortho, getUniform } from "./gl-utils";
+export { createProgram, createTexture, createFramebuffer, ortho, getUniform } from "../renderer/webgl/gl-utils";
