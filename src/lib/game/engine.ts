@@ -101,28 +101,29 @@ function difficultyMultiplier(score: number): number {
 // ---------------------------------------------------------------------------
 
 const LANE_TYPES = Object.keys(LANE_WEIGHTS) as LaneType[];
+const _lanePool: { type: LaneType; weight: number }[] = [];
 function pickLaneType(consecutiveCounts: Record<LaneType, number>): LaneType {
-  // Build available list respecting MAX_CONSECUTIVE
-  const available: { type: LaneType; weight: number }[] = [];
+  // Build available list respecting MAX_CONSECUTIVE (reuse pool to avoid GC)
+  _lanePool.length = 0;
   let totalAvailable = 0;
   for (const t of LANE_TYPES) {
     const max = MAX_CONSECUTIVE[t];
     if (consecutiveCounts[t] >= max) continue;
-    available.push({ type: t, weight: LANE_WEIGHTS[t] });
+    _lanePool.push({ type: t, weight: LANE_WEIGHTS[t] });
     totalAvailable += LANE_WEIGHTS[t];
   }
 
   // Fallback if everything is maxed (shouldn't happen with 4 types)
-  if (available.length === 0) {
+  if (_lanePool.length === 0) {
     return "grass";
   }
 
   let r = Math.random() * totalAvailable;
-  for (const entry of available) {
+  for (const entry of _lanePool) {
     r -= entry.weight;
     if (r <= 0) return entry.type;
   }
-  return available[available.length - 1].type;
+  return _lanePool[_lanePool.length - 1].type;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Trophy, Lock } from "lucide-react";
 import * as Icons from "lucide-react";
 import {
@@ -24,10 +25,10 @@ function AchievementIcon({ iconName, className }: { iconName: string; className?
 
 export function AchievementPanel() {
   const { profile, isAuthenticated, loading } = useVisitor();
+  const unlockedIds = useMemo(() => new Set(profile?.achievements ?? []), [profile?.achievements]);
 
   if (!isAuthenticated || loading) return null;
 
-  const unlockedIds = new Set(profile?.achievements ?? []);
   const unlockedCount = unlockedIds.size;
   const totalCount = getTotalAchievementCount();
 

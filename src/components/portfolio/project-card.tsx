@@ -11,9 +11,10 @@ const gradientClasses = ["project-gradient-1", "project-gradient-2"];
 interface ProjectCardProps {
   project: Project;
   featured?: boolean;
+  priority?: boolean;
 }
 
-export function ProjectCard({ project, featured }: ProjectCardProps) {
+export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
   const gradientClass = gradientClasses[project.title.length % gradientClasses.length];
   const heightClass = featured ? "h-56" : "h-48";
 
@@ -24,9 +25,10 @@ export function ProjectCard({ project, featured }: ProjectCardProps) {
           <Image
             src={project.image}
             alt={project.title}
-            width={400}
-            height={225}
-            className={`w-full ${heightClass} object-cover rounded-t-lg`}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority={priority}
+            className="object-cover rounded-t-lg"
           />
         </div>
       ) : (

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { ToolRenderer } from "@/components/tools/tool-renderer";
@@ -11,14 +12,20 @@ interface ToolPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: ToolPageProps): Promise<Metadata> {
-  const { slug } = await params;
+const getTool = cache(async (slug: string) => {
   const supabase = await createClient();
-  const { data: tool } = await supabase
+  const { data, error } = await supabase
     .from("tools")
-    .select("name, description")
+    .select("*")
     .eq("slug", slug)
     .single();
+  if (error || !data) return null;
+  return data as Tool;
+});
+
+export async function generateMetadata({ params }: ToolPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const tool = await getTool(slug);
   return {
     title: tool?.name ?? "Tool",
     description: tool?.description ?? undefined,
@@ -27,19 +34,11 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
 
 export default async function ToolPage({ params }: ToolPageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const tool = await getTool(slug);
 
-  const { data, error } = await supabase
-    .from("tools")
-    .select("*")
-    .eq("slug", slug)
-    .single();
-
-  if (error || !data) {
+  if (!tool) {
     notFound();
   }
-
-  const tool = data as Tool;
 
   const badgeColors = {
     internal: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
