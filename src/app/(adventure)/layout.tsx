@@ -4,8 +4,8 @@ import { isAdminEmail } from "@/lib/utils";
 
 export default async function AdventureLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const isAdmin = isAdminEmail(user?.email);
+  const { data } = await supabase.auth.getClaims();
+  const isAdmin = isAdminEmail(data?.claims?.email as string | undefined);
 
   return (
     <div className="flex min-h-screen flex-col">

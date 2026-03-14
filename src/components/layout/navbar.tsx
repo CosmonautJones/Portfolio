@@ -4,7 +4,6 @@ import { useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { motion } from "motion/react";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -69,10 +68,8 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
               >
                 {link.label}
                 {isActive && (
-                  <motion.div
-                    layoutId="nav-underline"
+                  <div
                     className="absolute -bottom-[19px] left-0 right-0 h-[2px] nav-underline"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
               </Link>

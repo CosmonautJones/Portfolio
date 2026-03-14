@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, hasAuthCookies } from "@/lib/supabase/client";
 import {
   getProfile,
   awardXP as serverAwardXP,
@@ -57,6 +57,16 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     async function loadProfile() {
+      // Fast path: skip all Supabase calls if no auth cookies exist
+      if (!hasAuthCookies()) {
+        if (mounted) {
+          setProfile(null);
+          setIsAuthenticated(false);
+          setLoading(false);
+        }
+        return;
+      }
+
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
