@@ -50,13 +50,22 @@ export function useLeaderboard(options: UseLeaderboardOptions = {}) {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  // Polling
+  // Polling — skip when tab is hidden, refresh immediately on visibility
   useEffect(() => {
-    intervalRef.current = setInterval(fetchLeaderboard, pollInterval);
+    intervalRef.current = setInterval(() => {
+      if (!document.hidden) fetchLeaderboard();
+    }, pollInterval);
+
+    function handleVisibility() {
+      if (!document.hidden) fetchLeaderboard();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [fetchLeaderboard, pollInterval]);
 
