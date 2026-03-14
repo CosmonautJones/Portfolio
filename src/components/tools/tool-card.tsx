@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Tool } from "@/lib/types";
-import * as Icons from "lucide-react";
-import { Wrench } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-function isLucideIcon(name: string): name is keyof typeof Icons {
-  return name in Icons && typeof (Icons as Record<string, unknown>)[name] === "function";
-}
+import { getIcon } from "@/lib/icon-map";
 
 const typeStyles = {
   internal: {
@@ -33,9 +27,7 @@ interface ToolCardProps {
 
 export function ToolCard({ tool }: ToolCardProps) {
   const iconName = toPascalCase(tool.icon || "wrench");
-  const IconComponent: LucideIcon = isLucideIcon(iconName)
-    ? (Icons[iconName] as LucideIcon)
-    : Wrench;
+  const IconComponent = getIcon(iconName);
 
   const styles = typeStyles[tool.type] ?? typeStyles.internal;
 

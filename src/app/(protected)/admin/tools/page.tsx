@@ -12,7 +12,7 @@ async function AdminToolsList() {
   const supabase = await createClient();
   const { data: tools, error } = await supabase
     .from("tools")
-    .select("*")
+    .select("id, slug, name, type, status, url, description, tags, icon, build_hook_url, created_at")
     .order("created_at", { ascending: true });
 
   if (error) {

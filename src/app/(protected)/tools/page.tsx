@@ -14,7 +14,7 @@ async function ToolsList() {
   const { data: { user } } = await supabase.auth.getUser();
   const isAdmin = isAdminEmail(user?.email);
 
-  let query = supabase.from("tools").select("*").order("created_at", { ascending: true });
+  let query = supabase.from("tools").select("id, slug, name, type, status, url, description, tags, icon, created_at").order("created_at", { ascending: true });
   if (!isAdmin) {
     query = query.eq("status", "enabled");
   }
