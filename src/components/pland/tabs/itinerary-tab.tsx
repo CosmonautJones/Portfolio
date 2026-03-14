@@ -31,6 +31,7 @@ import {
   Utensils,
   Bed,
   Tag,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -148,11 +149,15 @@ export function ItineraryTab({ tripId, trip, isAuthenticated }: ItineraryTabProp
   return (
     <div className="space-y-8">
       {sortedDates.length === 0 && items.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <Calendar className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold">No activities yet</h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
             {trip.start_date
-              ? "No activities yet. Add your first one!"
-              : "Set trip dates to start planning your itinerary."}
+              ? "Start building your day-by-day itinerary — add activities, transport, and meals."
+              : "Set trip dates first to start planning your itinerary."}
           </p>
         </div>
       )}

@@ -211,8 +211,14 @@ export function AccommodationsTab({ tripId, isAuthenticated }: AccommodationsTab
       </div>
 
       {accommodations.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No accommodations added yet.</p>
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <Bed className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold">No accommodations yet</h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Track hotels, Airbnbs, and other stays — including dates, costs, and booking links.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

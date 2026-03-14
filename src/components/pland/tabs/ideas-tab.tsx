@@ -23,6 +23,7 @@ import {
   DollarSign,
   Check,
   X,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -190,9 +191,17 @@ export function IdeasTab({ tripId, isAuthenticated }: IdeasTabProps) {
 
       {/* Ideas Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            {ideas.length === 0 ? "No ideas yet. Be the first to suggest something!" : "No ideas match this filter."}
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <Lightbulb className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold">
+            {ideas.length === 0 ? "No ideas yet" : "No ideas match this filter"}
+          </h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            {ideas.length === 0
+              ? "Drop in links, activities, or places to research later. Vote on your favorites!"
+              : "Try selecting a different filter to see more ideas."}
           </p>
         </div>
       ) : (

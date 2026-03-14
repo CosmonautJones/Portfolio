@@ -40,13 +40,13 @@ function statusVariant(status: PlandTrip["status"]) {
 export function TripList({ trips, onSelectTrip }: TripListProps) {
   if (trips.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-20">
-        <MapPin className="mb-4 h-10 w-10 text-muted-foreground" />
-        <p className="text-lg font-medium text-muted-foreground">
-          No trips yet
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Create your first trip to get started.
+      <div className="animate-fade-up flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+          <MapPin className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+        <h3 className="mb-2 text-lg font-semibold">No trips yet</h3>
+        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+          Plan your next adventure — create a trip to start organizing destinations, itineraries, and expenses.
         </p>
       </div>
     );

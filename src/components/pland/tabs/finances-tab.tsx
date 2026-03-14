@@ -268,8 +268,14 @@ export function FinancesTab({ tripId, members, isAuthenticated }: FinancesTabPro
       </div>
 
       {expenses.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No expenses recorded yet.</p>
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <DollarSign className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold">No expenses yet</h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Log expenses and split costs among group members to keep finances transparent.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -129,8 +129,14 @@ export function GalleryTab({ tripId, isAuthenticated }: GalleryTabProps) {
 
       {/* Gallery Grid */}
       {items.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No photos yet. Add your first one!</p>
+        <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <Image className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold">No photos yet</h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Capture the memories — add photo URLs to build a shared trip gallery.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 auto-rows-[200px]">

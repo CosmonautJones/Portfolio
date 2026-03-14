@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { Send, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { getMessages, sendMessage } from "@/actions/pland";
 import type { PlandMessage } from "@/lib/types";
@@ -83,9 +83,13 @@ export function ChatTab({ tripId, isAuthenticated }: ChatTabProps) {
       {/* Messages */}
       <div ref={containerRef} className="flex-1 overflow-y-auto space-y-3 p-4">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground text-sm">
-              No messages yet. Start the conversation!
+          <div className="animate-fade-up flex flex-col items-center justify-center h-full text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+              <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold">No messages yet</h3>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Start the conversation — discuss plans, share updates, and coordinate with your group.
             </p>
           </div>
         ) : (

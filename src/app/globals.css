@@ -511,6 +511,10 @@
   transition: border-color 0.2s, box-shadow 0.3s;
 }
 
+/* ─── Scrollbar hide utility ─── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ─── Reduced motion — respect user preference ─── */
 @media (prefers-reduced-motion: reduce) {
   *,

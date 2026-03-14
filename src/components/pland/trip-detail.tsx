@@ -136,7 +136,8 @@ export function TripDetail({ tripId, onBack, isAuthenticated }: TripDetailProps)
       {/* Main content */}
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start">
+          <div className="w-full overflow-x-auto scrollbar-hide">
+          <TabsList className="w-full justify-start inline-flex min-w-max">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
             <TabsTrigger value="ideas">Ideas</TabsTrigger>
@@ -145,6 +146,7 @@ export function TripDetail({ tripId, onBack, isAuthenticated }: TripDetailProps)
             <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="overview" className="mt-6 space-y-4">
             <div className="rounded-lg border p-6">
