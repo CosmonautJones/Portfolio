@@ -9,7 +9,7 @@ import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Learn about Travis Jones — a software developer focused on clean architecture, intuitive interfaces, and shipping products people want to use.",
+  description: "Travis Jones — a developer who builds game engines for fun, hides easter eggs in production, and writes zero any types.",
 };
 
 export default function AboutPage() {
@@ -23,14 +23,16 @@ export default function AboutPage() {
       <AnimateOnScroll delay={0.1}>
         <div className="mt-8 space-y-5 text-lg leading-relaxed text-muted-foreground">
           <p>
-            I&apos;m a software developer who thrives at the intersection of design and
-            engineering. I build full-stack applications with a focus on clean architecture,
-            intuitive interfaces, and shipping products that people actually want to use.
+            I&apos;m the kind of developer who builds a game engine to prove TypeScript can ship
+            a real arcade game, hides easter eggs in a portfolio site because life&apos;s too
+            short for boring software, and writes zero <code className="text-foreground/80">any</code> types
+            because I actually like sleeping at night.
           </p>
           <p>
-            With experience spanning React, Node.js, Python, and cloud infrastructure, I bring
-            ideas to life from concept to deployment. I care deeply about code quality, developer
-            experience, and creating software that stands the test of time.
+            Full-stack means full-stack: I design database schemas with row-level security,
+            write game renderers with bloom post-processing, animate SVG cocktails layer by layer,
+            and still make sure the button has an <code className="text-foreground/80">aria-label</code>.
+            From concept to deploy, I care about every pixel and every millisecond.
           </p>
         </div>
       </AnimateOnScroll>

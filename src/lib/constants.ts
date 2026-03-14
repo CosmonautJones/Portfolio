@@ -3,7 +3,7 @@ import type { Project } from "@/lib/types";
 export const SITE_CONFIG = {
   name: "Travis Jones",
   title: "Software Developer",
-  tagline: "Building software that makes an impact.",
+  tagline: "I build things you actually want to click on.",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -22,7 +22,7 @@ export const PROJECTS: Project[] = [
   {
     title: "Pixel Art Editor",
     description:
-      "A browser-based pixel art canvas with a 32-color palette, drawing tools, flood fill, and PNG export. Draw, erase, and create retro-style artwork right in the browser.",
+      "I wanted to see how far the Canvas API could go in the browser. This is a full drawing tool with flood fill, a 32-color palette, and PNG export — no dependencies, just pixels and math.",
     image: "/projects/pixel-art-editor.jpg",
     tags: ["Canvas API", "React", "TypeScript"],
     demoUrl: "/work/pixel-art-editor",
@@ -33,9 +33,9 @@ export const PROJECTS: Project[] = [
   {
     title: "Cocktail Mixer",
     description:
-      "Pick a cocktail and watch an animated step-by-step recipe unfold. Each ingredient pours in with smooth animations, building the drink visually layer by layer.",
+      "An animation playground disguised as a bartending app. Pick a drink, watch each ingredient pour in with layered SVG animations, and unlock a secret 7th cocktail if you try them all.",
     image: "/projects/cocktail-mixer.jpg",
-    tags: ["Animation", "React", "CSS"],
+    tags: ["Animation", "SVG", "React"],
     demoUrl: "/work/cocktail-mixer",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Interactive Demo",
@@ -44,9 +44,9 @@ export const PROJECTS: Project[] = [
   {
     title: "ClaudeBot's Adventure",
     description:
-      "A retro arcade game built with HTML5 Canvas. Help ClaudeBot cross rivers, dodge traffic, and chase a high score on the global leaderboard.",
+      "A from-scratch game engine: fixed-timestep loop, procedural level generation, WebGL rendering with bloom, and procedural audio — zero audio files. Built to prove that TypeScript can ship a real arcade game.",
     image: "/projects/claudebot-adventure.jpg",
-    tags: ["Game Engine", "Canvas API", "TypeScript", "Web Audio"],
+    tags: ["Game Engine", "WebGL", "TypeScript", "Web Audio"],
     demoUrl: "/adventure",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Game",
@@ -54,12 +54,12 @@ export const PROJECTS: Project[] = [
   {
     title: "Plan'd",
     description:
-      "A group trip planning app with itineraries, expense splitting, ideas board, accommodations tracking, group chat, and a photo gallery. Plan everything in one place.",
+      "Group trips fall apart in group chats. This is the fix: shared itineraries, expense splitting that tracks who owes what, an ideas board, and real-time chat — all backed by Supabase with row-level security.",
     image: "/projects/pland.jpg",
     tags: ["Next.js", "Supabase", "TypeScript", "Real-time"],
     demoUrl: "/pland",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
-    role: "Prototype",
+    role: "Full-Stack App",
   },
 ];
 
@@ -88,24 +88,24 @@ export const EXPERIENCE = [
     year: "2024",
     title: "Senior Software Developer",
     description:
-      "Building full-stack applications with modern web technologies. Focused on developer tooling, AI integrations, and shipping products that users love.",
+      "Leading architecture for full-stack products. Built developer tools and AI integrations that shipped to production. This portfolio — game engine, progression system, admin panel — is the after-hours work.",
   },
   {
     year: "2022",
     title: "Software Developer",
     description:
-      "Delivered production features across React and Node.js applications. Collaborated closely with product and design to iterate quickly.",
+      "Shipped production features across React and Node.js apps. Owned end-to-end delivery from database migrations to deployed UI. Got fast at turning product ideas into working software.",
   },
   {
     year: "2019",
     title: "Junior Developer",
     description:
-      "Shipped first production apps. Built MERN stack projects, contributed to open-source, and developed a passion for clean, maintainable code.",
+      "First production apps in the wild. Built MERN stack projects, caught the open-source bug, and learned that the best code is the code someone else can read at 2 AM.",
   },
   {
     year: "2018",
-    title: "Started Coding",
+    title: "Wrote My First Line of Code",
     description:
-      "Wrote my first lines of code and never looked back. Self-taught fundamentals through online courses, personal projects, and relentless curiosity.",
+      "Self-taught through online courses, side projects, and an unhealthy amount of Stack Overflow. Turned curiosity into a career.",
   },
 ];

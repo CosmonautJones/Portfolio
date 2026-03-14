@@ -80,7 +80,7 @@ export function ContactForm() {
             aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.name.message}</p>
           )}
         </div>
 
@@ -95,7 +95,7 @@ export function ContactForm() {
             aria-invalid={!!errors.email}
           />
           {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.email.message}</p>
           )}
         </div>
 
@@ -109,7 +109,7 @@ export function ContactForm() {
             aria-invalid={!!errors.message}
           />
           {errors.message && (
-            <p className="text-sm text-destructive">{errors.message.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.message.message}</p>
           )}
         </div>
 

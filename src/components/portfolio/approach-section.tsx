@@ -7,21 +7,21 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 const principles = [
   {
     icon: Users,
-    title: "User-First",
+    title: "Obsessively User-First",
     description:
-      "Every decision starts with the user. I prioritize clarity, speed, and intuitive interfaces.",
+      "If a feature is technically impressive but confusing to use, it failed. I start with what people need and work backwards to the code.",
   },
   {
     icon: RefreshCw,
-    title: "Iterative",
+    title: "Ship It, Then Perfect It",
     description:
-      "Ship early, learn fast. I work in tight feedback loops to find the best solution.",
+      "I'd rather show you a working prototype tomorrow than a perfect spec next month. Tight feedback loops beat long planning cycles every time.",
   },
   {
     icon: Blocks,
-    title: "Maintainable",
+    title: "Built to Last",
     description:
-      "Code is read more than it's written. I write clean, well-structured code.",
+      "I write code like someone else will maintain it at 2 AM. Strict types, meaningful tests, clear boundaries. Future me always sends thanks.",
   },
 ];
 
