@@ -1,14 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import * as Icons from "lucide-react";
-import { Trophy } from "lucide-react";
+import { getIcon } from "@/lib/icon-map";
 import type { Achievement } from "@/lib/types";
 
 function AchievementIcon({ iconName, className }: { iconName: string; className?: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const IconComponent = (Icons as any)[iconName] as React.ComponentType<{ className?: string }> | undefined;
-  if (!IconComponent) return <Trophy className={className} />;
+  const IconComponent = getIcon(iconName);
   return <IconComponent className={className} />;
 }
 

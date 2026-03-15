@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
-import { LevelUpOverlay } from "@/components/progression/level-up-overlay";
 import { TerminalProvider } from "@/components/terminal/terminal-provider";
-import { TerminalSheet } from "@/components/terminal/terminal-sheet";
-import { KonamiEffects } from "@/components/easter-eggs/konami-effects";
 import "./globals.css";
+
+const TerminalSheet = dynamic(
+  () => import("@/components/terminal/terminal-sheet").then((m) => ({ default: m.TerminalSheet })),
+);
+const KonamiEffects = dynamic(
+  () => import("@/components/easter-eggs/konami-effects").then((m) => ({ default: m.KonamiEffects })),
+);
+const LevelUpOverlay = dynamic(
+  () => import("@/components/progression/level-up-overlay").then((m) => ({ default: m.LevelUpOverlay })),
+);
 
 
 export const metadata: Metadata = {

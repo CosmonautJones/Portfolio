@@ -15,14 +15,14 @@ export function AboutPreview() {
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.05}>
         <blockquote className="border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
-          &ldquo;A developer who cares about craft, clarity, and shipping things that actually
-          work.&rdquo;
+          &ldquo;A developer who builds game engines for fun, hides easter eggs in production,
+          and writes zero <code className="text-foreground/80">any</code> types.&rdquo;
         </blockquote>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.1}>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-          I build full-stack applications with a focus on clean architecture, intuitive interfaces,
-          and delivering real value. Curious to learn more?
+          From concept to deploy, I care about every pixel and every millisecond.
+          Want the full story?
         </p>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.15}>

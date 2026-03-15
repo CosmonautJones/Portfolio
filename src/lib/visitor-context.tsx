@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -46,11 +47,14 @@ export const VisitorContext = createContext<VisitorContextValue>({
 
 // Session-level dedup for "per_session" XP actions
 const sessionAwarded = new Set<string>();
+let streakUpdatedThisSession = false;
 
 export function VisitorProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const profileRef = useRef<Profile | null>(null);
+  profileRef.current = profile;
 
   // Load profile on mount + listen to auth changes
   useEffect(() => {
@@ -87,8 +91,9 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       }
       if (mounted) setLoading(false);
 
-      // Update streak on load
-      if (session) {
+      // Update streak on load (once per session)
+      if (session && !streakUpdatedThisSession) {
+        streakUpdatedThisSession = true;
         const streakResult = await updateStreak();
         if ("streakDays" in streakResult && mounted) {
           setProfile((prev) =>
@@ -157,7 +162,8 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
 
   const awardXP = useCallback(
     (action: XPAction, meta?: Record<string, unknown>) => {
-      if (!isAuthenticated || !profile) return;
+      const currentProfile = profileRef.current;
+      if (!isAuthenticated || !currentProfile) return;
 
       const award = XP_AWARDS[action];
       if (!award) return;
@@ -165,7 +171,6 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       // Dedup check
       const dedupKey = `${action}:${meta?.key ?? ""}`;
       if (award.rule === "once_ever") {
-        // Check if we've logged this event type before in achievements/events
         if (sessionAwarded.has(dedupKey)) return;
       }
       if (award.rule === "per_session") {
@@ -174,7 +179,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
 
       sessionAwarded.add(dedupKey);
 
-      const oldLevel = profile.level;
+      const oldLevel = currentProfile.level;
 
       // Optimistic UI update
       setProfile((prev) => {
@@ -191,10 +196,9 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       });
 
       // Check for level up
-      const newXP = profile.xp + award.xp;
+      const newXP = currentProfile.xp + award.xp;
       const newLevelInfo = getLevelForXP(newXP);
       if (newLevelInfo.level > oldLevel) {
-        // Delay level-up toast slightly so it stacks after XP toast
         setTimeout(() => {
           toast.success(`Level Up! Level ${newLevelInfo.level}`, {
             description: `New title: ${newLevelInfo.title}`,
@@ -207,15 +211,15 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       serverAwardXP(award.xp, action);
       serverTrackEvent(action, meta ?? {});
     },
-    [isAuthenticated, profile]
+    [isAuthenticated]
   );
 
   const unlockAchievement = useCallback(
     (id: string) => {
-      if (!isAuthenticated || !profile) return;
-      checkAndUnlockAchievement(id, profile);
+      if (!isAuthenticated || !profileRef.current) return;
+      checkAndUnlockAchievement(id, profileRef.current);
     },
-    [isAuthenticated, profile]
+    [isAuthenticated]
   );
 
   const trackEvent = useCallback(
