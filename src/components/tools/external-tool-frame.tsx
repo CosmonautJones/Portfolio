@@ -24,6 +24,7 @@ export function ExternalToolFrame({ tool }: ExternalToolFrameProps) {
         src={tool.url!}
         className="h-[calc(100vh-16rem)] w-full rounded-lg border"
         title={tool.name}
+        loading="lazy"
         sandbox="allow-scripts allow-forms allow-popups"
       />
     </div>

@@ -7,7 +7,7 @@ import { AboutPreview } from "@/components/portfolio/about-preview";
 export const metadata: Metadata = {
   title: "Home",
   description:
-    "Portfolio of Travis Jones — software developer building clean, impactful products.",
+    "Travis Jones — I build things you actually want to click on. Full-stack developer, game engine tinkerer, easter egg hider.",
 };
 
 export default function HomePage() {

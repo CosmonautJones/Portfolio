@@ -18,6 +18,7 @@ export function EmbeddedToolFrame({ tool }: EmbeddedToolFrameProps) {
         src={`/api/embed/${tool.slug}`}
         className="h-[calc(100vh-16rem)] w-full rounded-lg border"
         title={tool.name}
+        loading="lazy"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
       />
     </div>

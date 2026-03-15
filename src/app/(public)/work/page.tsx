@@ -23,7 +23,7 @@ export default function WorkPage() {
         </AnimateOnScroll>
         <AnimateOnScroll delay={0.1}>
           <p className="mt-4 text-lg text-muted-foreground">
-            Interactive demos and projects I&apos;ve built.
+            Each project started with &ldquo;I wonder if I could&hellip;&rdquo; &mdash; here&apos;s what happened next.
           </p>
         </AnimateOnScroll>
       </div>

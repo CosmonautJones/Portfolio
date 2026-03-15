@@ -9,19 +9,19 @@ const items = [
     icon: Code2,
     title: "Full-Stack Development",
     description:
-      "From React frontends to Node.js APIs and PostgreSQL databases — I build across the entire stack.",
+      "Database schemas with row-level security one hour, WebGL bloom shaders the next. If it runs on the web, I\u2019ve probably argued with it.",
   },
   {
     icon: Layers,
     title: "System Design",
     description:
-      "Clean architecture, scalable patterns, and thoughtful abstractions that make codebases a joy to work in.",
+      "I write code like someone else will debug it at 2 AM \u2014 because that someone is usually me. Strict types, clear boundaries, zero any.",
   },
   {
     icon: Rocket,
     title: "Product Delivery",
     description:
-      "Shipping features that users actually need. Fast iteration, clear communication, and a bias for action.",
+      "Working software beats perfect specs. I ship fast, gather feedback faster, and save the polish for what actually matters.",
   },
 ];
 

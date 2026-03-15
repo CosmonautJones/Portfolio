@@ -12,23 +12,23 @@ export const DEFAULT_CONFIG: GameConfig = {
 };
 
 export const LANE_WEIGHTS = {
-  grass: 30,
-  road: 50,
-  water: 15,
+  grass: 40,
+  road: 35,
+  water: 20,
   railroad: 5,
 } as const;
 
 export const MAX_CONSECUTIVE = {
-  road: 4,
+  road: 3,
   water: 3,
   railroad: 1,
   grass: 3,
 } as const;
 
-export const SAFE_START_LANES = 4;
+export const SAFE_START_LANES = 6;
 
 export const SPEED_RANGES = {
-  car: { min: 60, max: 140 },
+  car: { min: 45, max: 140 },
   truck: { min: 40, max: 100 },
   train: { min: 240, max: 360 },
   log: { min: 30, max: 80 },
