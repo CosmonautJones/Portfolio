@@ -27,6 +27,8 @@ interface PlayerStats {
   totalCoins: number;
   favoriteDeath: string;
   lastPlayed: string;
+  bestCoins?: number;
+  bestCoinBonus?: number;
 }
 
 export function StatsPanel({ refreshKey }: StatsPanelProps) {
@@ -57,6 +59,15 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
     { label: "Nemesis", value: `${getDeathIcon(stats.favoriteDeath)} ${stats.favoriteDeath}` },
   ];
 
+  const personalBests = [
+    ...(stats.bestCoins !== undefined && stats.bestCoins > 0
+      ? [{ label: "Best Coins", value: String(stats.bestCoins), color: "#ffcd75" }]
+      : []),
+    ...(stats.bestCoinBonus !== undefined && stats.bestCoinBonus > 0
+      ? [{ label: "Best Bonus", value: `+${stats.bestCoinBonus}`, color: "#a7f070" }]
+      : []),
+  ];
+
   return (
     <RetroPanel title="Your Stats">
       <div className="space-y-1">
@@ -70,6 +81,36 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
           </div>
         ))}
       </div>
+
+      {/* Personal Bests Section */}
+      {personalBests.length > 0 && (
+        <>
+          <div
+            className="my-1.5"
+            style={{
+              height: 1,
+              background: "linear-gradient(to right, transparent, #333c57, transparent)",
+            }}
+          />
+          <div
+            className="font-mono text-[9px] uppercase tracking-wider mb-1 text-center"
+            style={{ color: "#ffcd75", textShadow: "0 0 4px rgba(255, 205, 117, 0.3)" }}
+          >
+            Personal Bests
+          </div>
+          <div className="space-y-1">
+            {personalBests.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center justify-between font-mono text-[11px]"
+              >
+                <span style={{ color: "#566c86" }}>{row.label}</span>
+                <span style={{ color: row.color ?? "#94b0c2" }}>{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </RetroPanel>
   );
 }

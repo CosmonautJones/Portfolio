@@ -116,6 +116,16 @@ export async function getPlayerStats(gameType = "adventure") {
       }
     }
 
+    // Personal bests: best coins in single run
+    const bestCoins = Math.max(
+      ...data.map((d) => (d.coins_collected as number) ?? 0),
+    );
+
+    // Best coin bonus in single run
+    const bestCoinBonus = Math.max(
+      ...data.map((d) => (d.coin_bonus as number) ?? 0),
+    );
+
     return {
       stats: {
         gamesPlayed: data.length,
@@ -125,6 +135,9 @@ export async function getPlayerStats(gameType = "adventure") {
         totalCoins,
         favoriteDeath,
         lastPlayed: data[0].created_at,
+        // Personal bests
+        bestCoins,
+        bestCoinBonus,
       },
     };
   });

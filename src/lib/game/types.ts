@@ -153,3 +153,100 @@ export interface GameConfig {
   cameraSmoothing: number;
   fixedTimestep: number;
 }
+
+// --- Ghost Run System ---
+
+export interface GhostFrame {
+  /** Game tick at which this frame was recorded */
+  tick: number;
+  /** Grid X position */
+  x: number;
+  /** Grid Y position */
+  y: number;
+  /** Facing direction */
+  dir: Direction;
+}
+
+export interface GhostRun {
+  /** Score achieved during this ghost run */
+  score: number;
+  /** Compressed frames (only position-change frames stored) */
+  frames: GhostFrame[];
+  /** When the ghost run was recorded */
+  recordedAt: string;
+}
+
+// --- Challenge System ---
+
+export type ChallengeType = "score_target" | "collection" | "survival" | "restriction";
+export type ChallengePeriod = "daily" | "weekly";
+export type RestrictionKind = "no_water_death" | "no_coins";
+
+export interface ChallengeParams {
+  /** For score_target: the score to reach */
+  targetScore?: number;
+  /** For collection: number of coins to collect */
+  targetCoins?: number;
+  /** For collection: specific coin type required */
+  coinType?: CoinType;
+  /** For survival: seconds to survive */
+  targetSeconds?: number;
+  /** For survival: level to reach */
+  targetLevel?: number;
+  /** For restriction: the restriction kind */
+  restriction?: RestrictionKind;
+  /** For restriction: score to reach under restriction */
+  restrictedScore?: number;
+}
+
+export interface Challenge {
+  /** Deterministic ID based on date + index */
+  id: string;
+  /** Challenge type */
+  type: ChallengeType;
+  /** Challenge parameters */
+  params: ChallengeParams;
+  /** Human-readable description */
+  description: string;
+  /** XP reward on completion */
+  xpReward: number;
+  /** Daily or weekly */
+  period: ChallengePeriod;
+}
+
+export interface ChallengeProgress {
+  /** Challenge ID */
+  challengeId: string;
+  /** Current progress value (e.g., score reached, coins collected) */
+  current: number;
+  /** Target value to complete */
+  target: number;
+  /** Whether the challenge is completed */
+  completed: boolean;
+  /** Whether a restriction was violated */
+  violated?: boolean;
+}
+
+// --- Personal Bests ---
+
+export interface PersonalBests {
+  bestScore: number;
+  mostCoins: number;
+  longestSurvivalMs: number;
+  highestLevel: number;
+  highestCombo: number;
+}
+
+// --- Run Summary ---
+
+export interface RunSummary {
+  score: number;
+  level: number;
+  coinsCollected: number;
+  coinBonus: number;
+  deathCause: DeathCause | null;
+  survivalTimeMs: number;
+  isNewHighScore: boolean;
+  personalBestsBeaten: (keyof PersonalBests)[];
+  challengesCompleted: string[];
+}

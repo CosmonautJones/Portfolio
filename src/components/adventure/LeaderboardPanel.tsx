@@ -1,7 +1,7 @@
 "use client";
 
 import { RetroPanel } from "./RetroPanel";
-import type { LeaderboardEntry } from "@/hooks/use-leaderboard";
+import type { LeaderboardEntry } from "@/hooks/use-realtime-leaderboard";
 import type { DeathCause } from "@/lib/game/types";
 
 function getDeathIcon(cause: string): string {

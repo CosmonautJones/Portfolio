@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useRef } from "react";
 import type { GamePhase } from "@/lib/game/types";
-import { useLeaderboard } from "@/hooks/use-leaderboard";
+import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard";
 import { LeaderboardPanel } from "./LeaderboardPanel";
 import { StatsPanel } from "./StatsPanel";
 import { CurrentRunPanel } from "./CurrentRunPanel";
 import { RecentScoresPanel } from "./RecentScoresPanel";
 import { ControlsPanel } from "./ControlsPanel";
 import { GameInfoPanel } from "./GameInfoPanel";
+import { ChallengePanel } from "./ChallengePanel";
 import { CRTToggle } from "./CRTOverlay";
 import GameCanvas from "./GameCanvas";
 
@@ -23,7 +24,7 @@ export function AdventureShell() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [, setTick] = useState(0); // force re-render for timer
 
-  const { entries, isLoading, refresh, lastUpdated } = useLeaderboard({
+  const { entries, isLoading, refresh, lastUpdated } = useRealtimeLeaderboard({
     pollInterval: 30000,
     limit: 10,
   });
@@ -112,6 +113,7 @@ export function AdventureShell() {
           lastUpdated={lastUpdated}
         />
         <RecentScoresPanel refreshKey={deathCount} />
+        <ChallengePanel refreshKey={deathCount} />
         <GameInfoPanel />
       </div>
     </div>
