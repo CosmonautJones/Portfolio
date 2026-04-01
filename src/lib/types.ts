@@ -81,6 +81,8 @@ export interface Achievement {
   secret: boolean;
   xpReward: number;
   condition: AchievementCondition;
+  /** Which system this achievement belongs to. Defaults to "site" for legacy achievements. */
+  context?: "site" | "game" | "both";
 }
 
 export type AchievementCondition =

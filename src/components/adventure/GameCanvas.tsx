@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import type { GamePhase, DeathCause } from "@/lib/game/types";
 import { saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { useGameEngine } from "@/hooks/use-game-engine";
 import { useGameSprites } from "@/hooks/use-game-sprites";
+import { useVisitor } from "@/hooks/use-visitor";
 import { CRTOverlay } from "./CRTOverlay";
 import { MenuOverlay } from "./MenuOverlay";
 import { GameHUD } from "./GameHUD";
@@ -30,6 +31,13 @@ export default function GameCanvas({
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Progression bridge: wire game events to site XP/achievements
+  const { awardXP, unlockAchievement } = useVisitor();
+  const awardXPRef = useRef(awardXP);
+  awardXPRef.current = awardXP;
+  const unlockAchievementRef = useRef(unlockAchievement);
+  unlockAchievementRef.current = unlockAchievement;
   const [canvasWidth, setCanvasWidth] = useState(VIEWPORT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(VIEWPORT_HEIGHT);
   const [spriteStyle, setSpriteStyle] = useState<SpriteStyle>("pixel");
@@ -52,6 +60,24 @@ export default function GameCanvas({
     onDeath: onDeathExternal,
     onCoinUpdate: onCoinUpdateExternal,
   });
+
+  // Award XP when game starts
+  const prevPhaseRef = useRef<GamePhase>("menu");
+  useEffect(() => {
+    if (engineState.phase === "playing" && prevPhaseRef.current !== "playing") {
+      awardXPRef.current("play_game");
+    }
+    prevPhaseRef.current = engineState.phase;
+  }, [engineState.phase]);
+
+  // Award XP for score milestones on death
+  useEffect(() => {
+    if (engineState.phase === "game_over" && engineState.score > 0) {
+      if (engineState.score >= 50) awardXPRef.current("score_50");
+      if (engineState.score >= 100) awardXPRef.current("score_100");
+      if (engineState.score >= 200) awardXPRef.current("score_200");
+    }
+  }, [engineState.phase, engineState.score]);
 
   // Fractional scaling -- allow non-integer scales, cap at 6x
   const updateScale = useCallback(() => {

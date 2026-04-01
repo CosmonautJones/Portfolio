@@ -1,0 +1,27 @@
+{
+  "master_style": "Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+  "assets": {
+    "player_crab": {
+      "forward": "A single cute orange crab character named Claw’d facing directly forward toward the camera. He has two large claws and four small legs. Isometric front view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "away": "A single cute orange crab character named Claw’d viewed from behind, facing away from the camera. Orange shell and small back legs visible. Isometric back view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "left": "A single cute orange crab character named Claw’d facing the left side of the screen in profile. Left claw prominently visible. Isometric left-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "right": "A single cute orange crab character named Claw’d facing the right side of the screen in profile. Right claw prominently visible. Isometric right-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset."
+    },
+    "hazards_cars": {
+      "left": "A single small, blocky, retro-style sedan car facing the left side of the screen. Painted vibrant red. No visible windows or wheels, just geometric voxel shapes. Isometric left-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "right": "A single small, blocky, retro-style sedan car facing the right side of the screen. Painted vibrant red. No visible windows or wheels, just geometric voxel shapes. Isometric right-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset."
+    },
+    "hazards_trucks": {
+      "left": "A single long, blocky delivery truck facing the left side of the screen. Painted military green with a flat rectangular cargo back. Isometric left-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "right": "A single long, blocky delivery truck facing the right side of the screen. Painted military green with a flat rectangular cargo back. Isometric right-profile view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset."
+    },
+    "platforms": {
+      "log": "A simple, blocky wooden log resting horizontally across the screen. Made of flat brown voxel blocks with subtle wood grain color variations. Isometric 3/4 top-down view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset."
+    },
+    "environment_tiles": {
+      "grass": "A single square 3D game tile of grass. Made of varied shades of bright green voxels. Flat top with raised 3D blocky depth. Isometric top-down view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "road": "A single square 3D game tile of an asphalt road. Dark grey/blueish voxels with a bright yellow dashed line painted down the middle. Flat top with raised 3D blocky depth. Isometric top-down view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset.",
+      "water": "A single square 3D game tile of a river. Made of slightly translucent, vibrant blue voxels with subtle lighter blue highlights for ripples. Flat top with raised 3D blocky depth. Isometric top-down view. Minimalist 3D voxel style, high-quality matte plastic material, toy-like aesthetic, soft ambient lighting, clean sharp voxel edges, solid white background, high definition, professional game asset."
+    }
+  }
+}

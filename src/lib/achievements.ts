@@ -1,6 +1,10 @@
 import type { Achievement } from "@/lib/types";
 
-export const ACHIEVEMENTS: Achievement[] = [
+// ---------------------------------------------------------------------------
+// Site Achievements (exploration, interaction, secrets)
+// ---------------------------------------------------------------------------
+
+export const SITE_ACHIEVEMENTS: Achievement[] = [
   {
     id: "first_steps",
     name: "First Steps",
@@ -9,6 +13,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 10,
     condition: { type: "event", eventType: "first_visit" },
+    context: "site",
   },
   {
     id: "road_scholar",
@@ -18,6 +23,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 25,
     condition: { type: "event_count", eventType: "view_project", count: 3 },
+    context: "site",
   },
   {
     id: "mixologist",
@@ -27,6 +33,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 30,
     condition: { type: "event_count", eventType: "make_cocktail", count: 6 },
+    context: "site",
   },
   {
     id: "pixel_perfect",
@@ -36,6 +43,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 30,
     condition: { type: "event", eventType: "fill_canvas" },
+    context: "site",
   },
   {
     id: "hop_skip",
@@ -45,6 +53,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 25,
     condition: { type: "score", gameType: "adventure", threshold: 50 },
+    context: "both",
   },
   {
     id: "road_warrior",
@@ -54,6 +63,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 75,
     condition: { type: "score", gameType: "adventure", threshold: 200 },
+    context: "both",
   },
   {
     id: "night_owl",
@@ -63,6 +73,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 5,
     condition: { type: "event", eventType: "toggle_theme" },
+    context: "site",
   },
   {
     id: "konami",
@@ -72,6 +83,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: true,
     xpReward: 50,
     condition: { type: "manual" },
+    context: "site",
   },
   {
     id: "red_pill",
@@ -81,6 +93,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: true,
     xpReward: 50,
     condition: { type: "manual" },
+    context: "site",
   },
   {
     id: "halliday_egg",
@@ -90,6 +103,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: true,
     xpReward: 100,
     condition: { type: "manual" },
+    context: "site",
   },
   {
     id: "cartographer",
@@ -99,6 +113,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: true,
     xpReward: 150,
     condition: { type: "event_count", eventType: "find_easter_egg", count: 5 },
+    context: "site",
   },
   {
     id: "streak_3",
@@ -108,6 +123,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 30,
     condition: { type: "streak", days: 3 },
+    context: "site",
   },
   {
     id: "streak_7",
@@ -117,12 +133,183 @@ export const ACHIEVEMENTS: Achievement[] = [
     secret: false,
     xpReward: 75,
     condition: { type: "streak", days: 7 },
+    context: "site",
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Game Achievements (ClaudeBot's Adventure)
+// ---------------------------------------------------------------------------
+
+export const GAME_ACHIEVEMENTS: Achievement[] = [
+  {
+    id: "first_hop",
+    name: "First Steps",
+    description: "Score your first point",
+    icon: "Footprints",
+    secret: false,
+    xpReward: 5,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "score_25",
+    name: "Getting Somewhere",
+    description: "Reach a score of 25",
+    icon: "MapPin",
+    secret: false,
+    xpReward: 10,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "score_100",
+    name: "Century Club",
+    description: "Reach a score of 100",
+    icon: "Medal",
+    secret: false,
+    xpReward: 30,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "score_200",
+    name: "Maximum Overdrive",
+    description: "Reach a score of 200",
+    icon: "Rocket",
+    secret: false,
+    xpReward: 50,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "log_rider",
+    name: "Log Rider",
+    description: "Ride a log across the river",
+    icon: "TreePine",
+    secret: false,
+    xpReward: 10,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "level_3",
+    name: "Halfway There",
+    description: "Reach level 3",
+    icon: "Star",
+    secret: false,
+    xpReward: 15,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "level_6",
+    name: "Master Explorer",
+    description: "Reach level 6",
+    icon: "Crown",
+    secret: false,
+    xpReward: 40,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "death_water",
+    name: "Splashdown",
+    description: "Fall into the water",
+    icon: "Waves",
+    secret: false,
+    xpReward: 5,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "death_train",
+    name: "Wrong Track",
+    description: "Get hit by a train",
+    icon: "TrainFront",
+    secret: false,
+    xpReward: 5,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "death_all",
+    name: "Equal Opportunity",
+    description: "Die from all 5 causes",
+    icon: "Skull",
+    secret: false,
+    xpReward: 25,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "score_no_water",
+    name: "Aquaphobe",
+    description: "Score 50+ without touching water",
+    icon: "Ban",
+    secret: false,
+    xpReward: 20,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "comeback",
+    name: "Never Give Up",
+    description: "Beat your previous high score",
+    icon: "Flame",
+    secret: false,
+    xpReward: 15,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "first_coin",
+    name: "Shiny!",
+    description: "Collect your first coin",
+    icon: "CircleDot",
+    secret: false,
+    xpReward: 5,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "diamond_hunter",
+    name: "Diamond Hunter",
+    description: "Collect a diamond coin",
+    icon: "Gem",
+    secret: false,
+    xpReward: 15,
+    condition: { type: "manual" },
+    context: "game",
+  },
+  {
+    id: "coin_hoarder",
+    name: "Coin Hoarder",
+    description: "Collect 20+ coins in a single game",
+    icon: "Coins",
+    secret: false,
+    xpReward: 25,
+    condition: { type: "manual" },
+    context: "game",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Combined registry
+// ---------------------------------------------------------------------------
+
+/** All achievements from both site and game systems */
+export const ACHIEVEMENTS: Achievement[] = [
+  ...SITE_ACHIEVEMENTS,
+  ...GAME_ACHIEVEMENTS,
+];
+
+/** Fast lookup map by achievement ID */
+const ACHIEVEMENT_MAP = new Map(ACHIEVEMENTS.map((a) => [a.id, a]));
+
 /** Look up an achievement definition by ID */
 export function getAchievement(id: string): Achievement | undefined {
-  return ACHIEVEMENTS.find((a) => a.id === id);
+  return ACHIEVEMENT_MAP.get(id);
 }
 
 /** Get all non-secret achievements */
@@ -133,4 +320,28 @@ export function getPublicAchievements(): Achievement[] {
 /** Get count of total achievements */
 export function getTotalAchievementCount(): number {
   return ACHIEVEMENTS.length;
+}
+
+/** Get achievements filtered by context */
+export function getAchievementsByContext(context: "site" | "game" | "both"): Achievement[] {
+  return ACHIEVEMENTS.filter((a) => {
+    const ctx = a.context ?? "site";
+    return ctx === context || ctx === "both";
+  });
+}
+
+/** Get site achievements (includes "both") */
+export function getSiteAchievements(): Achievement[] {
+  return ACHIEVEMENTS.filter((a) => {
+    const ctx = a.context ?? "site";
+    return ctx === "site" || ctx === "both";
+  });
+}
+
+/** Get game achievements (includes "both") */
+export function getGameAchievements(): Achievement[] {
+  return ACHIEVEMENTS.filter((a) => {
+    const ctx = a.context ?? "site";
+    return ctx === "game" || ctx === "both";
+  });
 }
