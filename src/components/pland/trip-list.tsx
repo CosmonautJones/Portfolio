@@ -62,6 +62,7 @@ export function TripList({ trips, onSelectTrip }: TripListProps) {
         >
           {trip.cover_image_url && (
             <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={trip.cover_image_url}
                 alt={trip.name}

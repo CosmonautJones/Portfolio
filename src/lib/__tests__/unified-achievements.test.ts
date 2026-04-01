@@ -11,7 +11,6 @@ import {
   getGameAchievements,
 } from "../achievements";
 import { XP_AWARDS } from "../xp";
-import type { Achievement } from "@/lib/types";
 
 describe("Unified Achievement Registry", () => {
   describe("data integrity", () => {

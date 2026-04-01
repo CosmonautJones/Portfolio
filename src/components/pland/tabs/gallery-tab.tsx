@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Image, X } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   getGalleryItems,
@@ -80,7 +80,7 @@ export function GalleryTab({ tripId, isAuthenticated }: GalleryTabProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Image className="h-5 w-5" />
+          <ImageIcon className="h-5 w-5" />
           Gallery
         </h3>
         {isAuthenticated && (
@@ -131,7 +131,7 @@ export function GalleryTab({ tripId, isAuthenticated }: GalleryTabProps) {
       {items.length === 0 ? (
         <div className="animate-fade-up flex flex-col items-center justify-center py-16 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-            <Image className="h-8 w-8 text-muted-foreground/50" />
+            <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
           </div>
           <h3 className="mb-2 text-lg font-semibold">No photos yet</h3>
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -151,7 +151,7 @@ export function GalleryTab({ tripId, isAuthenticated }: GalleryTabProps) {
                 {isBroken ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center text-muted-foreground">
-                      <Image className="h-8 w-8 mx-auto mb-1 opacity-40" />
+                      <ImageIcon className="h-8 w-8 mx-auto mb-1 opacity-40" />
                       <span className="text-xs">Image unavailable</span>
                     </div>
                   </div>

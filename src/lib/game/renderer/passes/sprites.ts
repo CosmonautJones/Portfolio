@@ -3,7 +3,7 @@
 // ============================================================================
 
 import type { RenderPass, RenderResources, RenderState } from "../render-pass";
-import type { Lane, GameState } from "../../types";
+import type { Lane } from "../../types";
 import type { AtlasRegion } from "../webgl/sprite-atlas";
 import type { SpriteBatch } from "../webgl/sprite-batch";
 import type { SpriteAtlas } from "../webgl/sprite-atlas";

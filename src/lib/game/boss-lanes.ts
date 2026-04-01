@@ -152,7 +152,7 @@ function generateGauntlet(
   bufferEndY: number,
   config: GameConfig,
   nextId: { value: number },
-  score: number,
+  _score: number,
 ): Lane[] {
   const { cellSize, gridColumns } = config;
   const totalWidth = gridColumns * cellSize;

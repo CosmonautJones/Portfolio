@@ -5,7 +5,7 @@ import {
   checkBossClear,
   getBossSectionSize,
 } from "../boss-lanes";
-import type { GameState, GameCallbacks, BossPattern } from "../types";
+import type { GameState, GameCallbacks } from "../types";
 import {
   DEFAULT_CONFIG,
   BOSS_LEVEL_TRIGGERS,

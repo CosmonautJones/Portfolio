@@ -1,7 +1,6 @@
 import type {
   PowerUp,
   PowerUpType,
-  ActivePowerUp,
   GameState,
   GameConfig,
   GameCallbacks,
@@ -200,7 +199,6 @@ export function applyMagnetEffect(
       // Pull coin toward player — speed increases as they get closer
       const pullStrength = (1 - dist / magnetRadius) * 120 * fixedTimestep;
       const nx = dx / dist;
-      const ny = dy / dist;
       coin.worldX += nx * pullStrength;
       // We only move worldX — laneY is the grid row, not a pixel position
       coin.gridX = Math.round(coin.worldX / cellSize);

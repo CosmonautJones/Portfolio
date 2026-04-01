@@ -14,7 +14,7 @@ export class BackgroundPass implements RenderPass {
   private uTime: WebGLUniformLocation | null = null;
   private uResolution: WebGLUniformLocation | null = null;
 
-  setup(gl: WebGL2RenderingContext, resources: RenderResources): void {
+  setup(gl: WebGL2RenderingContext, _resources: RenderResources): void {
     this.program = getProgram(gl, "background");
     this.uTime = getUniform(gl, this.program, "u_time");
     this.uResolution = getUniform(gl, this.program, "u_resolution");

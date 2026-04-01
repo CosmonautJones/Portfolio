@@ -6,7 +6,7 @@ import {
   applyWindDrift,
 } from "../weather";
 import type { GameState, GameCallbacks } from "../types";
-import { DEFAULT_CONFIG, RAIN_SLIDE_DISTANCE, WIND_DRIFT_PER_SECOND } from "../constants";
+import { DEFAULT_CONFIG } from "../constants";
 
 const CELL = DEFAULT_CONFIG.cellSize;
 

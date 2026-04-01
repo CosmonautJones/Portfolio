@@ -14,7 +14,7 @@
 
 import sharp from "sharp";
 import { readdir, writeFile, mkdir } from "node:fs/promises";
-import { join, parse } from "node:path";
+import { join } from "node:path";
 
 const SOURCE_DIR = join(import.meta.dirname ?? ".", "..", "claudeadventurev2", "sprites");
 const OUTPUT_DIR = join(import.meta.dirname ?? ".", "..", "public", "game", "sprites", "v2");
