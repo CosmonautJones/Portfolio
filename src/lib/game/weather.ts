@@ -74,7 +74,7 @@ export function updateWeather(
       }
 
       if (oldType !== targetType) {
-        callbacks.onWeatherChange(state.weather);
+        callbacks.onWeatherChange?.(state.weather);
       }
     }
   } else {

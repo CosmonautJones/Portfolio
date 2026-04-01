@@ -200,11 +200,11 @@ export interface GameCallbacks {
   onHop: () => void;
   onLevelUp: (level: number) => void;
   onCoinCollect: (coin: Coin, bonusPoints: number) => void;
-  onPowerUpCollect: (type: PowerUpType) => void;
-  onPowerUpExpire: (type: PowerUpType) => void;
-  onBossStart: (pattern: BossPattern) => void;
-  onBossClear: (pattern: BossPattern) => void;
-  onWeatherChange: (weather: Weather) => void;
+  onPowerUpCollect?: (type: PowerUpType) => void;
+  onPowerUpExpire?: (type: PowerUpType) => void;
+  onBossStart?: (pattern: BossPattern) => void;
+  onBossClear?: (pattern: BossPattern) => void;
+  onWeatherChange?: (weather: Weather) => void;
 }
 
 export interface GameConfig {

@@ -91,7 +91,7 @@ export function checkPowerUpCollection(
       pu.collected = true;
       activatePowerUp(state, pu.type);
       spawnPowerUpCollectParticles(state, pu, config);
-      callbacks.onPowerUpCollect(pu.type);
+      callbacks.onPowerUpCollect?.(pu.type);
     }
   }
 }
@@ -133,7 +133,7 @@ export function updatePowerUps(
 
     ap.remainingTime -= dt;
     if (ap.remainingTime <= 0) {
-      callbacks.onPowerUpExpire(ap.type);
+      callbacks.onPowerUpExpire?.(ap.type);
       state.activePowerUps.splice(i, 1);
     }
   }

@@ -184,6 +184,13 @@ export function createInitialState(
     coinBonusScore: 0,
     dyingTimer: 0,
     dyingDuration: 0.5,
+    powerUps: [],
+    activePowerUps: [],
+    bossLanesUsed: [],
+    inBossSection: false,
+    weather: { type: "clear", intensity: 0, windDirection: 1 },
+    windDriftAccumulator: 0,
+    rainSlideApplied: false,
   };
 }
 
@@ -304,6 +311,13 @@ export function resetForNewGame(
   state.coinsCollected = 0;
   state.coinBonusScore = 0;
   state.dyingTimer = 0;
+  state.powerUps = [];
+  state.activePowerUps = [];
+  state.bossLanesUsed = [];
+  state.inBossSection = false;
+  state.weather = { type: "clear", intensity: 0, windDirection: 1 };
+  state.windDriftAccumulator = 0;
+  state.rainSlideApplied = false;
 
   if (callbacks) {
     callbacks.onPhaseChange("playing");

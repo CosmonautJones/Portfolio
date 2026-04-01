@@ -140,7 +140,7 @@ export function checkBossClear(
   if (state.score >= threshold + bossSize + BOSS_BUFFER_LANES) {
     state.inBossSection = false;
     state.coinBonusScore += BOSS_CLEAR_BONUS;
-    callbacks.onBossClear(pattern);
+    callbacks.onBossClear?.(pattern);
   }
 }
 
