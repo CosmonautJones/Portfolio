@@ -1,4 +1,4 @@
-import type { GameConfig, CoinType, LaneType } from "./types";
+import type { GameConfig, CoinType, LaneType, PowerUpType, WeatherType, BossPattern } from "./types";
 
 export const DEFAULT_CONFIG: GameConfig = {
   cellSize: 32,
@@ -137,3 +137,53 @@ export const MAX_ATMOSPHERIC_PARTICLES = 80;
 // Decoration system
 export const DECORATION_CHANCE = 0.7;
 export const DECORATIONS_PER_LANE = { min: 2, max: 5 };
+
+// Power-up system
+export const POWERUP_SPAWN_CHANCE: Record<PowerUpType, number> = {
+  shield: 0.02,
+  speed: 0.04,
+  magnet: 0.03,
+  slow_mo: 0.02,
+};
+
+export const POWERUP_DURATION: Record<PowerUpType, number> = {
+  shield: Infinity, // consumed on hit
+  speed: 5,
+  magnet: 8,
+  slow_mo: 6,
+};
+
+export const POWERUP_COLLECT_RADIUS = 0.75; // fraction of cellSize
+export const POWERUP_MAGNET_RADIUS = 3; // cells
+export const POWERUP_SPEED_MULTIPLIER = 0.67; // hop duration multiplier (faster)
+export const POWERUP_SLOWMO_MULTIPLIER = 0.6; // obstacle speed multiplier (slower)
+
+export const POWERUP_PARTICLE_COLORS: Record<PowerUpType, string[]> = {
+  shield: ["#41a6f6", "#73eff7", "#e0e8ff"],
+  speed: ["#ffcd75", "#ef7d57", "#a7f070"],
+  magnet: ["#b13e53", "#e87461", "#ff6040"],
+  slow_mo: ["#3b5dc9", "#41a6f6", "#73eff7"],
+};
+
+// Boss lane system
+export const BOSS_LEVEL_TRIGGERS: Record<BossPattern, number> = {
+  gauntlet: 2,
+  rapids: 4,
+  train_yard: 6,
+};
+
+export const BOSS_BUFFER_LANES = 2; // grass buffer lanes before boss section
+export const BOSS_CLEAR_BONUS = 25; // bonus score for clearing a boss section
+
+// Weather system
+export const WEATHER_SCORE_THRESHOLDS: { type: WeatherType; minScore: number }[] = [
+  { type: "wind", minScore: 150 },
+  { type: "fog", minScore: 100 },
+  { type: "rain", minScore: 50 },
+  { type: "clear", minScore: 0 },
+];
+
+export const WEATHER_TRANSITION_DURATION = 2; // seconds to lerp intensity
+export const RAIN_SLIDE_DISTANCE = 0.5; // cells of slide after hop
+export const FOG_VISIBLE_LANES = 4; // lanes visible ahead in fog
+export const WIND_DRIFT_PER_SECOND = 0.3; // cells per second of lateral drift

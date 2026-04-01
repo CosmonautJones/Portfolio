@@ -28,6 +28,11 @@ function makeCallbacks(): GameCallbacks {
     onHop: vi.fn(),
     onLevelUp: vi.fn(),
     onCoinCollect: vi.fn(),
+    onPowerUpCollect: vi.fn(),
+    onPowerUpExpire: vi.fn(),
+    onBossStart: vi.fn(),
+    onBossClear: vi.fn(),
+    onWeatherChange: vi.fn(),
   };
 }
 

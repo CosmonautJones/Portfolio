@@ -103,6 +103,51 @@ export interface SpriteData {
   pixels: SpritePixels;
 }
 
+// Power-up system
+export type PowerUpType = "shield" | "speed" | "magnet" | "slow_mo";
+
+export interface PowerUp {
+  id: number;
+  type: PowerUpType;
+  gridX: number;
+  laneY: number;
+  worldX: number;
+  collected: boolean;
+}
+
+export interface ActivePowerUp {
+  type: PowerUpType;
+  remainingTime: number;
+  startTime: number;
+}
+
+// Boss lanes
+export type BossPattern = "gauntlet" | "rapids" | "train_yard";
+
+export interface BossLaneSection {
+  pattern: BossPattern;
+  startY: number;
+  endY: number;
+}
+
+// Weather system
+export type WeatherType = "clear" | "rain" | "fog" | "wind";
+
+export interface Weather {
+  type: WeatherType;
+  intensity: number;
+  windDirection: -1 | 1;
+}
+
+// Skin system
+export type SkinId = "default" | "golden" | "ghost" | "diamond" | "rainbow";
+
+export interface Skin {
+  id: SkinId;
+  name: string;
+  paletteOverrides: Record<number, number>;
+}
+
 export type InputAction =
   | "move_up"
   | "move_down"
@@ -132,6 +177,20 @@ export interface GameState {
   dyingTimer: number;
   /** Duration of the dying animation in seconds */
   dyingDuration: number;
+  /** Power-ups on the ground awaiting pickup */
+  powerUps: PowerUp[];
+  /** Currently active power-up effects */
+  activePowerUps: ActivePowerUp[];
+  /** Boss lane patterns already used this run */
+  bossLanesUsed: BossPattern[];
+  /** Whether we are currently inside a boss section */
+  inBossSection: boolean;
+  /** Current weather state */
+  weather: Weather;
+  /** Accumulated wind drift since last hop (reset on hop) */
+  windDriftAccumulator: number;
+  /** Accumulated rain slide offset (applied once after hop) */
+  rainSlideApplied: boolean;
 }
 
 export interface GameCallbacks {
@@ -141,6 +200,11 @@ export interface GameCallbacks {
   onHop: () => void;
   onLevelUp: (level: number) => void;
   onCoinCollect: (coin: Coin, bonusPoints: number) => void;
+  onPowerUpCollect: (type: PowerUpType) => void;
+  onPowerUpExpire: (type: PowerUpType) => void;
+  onBossStart: (pattern: BossPattern) => void;
+  onBossClear: (pattern: BossPattern) => void;
+  onWeatherChange: (weather: Weather) => void;
 }
 
 export interface GameConfig {
