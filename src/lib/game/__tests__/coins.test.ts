@@ -56,6 +56,8 @@ function createMockState(coins: Coin[] = []): GameState {
     coins,
     coinsCollected: 0,
     coinBonusScore: 0,
+    dyingTimer: 0,
+    dyingDuration: 0.5,
   };
 }
 
