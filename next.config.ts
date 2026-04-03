@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  turbopack: {
+    rules: {
+      "*.glsl": { loaders: ["raw-loader"], as: "*.js" },
+    },
+  },
   webpack(config) {
     config.module.rules.push({
       test: /\.glsl$/,

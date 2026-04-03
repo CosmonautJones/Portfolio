@@ -46,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.12",
     "jsdom": "^28.1.0",
+    "raw-loader": "4.0.2",
     "shadcn": "^3.8.5",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
