@@ -3,6 +3,7 @@
 // ============================================================================
 
 export { GameRenderer } from "./renderer";
+export { ThreeRenderer } from "./three-renderer";
 export { SpriteCache } from "./sprite-cache";
 export { PassGraph } from "./pass-graph";
 export type { RenderPass, RenderResources, RenderState } from "./render-pass";
