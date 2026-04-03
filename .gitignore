@@ -46,3 +46,4 @@ Portfolio_backup/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.claude/worktrees/
