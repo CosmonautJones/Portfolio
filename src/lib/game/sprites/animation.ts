@@ -5,11 +5,11 @@ export interface AnimationConfig {
 }
 
 export const ANIMATION_CONFIGS: Record<string, AnimationConfig> = {
-  car: { fps: 2, frameCount: 2, loop: true },
-  car_blue: { fps: 2, frameCount: 2, loop: true },
-  car_yellow: { fps: 2, frameCount: 2, loop: true },
-  truck: { fps: 2, frameCount: 2, loop: true },
-  train: { fps: 4, frameCount: 2, loop: true },
+  car: { fps: 1, frameCount: 2, loop: true },
+  car_blue: { fps: 1, frameCount: 2, loop: true },
+  car_yellow: { fps: 1, frameCount: 2, loop: true },
+  truck: { fps: 1, frameCount: 2, loop: true },
+  train: { fps: 2, frameCount: 2, loop: true },
 };
 
 export function getAnimationFrame(type: string, time: number): number {

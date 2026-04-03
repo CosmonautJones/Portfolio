@@ -188,12 +188,12 @@ export class SpritesPass implements RenderPass {
           }
         }
 
-        // Animation frame lookup
-        const frame = getAnimationFrame(baseType, state.animationTime);
+        const isVoxel = this.spriteStyle === "voxel";
+
+        // Animation frame lookup (pixel mode only — voxels have no _1 variants)
+        const frame = isVoxel ? 0 : getAnimationFrame(baseType, state.animationTime);
         const animatedType = frame > 0 ? `${baseType}_${frame}` : baseType;
         const spriteKey = obs.speed < 0 ? `${animatedType}_flip` : animatedType;
-
-        const isVoxel = this.spriteStyle === "voxel";
         // Voxel sprites have 3D baked in — no elevation or layering needed
         const height = isVoxel ? 0 : (OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[baseType] ?? 0);
         const obsRegion = this.resolveRegion(spriteKey, atlas);

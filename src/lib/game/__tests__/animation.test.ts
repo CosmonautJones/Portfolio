@@ -16,34 +16,34 @@ describe("getAnimationFrame", () => {
     }
   });
 
-  it("returns correct frame for car at 2fps", () => {
-    // At 2fps, frame duration = 0.5s
-    // t=0 → frame 0, t=0.25 → frame 0, t=0.5 → frame 1, t=0.75 → frame 1
+  it("returns correct frame for car at 1fps", () => {
+    // At 1fps, frame duration = 1.0s
+    // t=0 → frame 0, t=0.5 → frame 0, t=1.0 → frame 1, t=1.5 → frame 1
     expect(getAnimationFrame("car", 0)).toBe(0);
-    expect(getAnimationFrame("car", 0.25)).toBe(0);
-    expect(getAnimationFrame("car", 0.5)).toBe(1);
-    expect(getAnimationFrame("car", 0.75)).toBe(1);
+    expect(getAnimationFrame("car", 0.5)).toBe(0);
+    expect(getAnimationFrame("car", 1.0)).toBe(1);
+    expect(getAnimationFrame("car", 1.5)).toBe(1);
   });
 
-  it("returns correct frame for train at 4fps", () => {
-    // At 4fps, frame duration = 0.25s
-    // t=0 → frame 0, t=0.125 → frame 0, t=0.25 → frame 1, t=0.375 → frame 1
+  it("returns correct frame for train at 2fps", () => {
+    // At 2fps, frame duration = 0.5s
+    // t=0 → frame 0, t=0.25 → frame 0, t=0.5 → frame 1, t=0.75 → frame 1
     expect(getAnimationFrame("train", 0)).toBe(0);
-    expect(getAnimationFrame("train", 0.125)).toBe(0);
-    expect(getAnimationFrame("train", 0.25)).toBe(1);
-    expect(getAnimationFrame("train", 0.375)).toBe(1);
+    expect(getAnimationFrame("train", 0.25)).toBe(0);
+    expect(getAnimationFrame("train", 0.5)).toBe(1);
+    expect(getAnimationFrame("train", 0.75)).toBe(1);
   });
 
   it("wraps around (cycles) for looping animations", () => {
-    // car at 2fps: frame toggles every 0.5s → wraps at 1.0s
-    expect(getAnimationFrame("car", 1.0)).toBe(0);
-    expect(getAnimationFrame("car", 1.5)).toBe(1);
+    // car at 1fps: frame toggles every 1.0s → wraps at 2.0s
     expect(getAnimationFrame("car", 2.0)).toBe(0);
+    expect(getAnimationFrame("car", 3.0)).toBe(1);
+    expect(getAnimationFrame("car", 4.0)).toBe(0);
 
-    // train at 4fps: frame toggles every 0.25s → wraps at 0.5s
-    expect(getAnimationFrame("train", 0.5)).toBe(0);
-    expect(getAnimationFrame("train", 0.75)).toBe(1);
+    // train at 2fps: frame toggles every 0.5s → wraps at 1.0s
     expect(getAnimationFrame("train", 1.0)).toBe(0);
+    expect(getAnimationFrame("train", 1.5)).toBe(1);
+    expect(getAnimationFrame("train", 2.0)).toBe(0);
   });
 
   it("handles large time values correctly", () => {
@@ -54,11 +54,11 @@ describe("getAnimationFrame", () => {
   });
 
   it("applies to all color variants of car", () => {
-    // car_blue and car_yellow should behave identically to car
+    // car_blue and car_yellow should behave identically to car (1fps)
     for (const type of ["car", "car_blue", "car_yellow"]) {
       expect(getAnimationFrame(type, 0)).toBe(0);
-      expect(getAnimationFrame(type, 0.5)).toBe(1);
-      expect(getAnimationFrame(type, 1.0)).toBe(0);
+      expect(getAnimationFrame(type, 1.0)).toBe(1);
+      expect(getAnimationFrame(type, 2.0)).toBe(0);
     }
   });
 

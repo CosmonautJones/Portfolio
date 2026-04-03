@@ -387,11 +387,11 @@ describe("Clean night rendering constants", () => {
     expect(SHADOW_ALPHA).toBe(0.15);
   });
 
-  it("TILE_DEPTH values are reduced for cleaner silhouette", () => {
-    expect(TILE_DEPTH.grass).toBe(8);
-    expect(TILE_DEPTH.road).toBe(6);
-    expect(TILE_DEPTH.water).toBe(4);
-    expect(TILE_DEPTH.railroad).toBe(6);
+  it("TILE_DEPTH values are minimal for clean look", () => {
+    expect(TILE_DEPTH.grass).toBe(3);
+    expect(TILE_DEPTH.road).toBe(2);
+    expect(TILE_DEPTH.water).toBe(2);
+    expect(TILE_DEPTH.railroad).toBe(2);
   });
 
   it("COIN_LIGHT_RADIUS is 24", () => {

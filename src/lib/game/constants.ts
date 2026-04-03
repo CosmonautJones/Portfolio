@@ -98,10 +98,10 @@ export const OBJECT_TOP_FACE: Record<string, number> = {
 };
 
 export const TILE_DEPTH: Record<LaneType, number> = {
-  grass: 8,
-  road: 6,
-  water: 4,
-  railroad: 6,
+  grass: 3,
+  road: 2,
+  water: 2,
+  railroad: 2,
 };
 
 export const GROUND_COLORS: Record<LaneType, { top: string; front: string; frontDark: string }> = {

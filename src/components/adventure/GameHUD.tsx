@@ -54,12 +54,12 @@ export function GameHUD({
           <span
             className="font-bold font-mono"
             style={{
-              fontSize: canvasWidth * 0.05,
+              fontSize: canvasWidth * 0.04,
               color: "#ffcd75",
               textShadow: "1px 1px 0 #1a1c2c, -1px -1px 0 #1a1c2c",
             }}
           >
-            {coinsCollected}
+            🪙{coinsCollected}
           </span>
         )}
       </div>
