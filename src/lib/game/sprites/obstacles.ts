@@ -185,6 +185,104 @@ const LOG: SpritePixels = [
   [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
+// --- Animation frame helpers ---
+
+/** Deep-clone a sprite pixel array */
+function cloneSprite(pixels: SpritePixels): SpritePixels {
+  return pixels.map(row => [...row]);
+}
+
+/**
+ * Shift wheel pixels down by 1px to simulate rotation.
+ * Wheels are identified as 2x2 blocks of dark color (index 19 or 22)
+ * in the bottom region of the sprite (rows 22-25 for cars, rows 22-25 for trucks).
+ */
+function shiftWheels(pixels: SpritePixels, wheelColor: number): SpritePixels {
+  const result = cloneSprite(pixels);
+  const height = result.length;
+  const width = result[0].length;
+
+  // Find wheel regions: scan bottom quarter for wheel-colored blocks
+  const startRow = Math.floor(height * 0.6);
+  for (let r = startRow; r < height - 2; r++) {
+    for (let c = 0; c < width - 1; c++) {
+      // Detect a wheel pixel block and shift down by swapping with row below
+      if (result[r][c] === wheelColor && result[r][c + 1] === wheelColor) {
+        if (r + 2 < height && result[r + 2][c] === 0) {
+          // Move the wheel pixel down by 1: copy current to below, clear current
+          result[r + 2][c] = wheelColor;
+          result[r + 2][c + 1] = wheelColor;
+          result[r][c] = result[r + 1][c] === 1 ? 1 : 0;
+          result[r][c + 1] = result[r + 1][c + 1] === 1 ? 1 : 0;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Add a small exhaust puff — set a few transparent pixels to a light color
+ * behind the truck (at the left side, since truck faces right).
+ */
+function addExhaustPuff(pixels: SpritePixels): SpritePixels {
+  const result = cloneSprite(pixels);
+  // Place a tiny 2x2 puff near the left exhaust area (row 18-19, col 0-1)
+  const puffRow = 18;
+  const puffCol = 0;
+  if (result[puffRow] && result[puffRow][puffCol] === 0) {
+    result[puffRow][puffCol] = 15; // slate (exhaust)
+    result[puffRow][puffCol + 1] = 15;
+    result[puffRow + 1][puffCol] = 15;
+    result[puffRow + 1][puffCol + 1] = 15;
+  }
+  return result;
+}
+
+/**
+ * Shift the warning yellow stripe (index 29) by 2px to the right,
+ * creating a motion blur effect on the train.
+ */
+function shiftWarningStripe(pixels: SpritePixels): SpritePixels {
+  const result = cloneSprite(pixels);
+  const width = result[0].length;
+
+  for (let r = 0; r < result.length; r++) {
+    const row = result[r];
+    // Check if this row contains warning yellow (29)
+    if (!row.includes(29)) continue;
+
+    // Shift stripe pixels 2 positions to the right with wrap
+    const newRow = [...row];
+    for (let c = 0; c < width; c++) {
+      if (row[c] === 29) {
+        newRow[c] = result[r][c] !== 29 ? result[r][c] : 14; // replace with body color
+      }
+    }
+    for (let c = 0; c < width; c++) {
+      if (row[c] === 29) {
+        const nc = c + 2;
+        if (nc < width && row[nc] !== 1) { // don't overwrite outlines
+          newRow[nc] = 29;
+        }
+      }
+    }
+    result[r] = newRow;
+  }
+  return result;
+}
+
+// Car frame 1: shifted wheels
+const CAR_1 = shiftWheels(CAR, 19);
+const CAR_BLUE_1 = recolorSprite(CAR_1, 3, 10);
+const CAR_YELLOW_1 = recolorSprite(recolorSprite(CAR_1, 3, 5), 19, 4);
+
+// Truck frame 1: shifted wheels + exhaust puff
+const TRUCK_1 = addExhaustPuff(shiftWheels(TRUCK, 22));
+
+// Train frame 1: shifted warning stripe
+const TRAIN_1 = shiftWarningStripe(TRAIN);
+
 export const OBSTACLE_SPRITES: Record<string, SpritePixels> = {
   car: CAR,
   car_blue: CAR_BLUE,
@@ -192,6 +290,11 @@ export const OBSTACLE_SPRITES: Record<string, SpritePixels> = {
   truck: TRUCK,
   train: TRAIN,
   log: LOG,
+  car_1: CAR_1,
+  car_blue_1: CAR_BLUE_1,
+  car_yellow_1: CAR_YELLOW_1,
+  truck_1: TRUCK_1,
+  train_1: TRAIN_1,
 };
 
 export const OBSTACLE_WIDTHS: Record<string, number> = {

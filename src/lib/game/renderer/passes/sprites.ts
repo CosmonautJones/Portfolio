@@ -21,6 +21,7 @@ import {
 } from "../../constants";
 import { resolveSprite, type SpriteStyle } from "../../sprites/sprite-style";
 import { DECORATION_HEIGHTS } from "../../sprites/decorations";
+import { getAnimationFrame } from "../../sprites/animation";
 
 /** Parse hex color to normalized floats */
 function hexToFloats(hex: string): [number, number, number] {
@@ -166,27 +167,48 @@ export class SpritesPass implements RenderPass {
         }
       }
 
-      // Decorations (behind obstacles)
-      this.renderDecorations(lane, screenY, laneAlpha, batch, atlas);
+      // Decorations (behind obstacles) with breathing animation
+      this.renderDecorations(lane, screenY, laneAlpha, state.animationTime, batch, atlas);
 
-      // Obstacles with 2.5D depth
-      for (const obs of lane.obstacles) {
-        let spriteKey = obs.speed < 0 ? `${obs.type}_flip` : obs.type;
+      // Obstacles with 2.5D depth + animation frames + subtle deformation
+      for (let obsIdx = 0; obsIdx < lane.obstacles.length; obsIdx++) {
+        const obs = lane.obstacles[obsIdx];
+
+        // Resolve base sprite type (including car color variants)
+        let baseType = obs.type as string;
         let colorKey: string = obs.type;
         if (obs.type === "car") {
           const variant = obs.id % 3;
           if (variant === 0) {
-            spriteKey = obs.speed < 0 ? "car_blue_flip" : "car_blue";
+            baseType = "car_blue";
             colorKey = "car_blue";
           } else if (variant === 1) {
-            spriteKey = obs.speed < 0 ? "car_yellow_flip" : "car_yellow";
+            baseType = "car_yellow";
             colorKey = "car_yellow";
           }
         }
 
-        const height = OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[spriteKey] ?? 0;
+        // Animation frame lookup
+        const frame = getAnimationFrame(baseType, state.animationTime);
+        const animatedType = frame > 0 ? `${baseType}_${frame}` : baseType;
+        const spriteKey = obs.speed < 0 ? `${animatedType}_flip` : animatedType;
+
+        const height = OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[baseType] ?? 0;
         const obsRegion = this.resolveRegion(spriteKey, atlas);
         if (!obsRegion) continue;
+
+        // Subtle deformation for moving vehicles
+        let scaleY = 1;
+        if (obs.type === "train") {
+          scaleY = 1 + Math.sin(state.animationTime * 8) * 0.03;
+        } else if (obs.type === "car" || obs.type === "truck") {
+          scaleY = 1 + Math.sin(state.animationTime * 4 + obsIdx * 0.5) * 0.02;
+        }
+
+        const spriteW = obsRegion.width;
+        const spriteH = obsRegion.height;
+        const scaledH = spriteH * scaleY;
+        const yOffset = (spriteH - scaledH) / 2;
 
         // 1. Shadow silhouette
         const shadowKey = spriteKey + "_shadow";
@@ -200,12 +222,12 @@ export class SpritesPass implements RenderPass {
           const sideKey = spriteKey + "_side";
           const sideRegion = this.resolveRegion(sideKey, atlas);
           if (sideRegion) {
-            batch.draw(sideRegion, obs.worldX, screenY, undefined, undefined, 1, 1, 1, laneAlpha);
+            batch.draw(sideRegion, obs.worldX, screenY + yOffset, spriteW, scaledH, 1, 1, 1, laneAlpha);
           }
         }
 
-        // 3. Main sprite shifted up by height
-        batch.draw(obsRegion, obs.worldX, screenY - height, undefined, undefined, 1, 1, 1, laneAlpha);
+        // 3. Main sprite shifted up by height (with deformation)
+        batch.draw(obsRegion, obs.worldX, screenY - height + yOffset, spriteW, scaledH, 1, 1, 1, laneAlpha);
 
         // 4. Top face (roof)
         const topFace = OBJECT_TOP_FACE[colorKey] ?? 0;
@@ -213,7 +235,7 @@ export class SpritesPass implements RenderPass {
         if (topFace > 0 && topColor) {
           const obsWidth = obs.widthCells * cellSize;
           const inset = 4;
-          const topY = screenY - height - topFace;
+          const topY = screenY - height - topFace + yOffset;
           const [tcR, tcG, tcB] = hexToFloats(topColor);
           batch.drawQuad(whiteRegion, obs.worldX + inset, topY, obsWidth - inset * 2, topFace, tcR, tcG, tcB, laneAlpha);
           // 1px white highlight on top edge
@@ -287,6 +309,7 @@ export class SpritesPass implements RenderPass {
     lane: Lane,
     screenY: number,
     laneAlpha: number,
+    animationTime: number,
     batch: SpriteBatch,
     atlas: SpriteAtlas,
   ): void {
@@ -298,18 +321,40 @@ export class SpritesPass implements RenderPass {
       const spriteKey = `${deco.type}_${deco.variant}`;
       const shadowKey = `${spriteKey}_shadow`;
       const decoHeight = DECORATION_HEIGHTS[deco.type] ?? 0;
-      const x = deco.gridX * cellSize;
+      const baseX = deco.gridX * cellSize;
+
+      // Breathing / sway offsets per decoration type
+      let offsetX = 0;
+      let scale = 1;
+
+      if (deco.type === "tree") {
+        // Trees sway gently in the wind
+        offsetX = Math.sin(animationTime * 0.8 + baseX * 0.01) * 0.5;
+      } else if (deco.type === "bush") {
+        // Bushes breathe subtly (scale pulse)
+        scale = 1 + Math.sin(animationTime * 1.2 + baseX * 0.02) * 0.01;
+      }
+
+      const drawX = baseX + offsetX;
 
       // Shadow
       const shadowRegion = atlas.getRegion(shadowKey);
       if (shadowRegion) {
-        batch.draw(shadowRegion, x + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * 0.7 * laneAlpha);
+        batch.draw(shadowRegion, drawX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * 0.7 * laneAlpha);
       }
 
-      // Main decoration sprite
+      // Main decoration sprite (with optional scale for bushes)
       const region = atlas.getRegion(spriteKey);
       if (region) {
-        batch.draw(region, x, screenY - decoHeight, undefined, undefined, 1, 1, 1, laneAlpha);
+        if (scale !== 1) {
+          const w = region.width * scale;
+          const h = region.height * scale;
+          const scaleOffsetX = (region.width - w) / 2;
+          const scaleOffsetY = (region.height - h) / 2;
+          batch.draw(region, drawX + scaleOffsetX, screenY - decoHeight + scaleOffsetY, w, h, 1, 1, 1, laneAlpha);
+        } else {
+          batch.draw(region, drawX, screenY - decoHeight, undefined, undefined, 1, 1, 1, laneAlpha);
+        }
       }
     }
   }
