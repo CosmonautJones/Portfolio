@@ -79,22 +79,22 @@ export const COIN_COLLECT_RADIUS = 0.75; // fraction of cellSize
 
 // Isometric 2.5D depth — Crossy Road style thick ground layers
 export const OBJECT_HEIGHT: Record<string, number> = {
-  car: 14,
-  car_blue: 14,
-  car_yellow: 14,
-  truck: 16,
-  train: 18,
-  log: 8,
+  car: 4,
+  car_blue: 4,
+  car_yellow: 4,
+  truck: 5,
+  train: 6,
+  log: 2,
   coin: 0,
 };
 
 export const OBJECT_TOP_FACE: Record<string, number> = {
-  car: 5,
-  car_blue: 5,
-  car_yellow: 5,
-  truck: 6,
-  train: 7,
-  log: 4,
+  car: 0,
+  car_blue: 0,
+  car_yellow: 0,
+  truck: 0,
+  train: 0,
+  log: 0,
 };
 
 export const TILE_DEPTH: Record<LaneType, number> = {
@@ -120,8 +120,8 @@ export const TOP_FACE_COLORS: Record<string, string> = {
   log: "#d8b870",
 };
 
-export const SHADOW_OFFSET = { x: 4, y: 3 };
-export const SHADOW_ALPHA = 0.25;
+export const SHADOW_OFFSET = { x: 2, y: 2 };
+export const SHADOW_ALPHA = 0.15;
 
 // Post-processing & lighting
 export const BLOOM_INTENSITY = 0.15;

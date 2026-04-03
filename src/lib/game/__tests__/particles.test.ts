@@ -379,12 +379,12 @@ describe("Clean night rendering constants", () => {
   });
 
   it("SHADOW_OFFSET has reduced values for softer look", () => {
-    expect(SHADOW_OFFSET.x).toBe(4);
-    expect(SHADOW_OFFSET.y).toBe(3);
+    expect(SHADOW_OFFSET.x).toBe(2);
+    expect(SHADOW_OFFSET.y).toBe(2);
   });
 
-  it("SHADOW_ALPHA is 0.25", () => {
-    expect(SHADOW_ALPHA).toBe(0.25);
+  it("SHADOW_ALPHA is subtle", () => {
+    expect(SHADOW_ALPHA).toBe(0.15);
   });
 
   it("TILE_DEPTH values are reduced for cleaner silhouette", () => {

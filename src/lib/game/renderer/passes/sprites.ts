@@ -217,14 +217,7 @@ export class SpritesPass implements RenderPass {
           batch.draw(shadowRegion, obs.worldX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * laneAlpha);
         }
 
-        // 2. Side face (dark variant)
-        if (height > 0) {
-          const sideKey = spriteKey + "_side";
-          const sideRegion = this.resolveRegion(sideKey, atlas);
-          if (sideRegion) {
-            batch.draw(sideRegion, obs.worldX, screenY + yOffset, spriteW, scaledH, 1, 1, 1, laneAlpha);
-          }
-        }
+        // 2. Side face disabled — sprites have built-in isometric shading
 
         // 3. Main sprite shifted up by height (with deformation)
         batch.draw(obsRegion, obs.worldX, screenY - height + yOffset, spriteW, scaledH, 1, 1, 1, laneAlpha);
