@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClaudeBot Sprite Editor</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1c2c;
+    --bg-light: #252840;
+    --bg-lighter: #333c57;
+    --text: #f4f4f4;
+    --text-dim: #94b0c2;
+    --accent: #ef7d57;
+    --accent-hover: #ffcd75;
+    --border: #566c86;
+    --danger: #b13e53;
+    --success: #38b764;
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--bg-light);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .header-info { font-size: 12px; color: var(--text-dim); margin-left: auto; white-space: nowrap; }
+  /* Main layout */
+  .main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+  /* Panels */
+  .panel-left {
+    width: 320px;
+    min-width: 280px;
+    background: var(--bg-light);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .panel-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .panel-right {
+    width: 220px;
+    min-width: 200px;
+    background: var(--bg-light);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  /* Section titles */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  /* Controls */
+  select, input[type="number"], input[type="range"], input[type="text"], textarea {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; resize: vertical; }
+  button {
+    background: var(--bg-lighter);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  button:hover { background: var(--border); border-color: var(--accent); }
+  button.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  button.danger { border-color: var(--danger); }
+  button.danger:hover { background: var(--danger); }
+  button.success { border-color: var(--success); }
+  button.success:hover { background: var(--success); color: #000; }
+  /* Tool bar */
+  .tool-bar { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tool-bar button { flex: 0 0 auto; padding: 6px 10px; font-size: 13px; }
+  /* Row */
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > label { font-size: 12px; color: var(--text-dim); white-space: nowrap; min-width: 50px; }
+  .row > select, .row > input { flex: 1; }
+  /* Palette grid */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2px;
+  }
+  .palette-cell {
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .palette-cell:hover { border-color: var(--text); }
+  .palette-cell.selected { border-color: #fff; box-shadow: 0 0 0 1px var(--accent); }
+  .palette-cell .checker {
+    position: absolute; inset: 0; border-radius: 1px;
+    background: repeating-conic-gradient(#444 0% 25%, #666 0% 50%) 50%/8px 8px;
+  }
+  /* Palette usage */
+  .palette-usage {
+    font-size: 11px;
+    color: var(--text-dim);
+    max-height: 80px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+  .palette-usage span { margin-right: 8px; }
+  /* Canvas area */
+  .canvas-wrap {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--bg);
+  }
+  #editor-canvas { cursor: crosshair; image-rendering: pixelated; }
+  /* Status bar */
+  .status-bar {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--bg-light);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  /* Preview */
+  .preview-canvas-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .preview-canvas-wrap canvas { image-rendering: pixelated; border: 1px solid var(--border); }
+  .preview-controls { display: flex; gap: 4px; flex-wrap: wrap; }
+  .preview-controls button { font-size: 11px; padding: 3px 8px; }
+  /* Frame timeline */
+  .timeline { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .frame-thumb {
+    width: 48px; height: 48px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    image-rendering: pixelated;
+    background: var(--bg);
+  }
+  .frame-thumb.active { border-color: var(--accent); }
+  .frame-thumb:hover { border-color: var(--text-dim); }
+  .timeline-btns { display: flex; gap: 4px; }
+  .timeline-btns button { padding: 4px 8px; font-size: 12px; }
+  /* Export area */
+  .export-area {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    max-height: 200px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .export-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-light);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .export-header .section-title { margin-bottom: 0; }
+  #export-output {
+    flex: 1;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 11px;
+    background: var(--bg);
+    color: var(--text-dim);
+    border: none;
+    padding: 8px 12px;
+    resize: none;
+    overflow: auto;
+    white-space: pre;
+  }
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal h2 { font-size: 16px; color: var(--accent); }
+  .modal textarea { height: 200px; }
+  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .toggle-indicator {
+    width: 36px; height: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-indicator::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    top: 2px; left: 2px;
+    transition: all 0.2s;
+  }
+  .toggle-row.active .toggle-indicator { background: var(--accent); border-color: var(--accent); }
+  .toggle-row.active .toggle-indicator::after { left: 18px; background: #fff; }
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: var(--bg-lighter);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 50;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    display: none;
+  }
+  /* Responsive */
+  @media (max-width: 900px) {
+    .panel-left, .panel-right { width: 240px; min-width: 200px; }
+  }
+  @media (max-width: 700px) {
+    .main { flex-direction: column; }
+    .panel-left, .panel-right { width: 100%; min-width: unset; max-height: 40vh; border: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ClaudeBot Sprite Editor</h1>
+  <span class="header-info" id="header-info">32x32 | Frame 1/1</span>
+</div>
+
+<div class="main">
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <!-- Grid Size -->
+    <div>
+      <div class="section-title">Preset / Grid Size</div>
+      <div class="row" style="margin-bottom:4px">
+        <label>Preset</label>
+        <select id="preset-select">
+          <option value="">Custom</option>
+          <option value="32x32" selected>Player (32x32)</option>
+          <option value="64x32">Car (64x32)</option>
+          <option value="96x32">Truck / Log (96x32)</option>
+          <option value="128x32">Train (128x32)</option>
+          <option value="16x16">Coin (16x16)</option>
+          <option value="16x24">Decoration (16x24)</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>W</label>
+        <input type="number" id="grid-w" value="32" min="1" max="256" style="width:60px">
+        <label>H</label>
+        <input type="number" id="grid-h" value="32" min="1" max="256" style="width:60px">
+        <button id="btn-resize">Resize</button>
+      </div>
+    </div>
+
+    <!-- Tools -->
+    <div>
+      <div class="section-title">Tools</div>
+      <div class="tool-bar" id="tool-bar">
+        <button class="active" data-tool="pencil" title="Pencil (P)">&#9998; P</button>
+        <button data-tool="eraser" title="Eraser (E)">&#9003; E</button>
+        <button data-tool="fill" title="Fill (F)">&#9724; F</button>
+        <button data-tool="line" title="Line (L)">&#9585; L</button>
+        <button data-tool="rect" title="Rectangle (R)">&#9634; R</button>
+        <button data-tool="picker" title="Eyedropper (I)">&#128083; I</button>
+      </div>
+    </div>
+
+    <!-- Mirror -->
+    <div>
+      <div class="toggle-row" id="mirror-toggle">
+        <div class="toggle-indicator"></div>
+        <span>Mirror Mode (horizontal)</span>
+      </div>
+    </div>
+
+    <!-- Onion Skinning -->
+    <div>
+      <div class="toggle-row" id="onion-toggle">
+        <div class="toggle-indicator"></div>
+        <span>Onion Skinning</span>
+      </div>
+    </div>
+
+    <!-- Palette -->
+    <div>
+      <div class="section-title">Palette (96 colors)</div>
+      <div class="palette-grid" id="palette-grid"></div>
+    </div>
+
+    <!-- Palette usage -->
+    <div>
+      <div class="section-title">Palette Usage</div>
+      <div class="palette-usage" id="palette-usage"></div>
+    </div>
+
+    <!-- Animation -->
+    <div>
+      <div class="section-title">Animation</div>
+      <div class="row" style="margin-bottom: 6px;">
+        <label>FPS</label>
+        <input type="range" id="fps-slider" min="1" max="12" value="4" style="flex:1">
+        <span id="fps-value" style="font-size:12px;min-width:24px;text-align:right">4</span>
+      </div>
+      <div class="timeline-btns" style="margin-bottom: 6px;">
+        <button id="btn-play" title="Play/Pause (Space)">&#9654; Play</button>
+        <button id="btn-add-frame" title="Add Frame">+ Frame</button>
+        <button id="btn-dup-frame" title="Duplicate Frame">Dup</button>
+        <button id="btn-del-frame" title="Delete Frame" class="danger">Del</button>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- Import / Export buttons -->
+    <div>
+      <div class="section-title">Import / Export</div>
+      <div class="row">
+        <button id="btn-import" style="flex:1">Import JSON</button>
+        <button id="btn-export" class="success" style="flex:1">Export TS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="panel-center">
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="editor-canvas"></canvas>
+    </div>
+    <!-- Export area -->
+    <div class="export-area" id="export-area" style="display:none">
+      <div class="export-header">
+        <span class="section-title">TypeScript Export</span>
+        <button id="btn-copy" class="success" style="margin-left:auto">Copy</button>
+        <button id="btn-close-export">Close</button>
+      </div>
+      <textarea id="export-output" readonly></textarea>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <!-- Preview -->
+    <div>
+      <div class="section-title">Preview</div>
+      <div class="preview-controls">
+        <button class="active" data-zoom="1">1x</button>
+        <button data-zoom="2">2x</button>
+        <button data-zoom="4">4x</button>
+      </div>
+      <div class="preview-canvas-wrap">
+        <canvas id="preview-canvas"></canvas>
+      </div>
+    </div>
+    <!-- Bg toggle -->
+    <div>
+      <div class="section-title">Preview Background</div>
+      <div class="preview-controls" id="bg-controls">
+        <button class="active" data-bg="dark">Dark</button>
+        <button data-bg="checker">Check</button>
+        <button data-bg="grass">Grass</button>
+      </div>
+    </div>
+    <!-- Isometric Preview -->
+    <div>
+      <div class="section-title">Isometric 2.5D Preview</div>
+      <div class="preview-canvas-wrap">
+        <canvas id="iso-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar" id="status-bar">
+  <span id="status-coords">--</span>
+  <span id="status-tool">Tool: Pencil</span>
+  <span id="status-color">Color: 0</span>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <h2>Import Sprite Data</h2>
+    <p style="font-size:12px;color:var(--text-dim)">Paste a <code>number[][]</code> JSON array (one row per inner array).</p>
+    <textarea id="import-textarea" placeholder="[[0, 0, 1, 3], [0, 1, 3, 3], ...]"></textarea>
+    <div class="modal-buttons">
+      <button id="btn-import-cancel">Cancel</button>
+      <button id="btn-import-load" class="success">Load</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// PALETTE — 96 colors, index 0 = transparent
+// ============================================================
+const PALETTE = [
+  "transparent","#1a1c2c","#5d275d","#b13e53","#ef7d57","#ffcd75","#a7f070","#38b764",
+  "#257179","#29366f","#3b5dc9","#41a6f6","#73eff7","#f4f4f4","#94b0c2","#566c86",
+  "#333c57","#d4513b","#e87461","#9e2835","#3c3c50","#4e4e66","#3e8948","#265c42",
+  "#1e6aa0","#2d6aa5","#5a3a1e","#8b6914","#c4a35a","#ffff00","#ff0000","#000000",
+  "#f0c080","#7b4a20","#c84c39","#ff9b7b","#6b1f28","#50d090","#1a4030","#60c8f0",
+  "#0d3a6a","#ffa040","#ffe0a0","#b08020","#c0d8f0","#8090b0","#6080ff","#e0e8ff",
+  "#d08060","#f5b090","#4a1520","#1896c8","#0a2850","#a07838","#604020","#d0d8e0",
+  "#707890","#a8c8a0","#183820","#505868","#282830","#c0a870","#f8f0d0","#404060",
+  "#0a0618","#120e28","#1a1440","#251e58","#332a6e","#443878","#584a90","#6e5ea8",
+  "#8b1860","#a82868","#c84080","#e05898","#e87898","#f098a8","#f8b8b8","#ffd0c8",
+  "#182838","#283848","#384858","#506878","#688898","#80a0b0","#98b8c8","#b0d0e0",
+  "#00ffff","#40ffd0","#80ffe0","#ff6040","#ff9060","#ffc080","#060210","#0e0620"
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  width: 32,
+  height: 32,
+  frames: [createEmptyGrid(32, 32)],
+  currentFrame: 0,
+  selectedColor: 1,
+  tool: 'pencil',
+  mirror: false,
+  onionSkin: false,
+  zoom: 10,
+  previewZoom: 2,
+  previewBg: 'dark',
+  fps: 4,
+  playing: false,
+  undoStack: [],
+  redoStack: [],
+  // drawing state
+  drawing: false,
+  drawStart: null,
+  drawPreview: null,
+  lastPixel: null,
+};
+
+const MAX_UNDO = 50;
+
+function createEmptyGrid(w, h) {
+  return Array.from({ length: h }, () => new Array(w).fill(0));
+}
+
+function cloneGrid(grid) {
+  return grid.map(row => [...row]);
+}
+
+function cloneFrames() {
+  return state.frames.map(f => cloneGrid(f));
+}
+
+function currentGrid() {
+  return state.frames[state.currentFrame];
+}
+
+// ============================================================
+// UNDO / REDO
+// ============================================================
+function pushUndo() {
+  state.undoStack.push({
+    frames: cloneFrames(),
+    currentFrame: state.currentFrame,
+    width: state.width,
+    height: state.height,
+  });
+  if (state.undoStack.length > MAX_UNDO) state.undoStack.shift();
+  state.redoStack = [];
+}
+
+function undo() {
+  if (state.undoStack.length === 0) return;
+  state.redoStack.push({
+    frames: cloneFrames(),
+    currentFrame: state.currentFrame,
+    width: state.width,
+    height: state.height,
+  });
+  const prev = state.undoStack.pop();
+  state.frames = prev.frames;
+  state.currentFrame = prev.currentFrame;
+  state.width = prev.width;
+  state.height = prev.height;
+  updateAll();
+}
+
+function redo() {
+  if (state.redoStack.length === 0) return;
+  state.undoStack.push({
+    frames: cloneFrames(),
+    currentFrame: state.currentFrame,
+    width: state.width,
+    height: state.height,
+  });
+  const next = state.redoStack.pop();
+  state.frames = next.frames;
+  state.currentFrame = next.currentFrame;
+  state.width = next.width;
+  state.height = next.height;
+  updateAll();
+}
+
+// ============================================================
+// DRAWING ALGORITHMS
+// ============================================================
+function floodFill(grid, x, y, targetIdx, fillIdx) {
+  if (targetIdx === fillIdx) return;
+  const w = grid[0].length, h = grid.length;
+  const stack = [[x, y]];
+  while (stack.length > 0) {
+    const [cx, cy] = stack.pop();
+    if (cx < 0 || cx >= w || cy < 0 || cy >= h) continue;
+    if (grid[cy][cx] !== targetIdx) continue;
+    grid[cy][cx] = fillIdx;
+    stack.push([cx+1, cy], [cx-1, cy], [cx, cy+1], [cx, cy-1]);
+  }
+}
+
+function bresenhamLine(x0, y0, x1, y1) {
+  const points = [];
+  let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+  let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  while (true) {
+    points.push([x0, y0]);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 < dx) { err += dx; y0 += sy; }
+  }
+  return points;
+}
+
+function rectPoints(x0, y0, x1, y1) {
+  const points = [];
+  const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
+  const minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
+  for (let x = minX; x <= maxX; x++) {
+    points.push([x, minY], [x, maxY]);
+  }
+  for (let y = minY + 1; y < maxY; y++) {
+    points.push([minX, y], [maxX, y]);
+  }
+  return points;
+}
+
+function setPixel(grid, x, y, idx) {
+  if (x >= 0 && x < state.width && y >= 0 && y < state.height) {
+    grid[y][x] = idx;
+  }
+}
+
+function setPixelMirrored(grid, x, y, idx) {
+  setPixel(grid, x, y, idx);
+  if (state.mirror) {
+    const mx = state.width - 1 - x;
+    setPixel(grid, mx, y, idx);
+  }
+}
+
+// ============================================================
+// CANVAS RENDERING
+// ============================================================
+const editorCanvas = document.getElementById('editor-canvas');
+const editorCtx = editorCanvas.getContext('2d');
+const previewCanvas = document.getElementById('preview-canvas');
+const previewCtx = previewCanvas.getContext('2d');
+const isoCanvas = document.getElementById('iso-canvas');
+const isoCtx = isoCanvas.getContext('2d');
+
+// Checkerboard pattern
+let checkerPattern = null;
+function createCheckerPattern(ctx, size) {
+  const pc = document.createElement('canvas');
+  pc.width = size * 2; pc.height = size * 2;
+  const pctx = pc.getContext('2d');
+  pctx.fillStyle = '#2a2a3a';
+  pctx.fillRect(0, 0, size * 2, size * 2);
+  pctx.fillStyle = '#3a3a4a';
+  pctx.fillRect(0, 0, size, size);
+  pctx.fillRect(size, size, size, size);
+  return ctx.createPattern(pc, 'repeat');
+}
+
+function renderEditor() {
+  const grid = currentGrid();
+  const z = state.zoom;
+  const cw = state.width * z;
+  const ch = state.height * z;
+  editorCanvas.width = cw;
+  editorCanvas.height = ch;
+  editorCanvas.style.width = cw + 'px';
+  editorCanvas.style.height = ch + 'px';
+
+  // Background checkerboard
+  if (!checkerPattern) checkerPattern = createCheckerPattern(editorCtx, Math.max(4, Math.floor(z / 2)));
+  editorCtx.fillStyle = checkerPattern;
+  editorCtx.fillRect(0, 0, cw, ch);
+
+  // Onion skinning: previous frame at 30% opacity
+  if (state.onionSkin && state.currentFrame > 0) {
+    const prevGrid = state.frames[state.currentFrame - 1];
+    editorCtx.globalAlpha = 0.3;
+    for (let y = 0; y < state.height; y++) {
+      for (let x = 0; x < state.width; x++) {
+        const idx = prevGrid[y][x];
+        if (idx > 0 && idx < PALETTE.length) {
+          editorCtx.fillStyle = PALETTE[idx];
+          editorCtx.fillRect(x * z, y * z, z, z);
+        }
+      }
+    }
+    editorCtx.globalAlpha = 1.0;
+  }
+
+  // Draw pixels
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const idx = grid[y][x];
+      if (idx > 0 && idx < PALETTE.length) {
+        editorCtx.fillStyle = PALETTE[idx];
+        editorCtx.fillRect(x * z, y * z, z, z);
+      }
+    }
+  }
+
+  // Draw preview (line, rect)
+  if (state.drawPreview && state.drawPreview.length > 0) {
+    const color = state.tool === 'eraser' ? 'rgba(255,255,255,0.3)' :
+      (PALETTE[state.selectedColor] === 'transparent' ? 'rgba(255,255,255,0.3)' : PALETTE[state.selectedColor]);
+    editorCtx.globalAlpha = 0.6;
+    for (const [px, py] of state.drawPreview) {
+      if (px >= 0 && px < state.width && py >= 0 && py < state.height) {
+        editorCtx.fillStyle = color;
+        editorCtx.fillRect(px * z, py * z, z, z);
+        if (state.mirror) {
+          const mx = state.width - 1 - px;
+          if (mx >= 0 && mx < state.width) {
+            editorCtx.fillRect(mx * z, py * z, z, z);
+          }
+        }
+      }
+    }
+    editorCtx.globalAlpha = 1.0;
+  }
+
+  // Grid lines (only if zoom >= 6)
+  if (z >= 6) {
+    editorCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+    editorCtx.lineWidth = 1;
+    for (let x = 0; x <= state.width; x++) {
+      editorCtx.beginPath();
+      editorCtx.moveTo(x * z + 0.5, 0);
+      editorCtx.lineTo(x * z + 0.5, ch);
+      editorCtx.stroke();
+    }
+    for (let y = 0; y <= state.height; y++) {
+      editorCtx.beginPath();
+      editorCtx.moveTo(0, y * z + 0.5);
+      editorCtx.lineTo(cw, y * z + 0.5);
+      editorCtx.stroke();
+    }
+  }
+
+  // Mirror center line
+  if (state.mirror) {
+    editorCtx.setLineDash([4, 4]);
+    editorCtx.strokeStyle = 'rgba(239, 125, 87, 0.6)';
+    editorCtx.lineWidth = 2;
+    const cx = Math.floor(state.width / 2) * z;
+    editorCtx.beginPath();
+    editorCtx.moveTo(cx, 0);
+    editorCtx.lineTo(cx, ch);
+    editorCtx.stroke();
+    editorCtx.setLineDash([]);
+  }
+}
+
+function renderPreview() {
+  const grid = currentGrid();
+  const pz = state.previewZoom;
+  const pw = state.width * pz;
+  const ph = state.height * pz;
+  previewCanvas.width = pw;
+  previewCanvas.height = ph;
+  previewCanvas.style.width = pw + 'px';
+  previewCanvas.style.height = ph + 'px';
+
+  // Background
+  if (state.previewBg === 'dark') {
+    previewCtx.fillStyle = '#1a1c2c';
+  } else if (state.previewBg === 'grass') {
+    previewCtx.fillStyle = '#3e8948';
+  } else {
+    const cp = createCheckerPattern(previewCtx, Math.max(2, pz));
+    previewCtx.fillStyle = cp;
+  }
+  previewCtx.fillRect(0, 0, pw, ph);
+
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const idx = grid[y][x];
+      if (idx > 0 && idx < PALETTE.length) {
+        previewCtx.fillStyle = PALETTE[idx];
+        previewCtx.fillRect(x * pz, y * pz, pz, pz);
+      }
+    }
+  }
+}
+
+function renderIsometric() {
+  const grid = currentGrid();
+  const pz = Math.max(1, Math.floor(state.previewZoom * 0.75));
+  const sideHeight = Math.max(2, Math.floor(pz * 1.5));
+  const shadowOffset = Math.max(1, Math.floor(pz * 0.5));
+  const pw = state.width * pz + shadowOffset + 2;
+  const ph = state.height * pz + sideHeight + shadowOffset + 2;
+  isoCanvas.width = pw;
+  isoCanvas.height = ph;
+  isoCanvas.style.width = pw + 'px';
+  isoCanvas.style.height = ph + 'px';
+
+  // Background
+  if (state.previewBg === 'dark') {
+    isoCtx.fillStyle = '#1a1c2c';
+  } else if (state.previewBg === 'grass') {
+    isoCtx.fillStyle = '#3e8948';
+  } else {
+    isoCtx.fillStyle = '#2a2a3a';
+  }
+  isoCtx.fillRect(0, 0, pw, ph);
+
+  // Shadow
+  isoCtx.globalAlpha = 0.3;
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      if (grid[y][x] > 0) {
+        isoCtx.fillStyle = '#000';
+        isoCtx.fillRect(x * pz + shadowOffset, y * pz + shadowOffset + sideHeight, pz, pz);
+      }
+    }
+  }
+  isoCtx.globalAlpha = 1.0;
+
+  // Side face (darkened)
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const idx = grid[y][x];
+      if (idx > 0 && idx < PALETTE.length) {
+        isoCtx.fillStyle = darkenColor(PALETTE[idx], 0.5);
+        isoCtx.fillRect(x * pz, y * pz + pz, pz, sideHeight);
+      }
+    }
+  }
+
+  // Main sprite (elevated)
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const idx = grid[y][x];
+      if (idx > 0 && idx < PALETTE.length) {
+        isoCtx.fillStyle = PALETTE[idx];
+        isoCtx.fillRect(x * pz, y * pz, pz, pz);
+      }
+    }
+  }
+
+  // Top face highlight (first non-transparent pixel per column)
+  isoCtx.globalAlpha = 0.25;
+  for (let x = 0; x < state.width; x++) {
+    for (let y = 0; y < state.height; y++) {
+      if (grid[y][x] > 0) {
+        isoCtx.fillStyle = '#fff';
+        isoCtx.fillRect(x * pz, y * pz, pz, Math.max(1, Math.floor(pz * 0.3)));
+        break;
+      }
+    }
+  }
+  isoCtx.globalAlpha = 1.0;
+}
+
+function darkenColor(hex, factor) {
+  if (hex === 'transparent') return 'rgba(0,0,0,0)';
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgb(${Math.floor(r*factor)},${Math.floor(g*factor)},${Math.floor(b*factor)})`;
+}
+
+// ============================================================
+// UI UPDATES
+// ============================================================
+function updateAll() {
+  renderEditor();
+  renderPreview();
+  renderIsometric();
+  updateTimeline();
+  updatePaletteUsage();
+  updateHeaderInfo();
+  updateExportOutput();
+}
+
+function updateHeaderInfo() {
+  document.getElementById('header-info').textContent =
+    `${state.width}x${state.height} | Frame ${state.currentFrame + 1}/${state.frames.length} | Zoom ${state.zoom}x`;
+}
+
+function updatePaletteUsage() {
+  const grid = currentGrid();
+  const counts = {};
+  for (let y = 0; y < state.height; y++) {
+    for (let x = 0; x < state.width; x++) {
+      const idx = grid[y][x];
+      if (idx > 0) counts[idx] = (counts[idx] || 0) + 1;
+    }
+  }
+  const el = document.getElementById('palette-usage');
+  if (Object.keys(counts).length === 0) {
+    el.textContent = 'No colors used yet.';
+    return;
+  }
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  el.innerHTML = sorted.map(([idx, cnt]) => {
+    const c = PALETTE[idx];
+    const bg = c === 'transparent' ? '#000' : c;
+    return `<span><span style="display:inline-block;width:10px;height:10px;background:${bg};border:1px solid #666;vertical-align:middle;border-radius:1px;"></span> ${idx}: ${cnt}px</span>`;
+  }).join('');
+}
+
+// ============================================================
+// PALETTE UI
+// ============================================================
+function buildPalette() {
+  const grid = document.getElementById('palette-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < PALETTE.length; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'palette-cell' + (i === state.selectedColor ? ' selected' : '');
+    cell.dataset.index = i;
+    if (i === 0) {
+      cell.innerHTML = '<div class="checker"></div>';
+    } else {
+      cell.style.background = PALETTE[i];
+    }
+    cell.addEventListener('click', () => {
+      state.selectedColor = i;
+      document.querySelectorAll('.palette-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      updateStatusColor();
+    });
+    cell.addEventListener('mouseenter', (e) => {
+      showTooltip(e, `Index: ${i} | ${PALETTE[i]}`);
+    });
+    cell.addEventListener('mouseleave', hideTooltip);
+    grid.appendChild(cell);
+  }
+}
+
+function selectPaletteIndex(idx) {
+  if (idx < 0 || idx >= PALETTE.length) return;
+  state.selectedColor = idx;
+  document.querySelectorAll('.palette-cell').forEach(c => {
+    c.classList.toggle('selected', parseInt(c.dataset.index) === idx);
+  });
+  updateStatusColor();
+}
+
+function updateStatusColor() {
+  document.getElementById('status-color').textContent = `Color: ${state.selectedColor} (${PALETTE[state.selectedColor]})`;
+}
+
+// ============================================================
+// TIMELINE
+// ============================================================
+function updateTimeline() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  state.frames.forEach((frame, i) => {
+    const thumb = document.createElement('canvas');
+    thumb.className = 'frame-thumb' + (i === state.currentFrame ? ' active' : '');
+    thumb.width = state.width;
+    thumb.height = state.height;
+    thumb.style.width = '48px';
+    thumb.style.height = `${48 * (state.height / state.width)}px`;
+    const tctx = thumb.getContext('2d');
+    // checkerboard bg
+    const cp = createCheckerPattern(tctx, Math.max(1, Math.floor(state.width / 16)));
+    tctx.fillStyle = cp;
+    tctx.fillRect(0, 0, state.width, state.height);
+    for (let y = 0; y < state.height; y++) {
+      for (let x = 0; x < state.width; x++) {
+        const idx = frame[y][x];
+        if (idx > 0 && idx < PALETTE.length) {
+          tctx.fillStyle = PALETTE[idx];
+          tctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+    thumb.addEventListener('click', () => {
+      state.currentFrame = i;
+      updateAll();
+    });
+    tl.appendChild(thumb);
+  });
+}
+
+// ============================================================
+// CANVAS EVENTS
+// ============================================================
+function getPixelFromEvent(e) {
+  const rect = editorCanvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / state.zoom);
+  const y = Math.floor((e.clientY - rect.top) / state.zoom);
+  return [x, y];
+}
+
+editorCanvas.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  const [x, y] = getPixelFromEvent(e);
+  if (x < 0 || x >= state.width || y < 0 || y >= state.height) return;
+  const grid = currentGrid();
+
+  if (state.tool === 'picker') {
+    selectPaletteIndex(grid[y][x]);
+    return;
+  }
+
+  if (state.tool === 'fill') {
+    pushUndo();
+    floodFill(grid, x, y, grid[y][x], state.selectedColor);
+    if (state.mirror) {
+      const mx = state.width - 1 - x;
+      if (mx >= 0 && mx < state.width) {
+        floodFill(grid, mx, y, grid[y][mx], state.selectedColor);
+      }
+    }
+    updateAll();
+    return;
+  }
+
+  state.drawing = true;
+  state.drawStart = [x, y];
+  state.lastPixel = [x, y];
+
+  if (state.tool === 'pencil' || state.tool === 'eraser') {
+    pushUndo();
+    const colorIdx = state.tool === 'eraser' ? 0 : state.selectedColor;
+    setPixelMirrored(grid, x, y, colorIdx);
+    updateAll();
+  }
+});
+
+editorCanvas.addEventListener('mousemove', (e) => {
+  const [x, y] = getPixelFromEvent(e);
+  document.getElementById('status-coords').textContent =
+    (x >= 0 && x < state.width && y >= 0 && y < state.height)
+      ? `(${x}, ${y}) idx:${currentGrid()[y]?.[x] ?? '-'}`
+      : '--';
+
+  if (!state.drawing) {
+    // Show preview for line/rect if not drawing
+    state.drawPreview = null;
+    renderEditor();
+    return;
+  }
+
+  const grid = currentGrid();
+
+  if (state.tool === 'pencil' || state.tool === 'eraser') {
+    const colorIdx = state.tool === 'eraser' ? 0 : state.selectedColor;
+    // Interpolate from last pixel to current for smooth drawing
+    if (state.lastPixel) {
+      const pts = bresenhamLine(state.lastPixel[0], state.lastPixel[1], x, y);
+      for (const [px, py] of pts) {
+        setPixelMirrored(grid, px, py, colorIdx);
+      }
+    } else {
+      setPixelMirrored(grid, x, y, colorIdx);
+    }
+    state.lastPixel = [x, y];
+    updateAll();
+  } else if (state.tool === 'line') {
+    state.drawPreview = bresenhamLine(state.drawStart[0], state.drawStart[1], x, y);
+    renderEditor();
+  } else if (state.tool === 'rect') {
+    state.drawPreview = rectPoints(state.drawStart[0], state.drawStart[1], x, y);
+    renderEditor();
+  }
+});
+
+editorCanvas.addEventListener('mouseup', (e) => {
+  if (!state.drawing) return;
+  const [x, y] = getPixelFromEvent(e);
+  const grid = currentGrid();
+  const colorIdx = state.tool === 'eraser' ? 0 : state.selectedColor;
+
+  if (state.tool === 'line') {
+    pushUndo();
+    const pts = bresenhamLine(state.drawStart[0], state.drawStart[1], x, y);
+    for (const [px, py] of pts) {
+      setPixelMirrored(grid, px, py, colorIdx);
+    }
+  } else if (state.tool === 'rect') {
+    pushUndo();
+    const pts = rectPoints(state.drawStart[0], state.drawStart[1], x, y);
+    for (const [px, py] of pts) {
+      setPixelMirrored(grid, px, py, colorIdx);
+    }
+  }
+
+  state.drawing = false;
+  state.drawStart = null;
+  state.drawPreview = null;
+  state.lastPixel = null;
+  updateAll();
+});
+
+editorCanvas.addEventListener('mouseleave', () => {
+  if (state.drawing && (state.tool === 'pencil' || state.tool === 'eraser')) {
+    state.drawing = false;
+    state.drawStart = null;
+    state.drawPreview = null;
+    state.lastPixel = null;
+  }
+  document.getElementById('status-coords').textContent = '--';
+});
+
+// Zoom with scroll
+document.getElementById('canvas-wrap').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -1 : 1;
+  state.zoom = Math.max(1, Math.min(40, state.zoom + delta));
+  checkerPattern = null; // rebuild pattern
+  updateAll();
+}, { passive: false });
+
+// ============================================================
+// TOOL BAR
+// ============================================================
+document.querySelectorAll('#tool-bar button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.tool = btn.dataset.tool;
+    document.querySelectorAll('#tool-bar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('status-tool').textContent = `Tool: ${state.tool.charAt(0).toUpperCase() + state.tool.slice(1)}`;
+  });
+});
+
+function selectTool(toolName) {
+  state.tool = toolName;
+  document.querySelectorAll('#tool-bar button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === toolName);
+  });
+  document.getElementById('status-tool').textContent = `Tool: ${toolName.charAt(0).toUpperCase() + toolName.slice(1)}`;
+}
+
+// ============================================================
+// TOGGLES
+// ============================================================
+document.getElementById('mirror-toggle').addEventListener('click', () => {
+  state.mirror = !state.mirror;
+  document.getElementById('mirror-toggle').classList.toggle('active', state.mirror);
+  renderEditor();
+});
+
+document.getElementById('onion-toggle').addEventListener('click', () => {
+  state.onionSkin = !state.onionSkin;
+  document.getElementById('onion-toggle').classList.toggle('active', state.onionSkin);
+  renderEditor();
+});
+
+// ============================================================
+// PRESET / RESIZE
+// ============================================================
+document.getElementById('preset-select').addEventListener('change', (e) => {
+  const val = e.target.value;
+  if (!val) return;
+  const [w, h] = val.split('x').map(Number);
+  document.getElementById('grid-w').value = w;
+  document.getElementById('grid-h').value = h;
+  resizeGrid(w, h);
+});
+
+document.getElementById('btn-resize').addEventListener('click', () => {
+  const w = parseInt(document.getElementById('grid-w').value) || 32;
+  const h = parseInt(document.getElementById('grid-h').value) || 32;
+  resizeGrid(Math.max(1, Math.min(256, w)), Math.max(1, Math.min(256, h)));
+  document.getElementById('preset-select').value = '';
+});
+
+function resizeGrid(w, h) {
+  pushUndo();
+  state.width = w;
+  state.height = h;
+  state.frames = state.frames.map(oldGrid => {
+    const newGrid = createEmptyGrid(w, h);
+    for (let y = 0; y < Math.min(h, oldGrid.length); y++) {
+      for (let x = 0; x < Math.min(w, oldGrid[0].length); x++) {
+        newGrid[y][x] = oldGrid[y][x];
+      }
+    }
+    return newGrid;
+  });
+  // Auto-zoom to fit
+  const wrap = document.getElementById('canvas-wrap');
+  const maxZoom = Math.max(1, Math.min(
+    Math.floor((wrap.clientWidth - 20) / w),
+    Math.floor((wrap.clientHeight - 20) / h),
+    40
+  ));
+  state.zoom = Math.max(1, maxZoom);
+  checkerPattern = null;
+  updateAll();
+}
+
+// ============================================================
+// ANIMATION
+// ============================================================
+document.getElementById('fps-slider').addEventListener('input', (e) => {
+  state.fps = parseInt(e.target.value);
+  document.getElementById('fps-value').textContent = state.fps;
+});
+
+let animInterval = null;
+
+document.getElementById('btn-play').addEventListener('click', togglePlay);
+
+function togglePlay() {
+  state.playing = !state.playing;
+  const btn = document.getElementById('btn-play');
+  if (state.playing) {
+    btn.innerHTML = '&#9646;&#9646; Pause';
+    btn.classList.add('active');
+    startAnimation();
+  } else {
+    btn.innerHTML = '&#9654; Play';
+    btn.classList.remove('active');
+    stopAnimation();
+  }
+}
+
+function startAnimation() {
+  stopAnimation();
+  if (state.frames.length <= 1) return;
+  animInterval = setInterval(() => {
+    state.currentFrame = (state.currentFrame + 1) % state.frames.length;
+    renderEditor();
+    renderPreview();
+    renderIsometric();
+    updateTimeline();
+    updateHeaderInfo();
+  }, 1000 / state.fps);
+}
+
+function stopAnimation() {
+  if (animInterval) clearInterval(animInterval);
+  animInterval = null;
+}
+
+document.getElementById('btn-add-frame').addEventListener('click', () => {
+  pushUndo();
+  state.frames.push(createEmptyGrid(state.width, state.height));
+  state.currentFrame = state.frames.length - 1;
+  updateAll();
+});
+
+document.getElementById('btn-dup-frame').addEventListener('click', () => {
+  pushUndo();
+  state.frames.splice(state.currentFrame + 1, 0, cloneGrid(currentGrid()));
+  state.currentFrame++;
+  updateAll();
+});
+
+document.getElementById('btn-del-frame').addEventListener('click', () => {
+  if (state.frames.length <= 1) return;
+  pushUndo();
+  state.frames.splice(state.currentFrame, 1);
+  if (state.currentFrame >= state.frames.length) state.currentFrame = state.frames.length - 1;
+  updateAll();
+});
+
+// ============================================================
+// PREVIEW CONTROLS
+// ============================================================
+document.querySelectorAll('.preview-controls [data-zoom]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.previewZoom = parseInt(btn.dataset.zoom);
+    document.querySelectorAll('.preview-controls [data-zoom]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPreview();
+    renderIsometric();
+  });
+});
+
+document.querySelectorAll('#bg-controls [data-bg]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.previewBg = btn.dataset.bg;
+    document.querySelectorAll('#bg-controls [data-bg]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPreview();
+    renderIsometric();
+  });
+});
+
+// ============================================================
+// IMPORT / EXPORT
+// ============================================================
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-modal').classList.add('open');
+  document.getElementById('import-textarea').value = '';
+  document.getElementById('import-textarea').focus();
+});
+
+document.getElementById('btn-import-cancel').addEventListener('click', () => {
+  document.getElementById('import-modal').classList.remove('open');
+});
+
+document.getElementById('btn-import-load').addEventListener('click', () => {
+  const raw = document.getElementById('import-textarea').value.trim();
+  try {
+    // Try to extract array from TS variable declaration
+    let jsonStr = raw;
+    const match = raw.match(/=\s*(\[[\s\S]*\])\s*;?\s*$/);
+    if (match) jsonStr = match[1];
+    const data = JSON.parse(jsonStr);
+    if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error('Expected number[][]');
+    pushUndo();
+    const h = data.length;
+    const w = data[0].length;
+    state.width = w;
+    state.height = h;
+    state.frames = [data.map(row => row.map(v => Math.max(0, Math.min(95, typeof v === 'number' ? v : 0))))];
+    state.currentFrame = 0;
+    document.getElementById('grid-w').value = w;
+    document.getElementById('grid-h').value = h;
+    document.getElementById('preset-select').value = '';
+    // Auto-zoom
+    const wrap = document.getElementById('canvas-wrap');
+    state.zoom = Math.max(1, Math.min(
+      Math.floor((wrap.clientWidth - 20) / w),
+      Math.floor((wrap.clientHeight - 20) / h),
+      40
+    ));
+    checkerPattern = null;
+    updateAll();
+    document.getElementById('import-modal').classList.remove('open');
+  } catch (err) {
+    alert('Import failed: ' + err.message);
+  }
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  document.getElementById('export-area').style.display = 'flex';
+  updateExportOutput();
+});
+
+document.getElementById('btn-close-export').addEventListener('click', () => {
+  document.getElementById('export-area').style.display = 'none';
+});
+
+function updateExportOutput() {
+  const exportArea = document.getElementById('export-area');
+  if (exportArea.style.display === 'none') return;
+  const out = document.getElementById('export-output');
+  let code = '';
+
+  if (state.frames.length === 1) {
+    code = generateFrameCode('SPRITE', state.frames[0]);
+  } else {
+    state.frames.forEach((frame, i) => {
+      if (i > 0) code += '\n\n';
+      code += generateFrameCode(`SPRITE_FRAME_${i}`, frame);
+    });
+  }
+  out.value = code;
+}
+
+function generateFrameCode(name, grid) {
+  const maxIdxLen = Math.max(...grid.flat().map(v => String(v).length));
+  const pad = (v) => String(v).padStart(maxIdxLen, ' ');
+  let lines = `const ${name}: SpritePixels = [\n`;
+  for (let y = 0; y < grid.length; y++) {
+    lines += '  [' + grid[y].map(pad).join(',') + ']';
+    if (y < grid.length - 1) lines += ',';
+    lines += '\n';
+  }
+  lines += '];';
+  return lines;
+}
+
+document.getElementById('btn-copy').addEventListener('click', () => {
+  const out = document.getElementById('export-output');
+  navigator.clipboard.writeText(out.value).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  // Don't handle if inside textarea/input
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const mod = isMac ? e.metaKey : e.ctrlKey;
+
+  if (mod && e.key === 'z') { e.preventDefault(); undo(); return; }
+  if (mod && e.key === 'y') { e.preventDefault(); redo(); return; }
+  if (mod && e.shiftKey && e.key === 'Z') { e.preventDefault(); redo(); return; }
+
+  switch(e.key.toLowerCase()) {
+    case 'p': selectTool('pencil'); break;
+    case 'e': selectTool('eraser'); break;
+    case 'f': selectTool('fill'); break;
+    case 'l': selectTool('line'); break;
+    case 'r': selectTool('rect'); break;
+    case 'i': selectTool('picker'); break;
+    case ' ':
+      e.preventDefault();
+      togglePlay();
+      break;
+    case '[':
+      if (state.currentFrame > 0) { state.currentFrame--; updateAll(); }
+      break;
+    case ']':
+      if (state.currentFrame < state.frames.length - 1) { state.currentFrame++; updateAll(); }
+      break;
+    case '1': selectPaletteIndex(1); break;
+    case '2': selectPaletteIndex(2); break;
+    case '3': selectPaletteIndex(3); break;
+    case '4': selectPaletteIndex(4); break;
+    case '5': selectPaletteIndex(5); break;
+    case '6': selectPaletteIndex(6); break;
+    case '7': selectPaletteIndex(7); break;
+    case '8': selectPaletteIndex(8); break;
+    case '9': selectPaletteIndex(9); break;
+    case '0': selectPaletteIndex(0); break;
+  }
+});
+
+// ============================================================
+// TOOLTIP
+// ============================================================
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, text) {
+  tooltip.textContent = text;
+  tooltip.style.display = 'block';
+  tooltip.style.left = (e.clientX + 12) + 'px';
+  tooltip.style.top = (e.clientY + 12) + 'px';
+}
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildPalette();
+selectPaletteIndex(1);
+
+// Set initial zoom to fit
+requestAnimationFrame(() => {
+  const wrap = document.getElementById('canvas-wrap');
+  state.zoom = Math.max(1, Math.min(
+    Math.floor((wrap.clientWidth - 20) / state.width),
+    Math.floor((wrap.clientHeight - 20) / state.height),
+    40
+  ));
+  checkerPattern = null;
+  updateAll();
+});
+
+// Handle FPS slider for animation restart
+document.getElementById('fps-slider').addEventListener('change', () => {
+  if (state.playing) {
+    stopAnimation();
+    startAnimation();
+  }
+});
+</script>
+</body>
+</html>

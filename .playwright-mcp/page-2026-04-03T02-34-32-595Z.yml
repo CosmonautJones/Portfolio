@@ -1,0 +1,73 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - heading "ClaudeBot Sprite Editor" [level=1] [ref=e3]
+    - generic [ref=e4]: 32x32 | Frame 1/1 | Zoom 15x
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Preset / Grid Size
+        - generic [ref=e9]:
+          - generic [ref=e10]: Preset
+          - combobox [ref=e11]:
+            - option "Custom"
+            - option "Player (32x32)" [selected]
+            - option "Car (64x32)"
+            - option "Truck / Log (96x32)"
+            - option "Train (128x32)"
+            - option "Coin (16x16)"
+            - option "Decoration (16x24)"
+        - generic [ref=e12]:
+          - generic [ref=e13]: W
+          - spinbutton [ref=e14]: "32"
+          - generic [ref=e15]: H
+          - spinbutton [ref=e16]: "32"
+          - button "Resize" [ref=e17] [cursor=pointer]
+      - generic [ref=e18]:
+        - generic [ref=e19]: Tools
+        - generic [ref=e20]:
+          - button "✎ P" [ref=e21] [cursor=pointer]
+          - button "⌫ E" [ref=e22] [cursor=pointer]
+          - button "◼ F" [ref=e23] [cursor=pointer]
+          - button "╱ L" [ref=e24] [cursor=pointer]
+          - button "▢ R" [ref=e25] [cursor=pointer]
+          - button "👓 I" [ref=e26] [cursor=pointer]
+      - generic [ref=e30] [cursor=pointer]: Mirror Mode (horizontal)
+      - generic [ref=e34] [cursor=pointer]: Onion Skinning
+      - generic [ref=e36]: Palette (96 colors)
+      - generic [ref=e135]:
+        - generic [ref=e136]: Palette Usage
+        - generic [ref=e137]: No colors used yet.
+      - generic [ref=e138]:
+        - generic [ref=e139]: Animation
+        - generic [ref=e140]:
+          - generic [ref=e141]: FPS
+          - slider [ref=e142]: "4"
+          - generic [ref=e143]: "4"
+        - generic [ref=e144]:
+          - button "▶ Play" [ref=e145] [cursor=pointer]
+          - button "+ Frame" [ref=e146] [cursor=pointer]
+          - button "Dup" [ref=e147] [cursor=pointer]
+          - button "Del" [ref=e148] [cursor=pointer]
+      - generic [ref=e151]:
+        - generic [ref=e152]: Import / Export
+        - generic [ref=e153]:
+          - button "Import JSON" [ref=e154] [cursor=pointer]
+          - button "Export TS" [ref=e155] [cursor=pointer]
+    - generic [ref=e159]:
+      - generic [ref=e160]:
+        - generic [ref=e161]: Preview
+        - generic [ref=e162]:
+          - button "1x" [ref=e163] [cursor=pointer]
+          - button "2x" [ref=e164] [cursor=pointer]
+          - button "4x" [ref=e165] [cursor=pointer]
+      - generic [ref=e168]:
+        - generic [ref=e169]: Preview Background
+        - generic [ref=e170]:
+          - button "Dark" [ref=e171] [cursor=pointer]
+          - button "Check" [ref=e172] [cursor=pointer]
+          - button "Grass" [ref=e173] [cursor=pointer]
+      - generic [ref=e175]: Isometric 2.5D Preview
+  - generic [ref=e178]:
+    - generic [ref=e179]: "--"
+    - generic [ref=e180]: "Tool: Pencil"
+    - generic [ref=e181]: "Color: 1 (#1a1c2c)"
