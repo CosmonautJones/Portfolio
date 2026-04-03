@@ -2,7 +2,13 @@
 // GPU Sprite Batch Renderer — instanced quad rendering from a texture atlas
 // ============================================================================
 
-import { createProgram, getUniform, ortho } from "./gl-utils";
+import {
+  createProgram,
+  getUniform,
+  ortho,
+  createIsometricSkew,
+  multiplyMatrix4,
+} from "./gl-utils";
 import { SPRITE_VERTEX, SPRITE_FRAGMENT } from "../shaders/loader";
 import type { AtlasRegion } from "./sprite-atlas";
 
@@ -176,14 +182,53 @@ export class SpriteBatch {
 
   private viewWidth = 0;
   private viewHeight = 0;
+  private isometric = false;
 
-  /** Set the projection matrix */
-  setProjection(width: number, height: number): void {
+  /** Whether the isometric skew is currently active */
+  getIsometric(): boolean {
+    return this.isometric;
+  }
+
+  // Isometric skew constants
+  private static readonly ISO_SHEAR = 0.38;
+  private static readonly ISO_YSCALE = 0.88;
+
+  /** Apply isometric skew to an orthographic projection when enabled */
+  private applyIsometric(proj: Float32Array): Float32Array {
+    if (!this.isometric) return proj;
+
+    const shear = createIsometricSkew(SpriteBatch.ISO_SHEAR);
+    let mat = multiplyMatrix4(proj, shear);
+
+    // Compress Y to compensate for vertical stretching from the shear
+    const yScale = new Float32Array(16);
+    yScale[0] = 1;
+    yScale[5] = SpriteBatch.ISO_YSCALE;
+    yScale[10] = 1;
+    yScale[15] = 1;
+    mat = multiplyMatrix4(mat, yScale);
+
+    // Shift X to re-center the skewed scene
+    const xShift = new Float32Array(16);
+    xShift[0] = 1;
+    xShift[5] = 1;
+    xShift[10] = 1;
+    xShift[15] = 1;
+    xShift[12] = SpriteBatch.ISO_SHEAR * SpriteBatch.ISO_YSCALE * 0.5;
+    mat = multiplyMatrix4(xShift, mat);
+
+    return mat;
+  }
+
+  /** Set the projection matrix.
+   *  @param isometric When true, apply isometric skew (voxel mode). */
+  setProjection(width: number, height: number, isometric?: boolean): void {
     this.viewWidth = width;
     this.viewHeight = height;
+    if (isometric !== undefined) this.isometric = isometric;
     const gl = this.gl;
     gl.useProgram(this.program);
-    const proj = ortho(0, width, height, 0); // top-left origin
+    const proj = this.applyIsometric(ortho(0, width, height, 0));
     gl.uniformMatrix4fv(this.uProjection, false, proj);
   }
 
@@ -191,11 +236,13 @@ export class SpriteBatch {
   setShakeOffset(offsetX: number, offsetY: number): void {
     const gl = this.gl;
     gl.useProgram(this.program);
-    const proj = ortho(
-      -offsetX,
-      this.viewWidth - offsetX,
-      this.viewHeight - offsetY,
-      -offsetY,
+    const proj = this.applyIsometric(
+      ortho(
+        -offsetX,
+        this.viewWidth - offsetX,
+        this.viewHeight - offsetY,
+        -offsetY,
+      ),
     );
     gl.uniformMatrix4fv(this.uProjection, false, proj);
   }

@@ -109,6 +109,89 @@ describe("GL utilities", () => {
     // mat[15] = 1
     expect(mat[15]).toBe(1);
   });
+
+  it("createIsometricSkew produces identity-like matrix with shear in column-major slot", async () => {
+    const { createIsometricSkew } = await import("../webgl/gl-utils");
+    const mat = createIsometricSkew(0.4);
+    expect(mat).toBeInstanceOf(Float32Array);
+    expect(mat.length).toBe(16);
+    // Diagonal should be 1
+    expect(mat[0]).toBe(1);
+    expect(mat[5]).toBe(1);
+    expect(mat[10]).toBe(1);
+    expect(mat[15]).toBe(1);
+    // Shear at column 1, row 0 (index 4) — x += shear * y
+    expect(mat[4]).toBeCloseTo(0.4, 5);
+    // All other off-diagonal elements should be 0
+    for (let i = 0; i < 16; i++) {
+      if ([0, 4, 5, 10, 15].includes(i)) continue;
+      expect(mat[i]).toBe(0);
+    }
+  });
+
+  it("createIsometricSkew with zero shear produces identity", async () => {
+    const { createIsometricSkew } = await import("../webgl/gl-utils");
+    const mat = createIsometricSkew(0);
+    expect(mat[0]).toBe(1);
+    expect(mat[4]).toBe(0);
+    expect(mat[5]).toBe(1);
+    expect(mat[15]).toBe(1);
+  });
+
+  it("multiplyMatrix4 with two identities produces identity", async () => {
+    const { multiplyMatrix4 } = await import("../webgl/gl-utils");
+    const id = new Float32Array(16);
+    id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
+    const result = multiplyMatrix4(id, id);
+    for (let i = 0; i < 16; i++) {
+      expect(result[i]).toBeCloseTo(id[i], 5);
+    }
+  });
+
+  it("multiplyMatrix4: identity × A = A", async () => {
+    const { multiplyMatrix4, ortho } = await import("../webgl/gl-utils");
+    const id = new Float32Array(16);
+    id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
+    const a = ortho(0, 400, 600, 0);
+    const result = multiplyMatrix4(id, a);
+    for (let i = 0; i < 16; i++) {
+      expect(result[i]).toBeCloseTo(a[i], 5);
+    }
+  });
+
+  it("multiplyMatrix4: A × identity = A", async () => {
+    const { multiplyMatrix4, ortho } = await import("../webgl/gl-utils");
+    const id = new Float32Array(16);
+    id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
+    const a = ortho(0, 400, 600, 0);
+    const result = multiplyMatrix4(a, id);
+    for (let i = 0; i < 16; i++) {
+      expect(result[i]).toBeCloseTo(a[i], 5);
+    }
+  });
+
+  it("multiplyMatrix4: ortho × skew modifies the expected elements", async () => {
+    const { multiplyMatrix4, ortho, createIsometricSkew } = await import("../webgl/gl-utils");
+    const proj = ortho(0, 416, 640, 0);
+    const skew = createIsometricSkew(0.38);
+    const result = multiplyMatrix4(proj, skew);
+
+    // The result should still be a valid 4×4 matrix
+    expect(result.length).toBe(16);
+
+    // Diagonal should be preserved for x and z
+    expect(result[0]).toBeCloseTo(proj[0], 5); // x scale unchanged
+    expect(result[10]).toBe(-1); // z unchanged
+
+    // The skew should modify column 1 (indices 4..7)
+    // result col1 = proj * skew_col1
+    // skew_col1 = [0.38, 1, 0, 0]
+    // proj * skew_col1 = proj_col0 * 0.38 + proj_col1 * 1
+    // result[4] = proj[0] * 0.38 + proj[4] * 1 = (2/416)*0.38 + 0
+    expect(result[4]).toBeCloseTo(proj[0] * 0.38, 5);
+    // result[5] = proj[1]*0.38 + proj[5]*1 = 0 + proj[5]
+    expect(result[5]).toBeCloseTo(proj[5], 5);
+  });
 });
 
 describe("Renderer exports", () => {

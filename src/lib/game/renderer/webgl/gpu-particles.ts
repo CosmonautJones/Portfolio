@@ -2,7 +2,13 @@
 // GPU Particle System — instanced rendering for high-performance particles
 // ============================================================================
 
-import { createProgram, getUniform, ortho } from "./gl-utils";
+import {
+  createProgram,
+  getUniform,
+  ortho,
+  createIsometricSkew,
+  multiplyMatrix4,
+} from "./gl-utils";
 import { PARTICLE_VERTEX, PARTICLE_FRAGMENT } from "../shaders/loader";
 import type { Particle } from "../../types";
 
@@ -102,14 +108,50 @@ export class GPUParticleRenderer {
 
   private viewWidth = 0;
   private viewHeight = 0;
+  private isometric = false;
 
-  /** Set the projection matrix */
-  setProjection(width: number, height: number): void {
+  // Same constants as SpriteBatch to keep the two subsystems in sync
+  private static readonly ISO_SHEAR = 0.38;
+  private static readonly ISO_YSCALE = 0.88;
+
+  /** Apply isometric skew to an orthographic projection when enabled */
+  private applyIsometric(proj: Float32Array): Float32Array {
+    if (!this.isometric) return proj;
+
+    const shear = createIsometricSkew(GPUParticleRenderer.ISO_SHEAR);
+    let mat = multiplyMatrix4(proj, shear);
+
+    const yScale = new Float32Array(16);
+    yScale[0] = 1;
+    yScale[5] = GPUParticleRenderer.ISO_YSCALE;
+    yScale[10] = 1;
+    yScale[15] = 1;
+    mat = multiplyMatrix4(mat, yScale);
+
+    const xShift = new Float32Array(16);
+    xShift[0] = 1;
+    xShift[5] = 1;
+    xShift[10] = 1;
+    xShift[15] = 1;
+    xShift[12] = GPUParticleRenderer.ISO_SHEAR * GPUParticleRenderer.ISO_YSCALE * 0.5;
+    mat = multiplyMatrix4(xShift, mat);
+
+    return mat;
+  }
+
+  /** Set the projection matrix.
+   *  @param isometric When true, apply isometric skew (voxel mode). */
+  setProjection(width: number, height: number, isometric?: boolean): void {
     this.viewWidth = width;
     this.viewHeight = height;
+    if (isometric !== undefined) this.isometric = isometric;
     const gl = this.gl;
     gl.useProgram(this.program);
-    gl.uniformMatrix4fv(this.uProjection, false, ortho(0, width, height, 0));
+    gl.uniformMatrix4fv(
+      this.uProjection,
+      false,
+      this.applyIsometric(ortho(0, width, height, 0)),
+    );
   }
 
   /** Apply a screen-space shake offset by shifting the projection matrix */
@@ -119,7 +161,9 @@ export class GPUParticleRenderer {
     gl.uniformMatrix4fv(
       this.uProjection,
       false,
-      ortho(-offsetX, this.viewWidth - offsetX, this.viewHeight - offsetY, -offsetY),
+      this.applyIsometric(
+        ortho(-offsetX, this.viewWidth - offsetX, this.viewHeight - offsetY, -offsetY),
+      ),
     );
   }
 

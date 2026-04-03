@@ -52,6 +52,7 @@ export class GameRenderer {
   private passGraph: PassGraph;
   private postPipeline: PostPipeline;
   private spritesPass: SpritesPass;
+  private currentSpriteStyle: SpriteStyle = "pixel";
 
   constructor(canvas: HTMLCanvasElement, sprites: SpriteCache) {
     const gl = canvas.getContext("webgl2", {
@@ -141,9 +142,24 @@ export class GameRenderer {
     this.postPipeline.setup(gl, this.resources);
   }
 
-  /** Set the active sprite style (pixel or voxel) */
+  /** Set the active sprite style (pixel or voxel).
+   *  Voxel mode applies an isometric camera tilt to match the 3D sprites. */
   setSpriteStyle(style: SpriteStyle): void {
+    this.currentSpriteStyle = style;
     this.spritesPass.setSpriteStyle(style);
+
+    // Re-apply projection with isometric flag matching the sprite style
+    const iso = style === "voxel";
+    this.resources.batch.setProjection(
+      this.resources.width,
+      this.resources.height,
+      iso,
+    );
+    this.resources.particleRenderer.setProjection(
+      this.resources.width,
+      this.resources.height,
+      iso,
+    );
   }
 
   clear(): void {

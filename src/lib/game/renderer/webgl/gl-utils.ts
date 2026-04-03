@@ -132,6 +132,40 @@ export function ortho(
   return out;
 }
 
+/** Create a 4×4 shear matrix for isometric skew (column-major).
+ *  Maps x' = x + shearAmount * y, keeping y unchanged.
+ *  shearAmount ~0.35–0.5 gives a ~19–27° isometric tilt. */
+export function createIsometricSkew(shearAmount: number): Float32Array {
+  // Column-major: index = col*4 + row
+  // We want row 0 (x) to pick up a contribution from column 1 (y).
+  // That's index 1*4 + 0 = 4.
+  const out = new Float32Array(16);
+  out[0] = 1;             // col 0, row 0
+  out[5] = 1;             // col 1, row 1
+  out[10] = 1;            // col 2, row 2
+  out[15] = 1;            // col 3, row 3
+  out[4] = shearAmount;   // col 1, row 0  → x += shear * y
+  return out;
+}
+
+/** Multiply two 4×4 column-major matrices: out = A × B */
+export function multiplyMatrix4(
+  a: Float32Array,
+  b: Float32Array,
+): Float32Array {
+  const out = new Float32Array(16);
+  for (let col = 0; col < 4; col++) {
+    for (let row = 0; row < 4; row++) {
+      out[col * 4 + row] =
+        a[0 * 4 + row] * b[col * 4 + 0] +
+        a[1 * 4 + row] * b[col * 4 + 1] +
+        a[2 * 4 + row] * b[col * 4 + 2] +
+        a[3 * 4 + row] * b[col * 4 + 3];
+    }
+  }
+  return out;
+}
+
 /**
  * Get uniform location. Returns null if uniform is optimized out by the GLSL
  * compiler — this is normal and WebGL2 silently ignores null locations passed

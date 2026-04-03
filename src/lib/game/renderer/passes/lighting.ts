@@ -48,9 +48,12 @@ export class LightingPass implements RenderPass {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
 
-    // Use the sprite batch to draw light quads into the light map
+    // Use the sprite batch to draw light quads into the light map.
+    // Light map is rendered in its own coordinate space — never apply
+    // the isometric skew here (it's composited as a fullscreen quad later).
     const { batch, atlas, whiteRegion } = resources;
-    batch.setProjection(halfW, halfH);
+    const savedIso = batch.getIsometric();
+    batch.setProjection(halfW, halfH, false);
     batch.begin();
 
     // Scale factor for half-res
@@ -93,8 +96,8 @@ export class LightingPass implements RenderPass {
     if (atlasTex) batch.bindAtlas(atlasTex);
     batch.flush();
 
-    // Restore projection and blend mode
-    batch.setProjection(resources.width, resources.height);
+    // Restore projection (including isometric state) and blend mode
+    batch.setProjection(resources.width, resources.height, savedIso);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // --- Apply light map to scene ---
