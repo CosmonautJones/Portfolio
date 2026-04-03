@@ -193,16 +193,20 @@ export class SpritesPass implements RenderPass {
         const animatedType = frame > 0 ? `${baseType}_${frame}` : baseType;
         const spriteKey = obs.speed < 0 ? `${animatedType}_flip` : animatedType;
 
-        const height = OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[baseType] ?? 0;
+        const isVoxel = this.spriteStyle === "voxel";
+        // Voxel sprites have 3D baked in — no elevation or layering needed
+        const height = isVoxel ? 0 : (OBJECT_HEIGHT[obs.type] ?? OBJECT_HEIGHT[baseType] ?? 0);
         const obsRegion = this.resolveRegion(spriteKey, atlas);
         if (!obsRegion) continue;
 
-        // Subtle deformation for moving vehicles
+        // Subtle deformation for moving vehicles (pixel mode only)
         let scaleY = 1;
-        if (obs.type === "train") {
-          scaleY = 1 + Math.sin(state.animationTime * 8) * 0.03;
-        } else if (obs.type === "car" || obs.type === "truck") {
-          scaleY = 1 + Math.sin(state.animationTime * 4 + obsIdx * 0.5) * 0.02;
+        if (!isVoxel) {
+          if (obs.type === "train") {
+            scaleY = 1 + Math.sin(state.animationTime * 8) * 0.03;
+          } else if (obs.type === "car" || obs.type === "truck") {
+            scaleY = 1 + Math.sin(state.animationTime * 4 + obsIdx * 0.5) * 0.02;
+          }
         }
 
         const spriteW = obsRegion.width;
@@ -210,29 +214,32 @@ export class SpritesPass implements RenderPass {
         const scaledH = spriteH * scaleY;
         const yOffset = (spriteH - scaledH) / 2;
 
-        // 1. Shadow silhouette
-        const shadowKey = spriteKey + "_shadow";
-        const shadowRegion = this.resolveRegion(shadowKey, atlas);
-        if (shadowRegion) {
-          batch.draw(shadowRegion, obs.worldX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * laneAlpha);
+        // 1. Shadow silhouette (pixel mode only — voxels have baked shadows)
+        if (!isVoxel) {
+          const shadowKey = spriteKey + "_shadow";
+          const shadowRegion = this.resolveRegion(shadowKey, atlas);
+          if (shadowRegion) {
+            batch.draw(shadowRegion, obs.worldX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * laneAlpha);
+          }
         }
 
         // 2. Side face disabled — sprites have built-in isometric shading
 
-        // 3. Main sprite shifted up by height (with deformation)
+        // 3. Main sprite (shifted up by height in pixel mode, flat in voxel)
         batch.draw(obsRegion, obs.worldX, screenY - height + yOffset, spriteW, scaledH, 1, 1, 1, laneAlpha);
 
-        // 4. Top face (roof)
-        const topFace = OBJECT_TOP_FACE[colorKey] ?? 0;
-        const topColor = TOP_FACE_COLORS[colorKey];
-        if (topFace > 0 && topColor) {
-          const obsWidth = obs.widthCells * cellSize;
-          const inset = 4;
-          const topY = screenY - height - topFace + yOffset;
-          const [tcR, tcG, tcB] = hexToFloats(topColor);
-          batch.drawQuad(whiteRegion, obs.worldX + inset, topY, obsWidth - inset * 2, topFace, tcR, tcG, tcB, laneAlpha);
-          // 1px white highlight on top edge
-          batch.drawQuad(whiteRegion, obs.worldX + inset, topY, obsWidth - inset * 2, 1, 1, 1, 1, 0.3 * laneAlpha);
+        // 4. Top face (pixel mode only)
+        if (!isVoxel) {
+          const topFace = OBJECT_TOP_FACE[colorKey] ?? 0;
+          const topColor = TOP_FACE_COLORS[colorKey];
+          if (topFace > 0 && topColor) {
+            const obsWidth = obs.widthCells * cellSize;
+            const inset = 4;
+            const topY = screenY - height - topFace + yOffset;
+            const [tcR, tcG, tcB] = hexToFloats(topColor);
+            batch.drawQuad(whiteRegion, obs.worldX + inset, topY, obsWidth - inset * 2, topFace, tcR, tcG, tcB, laneAlpha);
+            batch.drawQuad(whiteRegion, obs.worldX + inset, topY, obsWidth - inset * 2, 1, 1, 1, 1, 0.3 * laneAlpha);
+          }
         }
       }
     }
@@ -330,10 +337,12 @@ export class SpritesPass implements RenderPass {
 
       const drawX = baseX + offsetX;
 
-      // Shadow
-      const shadowRegion = atlas.getRegion(shadowKey);
-      if (shadowRegion) {
-        batch.draw(shadowRegion, drawX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * 0.7 * laneAlpha);
+      // Shadow (pixel mode only — voxels have baked shadows)
+      if (this.spriteStyle !== "voxel") {
+        const shadowRegion = atlas.getRegion(shadowKey);
+        if (shadowRegion) {
+          batch.draw(shadowRegion, drawX + SHADOW_OFFSET.x, screenY + SHADOW_OFFSET.y, undefined, undefined, 1, 1, 1, SHADOW_ALPHA * 0.7 * laneAlpha);
+        }
       }
 
       // Main decoration sprite (with optional scale for bushes)
