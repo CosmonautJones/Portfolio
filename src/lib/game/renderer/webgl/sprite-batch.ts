@@ -190,7 +190,7 @@ export class SpriteBatch {
   }
 
   // Isometric skew constants
-  private static readonly ISO_SHEAR = -0.38;
+  private static readonly ISO_SHEAR = 0;
   private static readonly ISO_YSCALE = 0.88;
 
   /** Apply isometric skew to an orthographic projection when enabled */
