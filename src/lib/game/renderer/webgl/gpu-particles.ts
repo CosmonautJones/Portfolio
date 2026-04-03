@@ -111,7 +111,7 @@ export class GPUParticleRenderer {
   private isometric = false;
 
   // Same constants as SpriteBatch to keep the two subsystems in sync
-  private static readonly ISO_SHEAR = 0.38;
+  private static readonly ISO_SHEAR = -0.38;
   private static readonly ISO_YSCALE = 0.88;
 
   /** Apply isometric skew to an orthographic projection when enabled */
