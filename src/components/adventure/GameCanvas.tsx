@@ -5,6 +5,7 @@ import type { GamePhase, DeathCause } from "@/lib/game/types";
 import { saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { useGameEngine } from "@/hooks/use-game-engine";
 import { useGameSprites } from "@/hooks/use-game-sprites";
+import { useThreeRenderer } from "@/hooks/use-three-renderer";
 import { useVisitor } from "@/hooks/use-visitor";
 import { CRTOverlay } from "./CRTOverlay";
 import { MenuOverlay } from "./MenuOverlay";
@@ -31,6 +32,7 @@ export default function GameCanvas({
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasWrapperRef = useRef<HTMLDivElement>(null);
 
   // Progression bridge: wire game events to site XP/achievements
   const { awardXP, unlockAchievement } = useVisitor();
@@ -51,10 +53,18 @@ export default function GameCanvas({
     setSpriteStyle(initialSpriteStyle);
   }
 
+  // Three.js 3D renderer — managed by hook (lazy create, keep alive, destroy on unmount)
+  const isThreeActive = spriteStyle === "voxel";
+  const { threeRendererRef, threeCanvasRef } = useThreeRenderer(
+    isThreeActive, canvasWidth, canvasHeight,
+  );
+
   // Engine state management, game loop, callbacks
   const [engineState, controls] = useGameEngine({
     canvasRef,
+    inputRef: canvasWrapperRef,
     rendererRef,
+    threeRendererRef,
     onScoreUpdate,
     onPhaseChange: onPhaseChangeExternal,
     onDeath: onDeathExternal,
@@ -97,8 +107,9 @@ export default function GameCanvas({
     setSpriteStyle((prev) => {
       const next = prev === "pixel" ? "voxel" : "pixel";
       saveSpriteStyle(next);
-      if (rendererRef.current) {
-        rendererRef.current.setSpriteStyle(next);
+      // When switching back to pixel, restore the WebGL2 renderer sprite style
+      if (next === "pixel" && rendererRef.current) {
+        rendererRef.current.setSpriteStyle("pixel");
       }
       return next;
     });
@@ -195,9 +206,12 @@ export default function GameCanvas({
         }
       `}</style>
       <div
+        ref={canvasWrapperRef}
         className="relative"
-        style={{ width: canvasWidth, height: canvasHeight }}
+        tabIndex={0}
+        style={{ width: canvasWidth, height: canvasHeight, touchAction: "none", outline: "none" }}
       >
+        {/* WebGL2 pixel renderer canvas */}
         <canvas
           ref={canvasRef}
           width={VIEWPORT_WIDTH}
@@ -207,10 +221,22 @@ export default function GameCanvas({
             width: canvasWidth,
             height: canvasHeight,
             imageRendering: "auto",
-            touchAction: "none",
             backgroundColor: "#1a1c2c",
+            display: isThreeActive ? "none" : "block",
           }}
-          tabIndex={0}
+        />
+        {/* Three.js 3D isometric renderer canvas */}
+        <canvas
+          ref={threeCanvasRef}
+          width={VIEWPORT_WIDTH}
+          height={VIEWPORT_HEIGHT}
+          className="block"
+          style={{
+            width: canvasWidth,
+            height: canvasHeight,
+            backgroundColor: "#1a1c2c",
+            display: isThreeActive ? "block" : "none",
+          }}
         />
 
         <CRTOverlay />

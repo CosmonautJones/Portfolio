@@ -65,6 +65,7 @@ export interface GameEngineControls {
 
 interface UseGameEngineProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  inputRef?: React.RefObject<HTMLElement | null>;
   rendererRef: React.RefObject<GameRenderer | null>;
   threeRendererRef?: React.RefObject<ThreeRenderer | null>;
   onScoreUpdate?: (score: number, level: number) => void;
@@ -75,6 +76,7 @@ interface UseGameEngineProps {
 
 export function useGameEngine({
   canvasRef,
+  inputRef,
   rendererRef,
   threeRendererRef,
   onScoreUpdate,
@@ -364,11 +366,13 @@ export function useGameEngine({
       }
     });
 
+    // Touch events bind to inputRef (overlay div) if available, else canvas
+    const touchTarget = inputRef?.current ?? canvas;
     window.addEventListener("keydown", inputHandler.handleKeyDown);
-    canvas.addEventListener("touchstart", inputHandler.handleTouchStart, {
+    touchTarget.addEventListener("touchstart", inputHandler.handleTouchStart, {
       passive: false,
     });
-    canvas.addEventListener("touchend", inputHandler.handleTouchEnd);
+    touchTarget.addEventListener("touchend", inputHandler.handleTouchEnd);
 
     // Visibility change listener
     const handleVisibilityChange = () => {
@@ -475,12 +479,14 @@ export function useGameEngine({
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("keydown", inputHandler.handleKeyDown);
-      canvas.removeEventListener("touchstart", inputHandler.handleTouchStart);
-      canvas.removeEventListener("touchend", inputHandler.handleTouchEnd);
+      touchTarget.removeEventListener("touchstart", inputHandler.handleTouchStart);
+      touchTarget.removeEventListener("touchend", inputHandler.handleTouchEnd);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       inputHandler.destroy();
       audio.destroy();
     };
+  // inputRef intentionally excluded — it's a stable ref and including it
+  // would restart the entire game loop (audio, state, RAF) on ref changes
   }, [canvasRef, rendererRef, threeRendererRef, processUnlocks]);
 
   const engineState: GameEngineState = {
