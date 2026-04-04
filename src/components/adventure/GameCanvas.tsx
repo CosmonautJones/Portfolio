@@ -5,8 +5,8 @@ import type { GamePhase, DeathCause } from "@/lib/game/types";
 import { saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { useGameEngine } from "@/hooks/use-game-engine";
 import { useGameSprites } from "@/hooks/use-game-sprites";
+import { useThreeRenderer } from "@/hooks/use-three-renderer";
 import { useVisitor } from "@/hooks/use-visitor";
-import { ThreeRenderer } from "@/lib/game/renderer/three-renderer";
 import { CRTOverlay } from "./CRTOverlay";
 import { MenuOverlay } from "./MenuOverlay";
 import { GameHUD } from "./GameHUD";
@@ -31,9 +31,8 @@ export default function GameCanvas({
   hasSidebars = false,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const threeCanvasRef = useRef<HTMLCanvasElement>(null);
-  const threeRendererRef = useRef<ThreeRenderer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasWrapperRef = useRef<HTMLDivElement>(null);
 
   // Progression bridge: wire game events to site XP/achievements
   const { awardXP, unlockAchievement } = useVisitor();
@@ -54,27 +53,16 @@ export default function GameCanvas({
     setSpriteStyle(initialSpriteStyle);
   }
 
-  // Initialize ThreeRenderer when voxel mode is active
-  useEffect(() => {
-    if (spriteStyle === "voxel") {
-      const threeCanvas = threeCanvasRef.current;
-      if (threeCanvas && !threeRendererRef.current) {
-        threeCanvas.width = VIEWPORT_WIDTH;
-        threeCanvas.height = VIEWPORT_HEIGHT;
-        threeRendererRef.current = new ThreeRenderer(threeCanvas);
-      }
-    }
-    return () => {
-      if (threeRendererRef.current) {
-        threeRendererRef.current.destroy();
-        threeRendererRef.current = null;
-      }
-    };
-  }, [spriteStyle]);
+  // Three.js 3D renderer — managed by hook (lazy create, keep alive, destroy on unmount)
+  const isThreeActive = spriteStyle === "voxel";
+  const { threeRendererRef, threeCanvasRef } = useThreeRenderer(
+    isThreeActive, canvasWidth, canvasHeight,
+  );
 
   // Engine state management, game loop, callbacks
   const [engineState, controls] = useGameEngine({
     canvasRef,
+    inputRef: canvasWrapperRef,
     rendererRef,
     threeRendererRef,
     onScoreUpdate,
@@ -111,41 +99,18 @@ export default function GameCanvas({
       rect.height / VIEWPORT_HEIGHT,
     );
     const scale = Math.max(1, Math.min(rawScale, 6));
-    const w = Math.round(VIEWPORT_WIDTH * scale);
-    const h = Math.round(VIEWPORT_HEIGHT * scale);
-    setCanvasWidth(w);
-    setCanvasHeight(h);
-    // Resize the Three.js renderer if active
-    if (threeRendererRef.current) {
-      threeRendererRef.current.resize(w, h);
-    }
+    setCanvasWidth(Math.round(VIEWPORT_WIDTH * scale));
+    setCanvasHeight(Math.round(VIEWPORT_HEIGHT * scale));
   }, []);
 
   const toggleSpriteStyle = useCallback(() => {
     setSpriteStyle((prev) => {
       const next = prev === "pixel" ? "voxel" : "pixel";
       saveSpriteStyle(next);
-
-      if (next === "voxel") {
-        // Activate Three.js 3D renderer
-        const threeCanvas = threeCanvasRef.current;
-        if (threeCanvas && !threeRendererRef.current) {
-          threeCanvas.width = VIEWPORT_WIDTH;
-          threeCanvas.height = VIEWPORT_HEIGHT;
-          threeRendererRef.current = new ThreeRenderer(threeCanvas);
-        }
-      } else {
-        // Deactivate Three.js renderer, return to WebGL2 pixel renderer
-        if (threeRendererRef.current) {
-          threeRendererRef.current.destroy();
-          threeRendererRef.current = null;
-        }
-        // Restore pixel mode on the WebGL renderer
-        if (rendererRef.current) {
-          rendererRef.current.setSpriteStyle("pixel");
-        }
+      // When switching back to pixel, restore the WebGL2 renderer sprite style
+      if (next === "pixel" && rendererRef.current) {
+        rendererRef.current.setSpriteStyle("pixel");
       }
-
       return next;
     });
   }, [rendererRef]);
@@ -241,10 +206,12 @@ export default function GameCanvas({
         }
       `}</style>
       <div
+        ref={canvasWrapperRef}
         className="relative"
-        style={{ width: canvasWidth, height: canvasHeight }}
+        tabIndex={0}
+        style={{ width: canvasWidth, height: canvasHeight, touchAction: "none", outline: "none" }}
       >
-        {/* WebGL2 pixel renderer canvas — always in DOM for input events */}
+        {/* WebGL2 pixel renderer canvas */}
         <canvas
           ref={canvasRef}
           width={VIEWPORT_WIDTH}
@@ -254,16 +221,11 @@ export default function GameCanvas({
             width: canvasWidth,
             height: canvasHeight,
             imageRendering: "auto",
-            touchAction: "none",
             backgroundColor: "#1a1c2c",
-            // In voxel mode: invisible but still captures touch events
-            opacity: spriteStyle === "voxel" ? 0 : 1,
-            position: "relative",
-            zIndex: spriteStyle === "voxel" ? 2 : 1,
+            display: isThreeActive ? "none" : "block",
           }}
-          tabIndex={0}
         />
-        {/* Three.js 3D renderer canvas — overlaid when voxel mode is active */}
+        {/* Three.js 3D isometric renderer canvas */}
         <canvas
           ref={threeCanvasRef}
           width={VIEWPORT_WIDTH}
@@ -272,14 +234,8 @@ export default function GameCanvas({
           style={{
             width: canvasWidth,
             height: canvasHeight,
-            touchAction: "none",
             backgroundColor: "#1a1c2c",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            display: spriteStyle === "voxel" ? "block" : "none",
+            display: isThreeActive ? "block" : "none",
           }}
         />
 
