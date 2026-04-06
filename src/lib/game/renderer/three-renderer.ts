@@ -74,15 +74,16 @@ export class ThreeRenderer {
     this.scene.background = new THREE.Color(0x1a1c2c);
 
     // Isometric orthographic camera — Crossy Road style
+    // size must be large enough to see the full lane width (546 units) at an angle
     const aspect = canvas.width / canvas.height;
-    const size = 300;
+    const size = 550;
     this.camera = new THREE.OrthographicCamera(
       (-size * aspect) / 2,
       (size * aspect) / 2,
       size / 2,
       -size / 2,
-      100,
-      900,
+      1,
+      2000,
     );
     // Z is up, looking from isometric angle
     this.camera.up.set(0, 0, 1);
@@ -125,12 +126,14 @@ export class ThreeRenderer {
     this.frame++;
 
     // ---- Camera tracking ----
-    // Center camera X on the lane grid, follow player Y
+    // Center on the lane grid, follow player Y with isometric offset
     const centerX = (DEFAULT_CONFIG.gridColumns * TILE_SIZE) / 2;
     const cameraY = -state.camera.y * PX_TO_WORLD;
 
-    this.camera.position.set(centerX + 200, cameraY - 300, 300);
-    this.camera.lookAt(centerX, cameraY, 0);
+    // Isometric camera: offset behind-right (+X, -Y) and above (+Z)
+    // Moderate X offset keeps lanes visible; look slightly ahead for forward visibility
+    this.camera.position.set(centerX + 300, cameraY - 350, 350);
+    this.camera.lookAt(centerX, cameraY + 50, 0);
 
     // ---- Player ----
     this.syncPlayer(state);
@@ -164,7 +167,7 @@ export class ThreeRenderer {
     this.renderer.setSize(width, height, false);
 
     const aspect = width / height;
-    const size = 300;
+    const size = 550;
     this.camera.left = (-size * aspect) / 2;
     this.camera.right = (size * aspect) / 2;
     this.camera.top = size / 2;

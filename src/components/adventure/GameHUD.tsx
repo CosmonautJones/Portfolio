@@ -1,6 +1,7 @@
 "use client";
 
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Palette } from "lucide-react";
+import type { SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { padScore } from "./game-helpers";
 
 interface GameHUDProps {
@@ -9,7 +10,9 @@ interface GameHUDProps {
   level: number;
   coinsCollected: number;
   muted: boolean;
+  spriteStyle?: SpriteStyle;
   onToggleMute: () => void;
+  onToggleSpriteStyle?: () => void;
 }
 
 export function GameHUD({
@@ -18,7 +21,9 @@ export function GameHUD({
   level,
   coinsCollected,
   muted,
+  spriteStyle,
   onToggleMute,
+  onToggleSpriteStyle,
 }: GameHUDProps) {
   return (
     <div
@@ -63,28 +68,45 @@ export function GameHUD({
           </span>
         )}
       </div>
-      <button
-        onClick={onToggleMute}
-        className="pointer-events-auto p-1 rounded hover:bg-white/20 transition-colors"
-      >
-        {muted ? (
-          <VolumeX
-            className="text-white/70"
-            style={{
-              width: canvasWidth * 0.06,
-              height: canvasWidth * 0.06,
-            }}
-          />
-        ) : (
-          <Volume2
-            className="text-white/70"
-            style={{
-              width: canvasWidth * 0.06,
-              height: canvasWidth * 0.06,
-            }}
-          />
+      <div className="pointer-events-auto flex gap-1">
+        {onToggleSpriteStyle && (
+          <button
+            onClick={onToggleSpriteStyle}
+            className="p-1 rounded hover:bg-white/20 transition-colors"
+            title={`Mode: ${spriteStyle === "voxel" ? "3D" : "2D"}`}
+          >
+            <Palette
+              className={spriteStyle === "voxel" ? "text-orange-400/80" : "text-white/70"}
+              style={{
+                width: canvasWidth * 0.06,
+                height: canvasWidth * 0.06,
+              }}
+            />
+          </button>
         )}
-      </button>
+        <button
+          onClick={onToggleMute}
+          className="p-1 rounded hover:bg-white/20 transition-colors"
+        >
+          {muted ? (
+            <VolumeX
+              className="text-white/70"
+              style={{
+                width: canvasWidth * 0.06,
+                height: canvasWidth * 0.06,
+              }}
+            />
+          ) : (
+            <Volume2
+              className="text-white/70"
+              style={{
+                width: canvasWidth * 0.06,
+                height: canvasWidth * 0.06,
+              }}
+            />
+          )}
+        </button>
+      </div>
     </div>
   );
 }

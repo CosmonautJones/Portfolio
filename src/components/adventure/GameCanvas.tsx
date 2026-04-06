@@ -291,7 +291,9 @@ export default function GameCanvas({
             level={level}
             coinsCollected={coinsCollected}
             muted={muted}
+            spriteStyle={spriteStyle}
             onToggleMute={controls.toggleMute}
+            onToggleSpriteStyle={toggleSpriteStyle}
           />
         )}
 
