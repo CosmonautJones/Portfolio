@@ -74,9 +74,11 @@ export class ThreeRenderer {
     this.scene.background = new THREE.Color(0x1a1c2c);
 
     // Isometric orthographic camera — Crossy Road style
-    // size must be large enough to see the full lane width (546 units) at an angle
+    // Lanes are 546 world units wide; at isometric angle the projected width
+    // is ~437 units. Frustum horizontal range = size * aspect / 2, so size
+    // must be ~900+ for full coverage at aspect 0.65.
     const aspect = canvas.width / canvas.height;
-    const size = 550;
+    const size = 900;
     this.camera = new THREE.OrthographicCamera(
       (-size * aspect) / 2,
       (size * aspect) / 2,
@@ -101,10 +103,10 @@ export class ThreeRenderer {
     sun.shadow.mapSize.height = 1024;
     sun.shadow.camera.near = 10;
     sun.shadow.camera.far = 600;
-    sun.shadow.camera.left = -300;
-    sun.shadow.camera.right = 300;
-    sun.shadow.camera.top = 300;
-    sun.shadow.camera.bottom = -300;
+    sun.shadow.camera.left = -500;
+    sun.shadow.camera.right = 500;
+    sun.shadow.camera.top = 500;
+    sun.shadow.camera.bottom = -500;
     this.scene.add(sun);
 
     // Slight fill light from the other side
@@ -130,9 +132,9 @@ export class ThreeRenderer {
     const centerX = (DEFAULT_CONFIG.gridColumns * TILE_SIZE) / 2;
     const cameraY = -state.camera.y * PX_TO_WORLD;
 
-    // Isometric camera: offset behind-right (+X, -Y) and above (+Z)
-    // Moderate X offset keeps lanes visible; look slightly ahead for forward visibility
-    this.camera.position.set(centerX + 300, cameraY - 350, 350);
+    // Moderate isometric angle: behind (+Y), slightly right (+X), above (+Z)
+    // Reduced X offset (150 vs 300) keeps full lane width in frustum
+    this.camera.position.set(centerX + 150, cameraY - 300, 300);
     this.camera.lookAt(centerX, cameraY + 50, 0);
 
     // ---- Player ----
@@ -167,7 +169,7 @@ export class ThreeRenderer {
     this.renderer.setSize(width, height, false);
 
     const aspect = width / height;
-    const size = 550;
+    const size = 900;
     this.camera.left = (-size * aspect) / 2;
     this.camera.right = (size * aspect) / 2;
     this.camera.top = size / 2;
