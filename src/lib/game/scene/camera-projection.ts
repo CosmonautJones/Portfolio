@@ -17,7 +17,7 @@ export function projectTopDown(world: WorldPosition, camera: Camera): ScreenPoin
  * (increasing y, toward the top of the play area after camera subtraction) moves
  * the point up the screen, with a fixed diamond ratio.
  */
-const ISO_TILT = 0.5; // vertical compression of the iso diamond
+export const ISO_TILT = 0.5; // vertical compression of the iso diamond
 
 export function projectIsometric(world: WorldPosition, camera: Camera): ScreenPoint {
   const relY = world.y - camera.y; // camera-relative forward axis

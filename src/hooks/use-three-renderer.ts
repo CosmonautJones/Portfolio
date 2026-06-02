@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ThreeRenderer } from "@/lib/game/renderer/three-renderer";
+// Type-only import (erased at build) — keeps ref typing without pulling `three`
+// into the bundle. The value is loaded dynamically only when 3D activates.
+import type { ThreeRenderer } from "@/lib/game/renderer/three-renderer";
 
 const VIEWPORT_WIDTH = 416; // 13 * 32
 const VIEWPORT_HEIGHT = 640; // 20 * 32
@@ -25,27 +27,45 @@ export function useThreeRenderer(
   // Internal instance kept alive across toggle cycles
   const instanceRef = useRef<ThreeRenderer | null>(null);
 
-  // Create lazily on first activation; expose/hide via threeRendererRef
+  // Create lazily on first activation; expose/hide via threeRendererRef.
+  // The `three` library (and ThreeRenderer) is dynamically imported here so it
+  // is NOT in the initial/pixel-mode bundle — it loads only when 3D is first
+  // activated. This avoids the dev/Turbopack chunk-resolution error caused by
+  // eagerly bundling `three` through the client/HMR boundary.
   useEffect(() => {
-    if (active) {
-      const canvas = threeCanvasRef.current;
-      if (canvas && !instanceRef.current) {
+    if (!active) {
+      // Null the ref so the game loop falls through to WebGL2
+      threeRendererRef.current = null;
+      return;
+    }
+
+    const canvas = threeCanvasRef.current;
+    if (!canvas) {
+      console.warn("useThreeRenderer: canvas ref not ready on activation");
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      if (!instanceRef.current) {
         canvas.width = VIEWPORT_WIDTH;
         canvas.height = VIEWPORT_HEIGHT;
-        instanceRef.current = new ThreeRenderer(canvas);
+        const mod = await import("@/lib/game/renderer/three-renderer");
+        if (cancelled) return;
+        instanceRef.current = new mod.ThreeRenderer(canvas);
         // Ensure correct initial size (resize effect may have fired before creation)
         if (canvasWidth > 0 && canvasHeight > 0) {
           instanceRef.current.resize(canvasWidth, canvasHeight);
         }
       }
-      threeRendererRef.current = instanceRef.current;
-      if (!instanceRef.current) {
-        console.warn("useThreeRenderer: canvas ref not ready on activation");
+      if (!cancelled) {
+        threeRendererRef.current = instanceRef.current;
       }
-    } else {
-      // Null the ref so the game loop falls through to WebGL2
-      threeRendererRef.current = null;
-    }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [active, canvasWidth, canvasHeight]);
 
   // Forward resize to the Three.js renderer when dimensions change
