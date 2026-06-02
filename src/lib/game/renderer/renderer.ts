@@ -2,7 +2,7 @@
 // WebGL2 Game Renderer — thin orchestrator delegating to render passes
 // ============================================================================
 
-import type { GameState, Particle } from "../types";
+import type { Particle } from "../types";
 import type { RenderResources, RenderState } from "./render-pass";
 import { PassGraph } from "./pass-graph";
 import { BackgroundPass } from "./passes/background";
@@ -172,10 +172,10 @@ export class GameRenderer {
     const shaking = x !== 0 || y !== 0;
     if (shaking) this.setShakeOffset(Math.round(x), Math.round(y));
 
-    this.renderLanes(scene as unknown as Parameters<GameRenderer["renderLanes"]>[0]);
-    this.renderAmbientEffects(scene as unknown as Parameters<GameRenderer["renderAmbientEffects"]>[0]);
-    this.renderCoins(scene as unknown as Parameters<GameRenderer["renderCoins"]>[0]);
-    this.renderPlayer(scene as unknown as Parameters<GameRenderer["renderPlayer"]>[0]);
+    this.renderLanes(scene);
+    this.renderAmbientEffects(scene);
+    this.renderCoins(scene);
+    this.renderPlayer(scene);
     this.renderParticles(scene.particles, scene.camera.y);
 
     if (shaking) this.clearShakeOffset();
@@ -226,47 +226,6 @@ export class GameRenderer {
     this.postPipeline.composite(this.gl, postState, this.resources);
   }
 
-  /** Build RenderState from GameState for pass graph execution */
-  private buildRenderState(state: GameState): RenderState {
-    // Compute death progress (0→1 over dying duration)
-    let deathProgress = 0;
-    let deathPosition: { x: number; y: number } | null = null;
-    if (state.phase === "game_over" && state.deathCause !== null) {
-      deathProgress = Math.min(1, state.dyingTimer / state.dyingDuration);
-      deathPosition = {
-        x: state.player.worldPos.x,
-        y: state.player.worldPos.y,
-      };
-
-      // Enable death warp pass when dying
-      const deathWarp = this.passGraph.getPass<import("./passes/death-warp").DeathWarpPass>("deathWarp");
-      if (deathWarp) {
-        deathWarp.enabled = deathProgress > 0;
-      }
-    } else {
-      // Disable death warp when not dying
-      const deathWarp = this.passGraph.getPass<import("./passes/death-warp").DeathWarpPass>("deathWarp");
-      if (deathWarp) {
-        deathWarp.enabled = false;
-      }
-    }
-
-    return {
-      phase: state.phase,
-      player: state.player,
-      lanes: state.lanes,
-      camera: state.camera,
-      particles: state.particles,
-      coins: state.coins,
-      animationTime: state.animationTime,
-      score: state.score,
-      level: state.level,
-      deathCause: state.deathCause,
-      deathProgress,
-      deathPosition,
-    };
-  }
-
   renderBackground(animationTime: number): void {
     // Background rendered via pass graph, but for backward compat we support direct call
     const bgPass = this.passGraph.getPass<BackgroundPass>("background");
@@ -310,18 +269,28 @@ export class GameRenderer {
     this.spritesPass.resetState();
   }
 
-  renderLanes(state: GameState): void {
+  renderLanes(scene: RenderScene): void {
+    // Toggle the death-warp pass based on the scene's death progress.
+    const deathWarp = this.passGraph.getPass<
+      import("./passes/death-warp").DeathWarpPass
+    >("deathWarp");
+    if (deathWarp) {
+      deathWarp.enabled =
+        scene.phase === "game_over" &&
+        scene.deathCause !== null &&
+        scene.deathProgress > 0;
+    }
+
     // Delegate to sprites pass lane rendering
-    const renderState = this.buildRenderState(state);
-    this.spritesPass.execute(this.gl, renderState, this.resources);
+    this.spritesPass.execute(this.gl, scene, this.resources);
   }
 
-  renderCoins(_state: GameState): void {
+  renderCoins(_scene: RenderScene): void {
     // Coins are now rendered as part of SpritesPass.execute()
     // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
   }
 
-  renderPlayer(_state: GameState): void {
+  renderPlayer(_scene: RenderScene): void {
     // Player is now rendered as part of SpritesPass.execute()
     // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
   }
@@ -338,7 +307,7 @@ export class GameRenderer {
     // Handled by post-processing composite shader
   }
 
-  renderAmbientEffects(_state: GameState): void {
+  renderAmbientEffects(_scene: RenderScene): void {
     // Ambient effects are now rendered as part of SpritesPass.execute()
     // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
   }
