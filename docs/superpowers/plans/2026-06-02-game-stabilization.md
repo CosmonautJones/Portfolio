@@ -463,9 +463,11 @@ export function projectIsometric(world: WorldPosition, camera: Camera): ScreenPo
   const relY = world.y - camera.y; // camera-relative forward axis
   const cx = camera.viewportWidth / 2;
   // X stays centered around the viewport; Y is compressed for the iso look.
+  // Negated so increasing camera-relative forward distance moves UP the screen
+  // (smaller screen y), matching the documented intent and the test.
   return {
     x: cx + (world.x - cx),
-    y: relY * ISO_TILT,
+    y: -relY * ISO_TILT,
   };
 }
 ```
