@@ -51,3 +51,8 @@ next-env.d.ts
 # stray debug screenshots
 /3d-*.png
 /final-*.png
+
+# playtest / browser-automation artifacts
+/smoke-*.png
+/playtest-3d/
+/.playwright-mcp/
