@@ -40,4 +40,15 @@ describe("buildScene", () => {
     const scene = buildScene(state);
     expect(scene.shake).toEqual({ x: 0, y: 0 });
   });
+
+  it("yields finite deathProgress when dyingDuration is zero", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.phase = "game_over";
+    state.deathCause = "vehicle";
+    state.dyingTimer = 0;
+    state.dyingDuration = 0;
+    const scene = buildScene(state, { shake: { x: 0, y: 0 } });
+    expect(Number.isFinite(scene.deathProgress)).toBe(true);
+    expect(scene.deathProgress).toBe(1);
+  });
 });

@@ -18,7 +18,9 @@ export function buildScene(
   let deathProgress = 0;
   let deathPosition: { x: number; y: number } | null = null;
   if (state.phase === "game_over" && state.deathCause !== null) {
-    deathProgress = Math.min(1, state.dyingTimer / state.dyingDuration);
+    deathProgress = state.dyingDuration > 0
+      ? Math.min(1, state.dyingTimer / state.dyingDuration)
+      : 1;
     deathPosition = { x: state.player.worldPos.x, y: state.player.worldPos.y };
   }
 

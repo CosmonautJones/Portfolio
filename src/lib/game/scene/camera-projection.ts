@@ -21,11 +21,12 @@ const ISO_TILT = 0.5; // vertical compression of the iso diamond
 
 export function projectIsometric(world: WorldPosition, camera: Camera): ScreenPoint {
   const relY = world.y - camera.y; // camera-relative forward axis
-  const cx = camera.viewportWidth / 2;
-  // X stays centered around the viewport; Y is compressed for the iso look and
-  // negated so increasing world-forward moves the point UP the screen.
+  // X passes through unchanged for now; true isometric X-centering is wired in
+  // Task 13 when the ThreeRenderer camera is derived from this module. Y is
+  // compressed for the iso look and negated so increasing world-forward moves
+  // the point UP the screen.
   return {
-    x: cx + (world.x - cx),
+    x: world.x,
     y: -relY * ISO_TILT,
   };
 }
