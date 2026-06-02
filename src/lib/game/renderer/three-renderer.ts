@@ -10,6 +10,7 @@ import type { RenderScene } from "../scene/types";
 import type { SpriteStyle } from "../sprites/sprite-style";
 import type { LaneType, ObstacleType } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
+import { ISO_TILT } from "../scene/camera-projection";
 import {
   createPlayer,
   createCar,
@@ -35,6 +36,42 @@ const PX_TO_WORLD = TILE_SIZE / CELL_SIZE;
 /** Lane width in Three.js world units */
 const LANE_WIDTH = DEFAULT_CONFIG.gridColumns * TILE_SIZE;
 
+// ---------------------------------------------------------------------------
+// Isometric camera geometry — derived from ONE shared constant: ISO_TILT.
+//
+// `projectIsometric` (camera-projection.ts) compresses world-forward (Y) onto
+// the screen by ISO_TILT. For an orthographic camera that pitch corresponds to
+// the camera looking DOWN at the ground plane such that the ground's vertical
+// foreshortening equals ISO_TILT, i.e. sin(pitch) === ISO_TILT. With
+// ISO_TILT = 0.5 that is a 30° downward pitch — a classic Crossy-Road dimetric
+// angle. Tune the look in ONE place (ISO_TILT) — never with ad-hoc frustum/offset
+// numbers in render().
+//
+// CAMERA_PITCH  : angle below horizontal the camera looks down (from ISO_TILT).
+// CAMERA_YAW    : small horizontal turn so lanes recede diagonally (the "iso"
+//                 feel) instead of dead-on front-to-back.
+// CAMERA_DISTANCE: how far back along the view ray the camera sits. Orthographic,
+//                 so this only affects the near/far clip framing, not scale.
+// ---------------------------------------------------------------------------
+const CAMERA_PITCH = Math.asin(ISO_TILT); // radians; sin(pitch) === ISO_TILT
+const CAMERA_YAW = Math.PI / 9; // 20° yaw for the dimetric / Crossy-Road look
+const CAMERA_DISTANCE = 900; // world units back along the view ray
+
+// Number of lanes that fit in the play viewport (gameplay viewport is 20 cells
+// tall: 640px / 32px cell). The ortho frustum vertical extent is the
+// on-screen-foreshortened depth of that many lanes (lanes * TILE_SIZE world
+// depth, foreshortened by ISO_TILT), with a little headroom for object height.
+// Horizontal extent covers the full lane width. Both are expressed in world
+// units; aspect handling stays in resize().
+const VISIBLE_LANES = 20; // gameplay viewport height in cells (640 / 32)
+const FRUSTUM_DEPTH = VISIBLE_LANES * TILE_SIZE * ISO_TILT + TILE_SIZE * 3;
+
+// The play field is portrait, so the full lane width is the binding horizontal
+// constraint. Make the horizontal half-extent cover the whole lane width plus a
+// one-tile margin; the vertical extent then follows from aspect (see resize()),
+// and must remain at least FRUSTUM_DEPTH so the foreshortened lane depth fits.
+const FRUSTUM_HALF_WIDTH = LANE_WIDTH / 2 + TILE_SIZE;
+
 /** Car color variants keyed by obstacle id % 3 */
 const CAR_COLORS = ["#b13e53", "#3b5dc9", "#ffcd75"] as const;
 
@@ -48,6 +85,8 @@ export class ThreeRenderer {
   private camera: THREE.OrthographicCamera;
   private renderer: THREE.WebGLRenderer;
   private disposed = false;
+  /** Unit*distance vector from the look-at focus toward the camera (iso angle). */
+  private viewOffset: THREE.Vector3;
 
   // Object pools — reuse meshes instead of recreating
   private lanePool = new Map<number, PooledObject>();
@@ -74,24 +113,33 @@ export class ThreeRenderer {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1a1c2c);
 
-    // Isometric orthographic camera — Crossy Road style
-    // Lanes are 546 world units wide; at isometric angle the projected width
-    // is ~437 units. Frustum horizontal range = size * aspect / 2, so size
-    // must be ~900+ for full coverage at aspect 0.65.
-    const aspect = canvas.width / canvas.height;
-    const size = 900;
-    this.camera = new THREE.OrthographicCamera(
-      (-size * aspect) / 2,
-      (size * aspect) / 2,
-      size / 2,
-      -size / 2,
-      1,
-      2000,
-    );
-    // Z is up, looking from isometric angle
+    // Isometric orthographic camera — Crossy-Road style dimetric view.
+    // Frustum extents are derived from FRUSTUM_HALF_WIDTH / FRUSTUM_DEPTH /
+    // aspect (all rooted in ISO_TILT) — see applyFrustum(). Z is up.
+    this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 4000);
     this.camera.up.set(0, 0, 1);
-    this.camera.position.set(300, -300, 300);
-    this.camera.lookAt(0, 0, 0);
+    this.applyFrustum(canvas.width / canvas.height);
+
+    // Unit vector pointing FROM the look-at focus TOWARD the camera: pitched
+    // CAMERA_PITCH above the ground (sin === ISO_TILT) and yawed CAMERA_YAW so
+    // lanes recede diagonally. The camera sits on the +Y (already-traversed)
+    // side so forward lanes (more negative Y) recede away from the viewer.
+    const cosPitch = Math.cos(CAMERA_PITCH);
+    this.viewOffset = new THREE.Vector3(
+      Math.sin(CAMERA_YAW) * cosPitch,
+      Math.cos(CAMERA_YAW) * cosPitch,
+      Math.sin(CAMERA_PITCH),
+    ).multiplyScalar(CAMERA_DISTANCE);
+
+    // Initial placement looking at the field origin; render() updates this to
+    // follow the player every frame.
+    const centerX = LANE_WIDTH / 2;
+    this.camera.position.set(
+      centerX + this.viewOffset.x,
+      this.viewOffset.y,
+      this.viewOffset.z,
+    );
+    this.camera.lookAt(centerX, 0, 0);
 
     // Lighting — warm ambient + directional sun
     const ambient = new THREE.AmbientLight(0xffffff, 0.65);
@@ -130,14 +178,22 @@ export class ThreeRenderer {
     this.frame++;
 
     // ---- Camera tracking ----
-    // Center on the lane grid, follow player Y with isometric offset
-    const centerX = (DEFAULT_CONFIG.gridColumns * TILE_SIZE) / 2;
+    // Follow the player vertically, mirroring how camera.y drives the 2D view.
+    // The focus point rides the lane grid centerline at the camera's world Y;
+    // we look slightly FORWARD (toward more-negative Y) so the player sits in
+    // the lower third of the frame, Crossy-Road style. The camera position is
+    // the focus plus the fixed iso view offset — angle/framing never change,
+    // only the focus translates, so there are NO per-frame magic offsets.
+    const centerX = LANE_WIDTH / 2;
     const cameraY = -state.camera.y * PX_TO_WORLD;
+    const focusY = cameraY - FRUSTUM_DEPTH * 0.2; // nudge focus ahead of player
 
-    // Moderate isometric angle: behind (+Y), slightly right (+X), above (+Z)
-    // Reduced X offset (150 vs 300) keeps full lane width in frustum
-    this.camera.position.set(centerX + 150, cameraY - 300, 300);
-    this.camera.lookAt(centerX, cameraY + 50, 0);
+    this.camera.position.set(
+      centerX + this.viewOffset.x,
+      focusY + this.viewOffset.y,
+      this.viewOffset.z,
+    );
+    this.camera.lookAt(centerX, focusY, 0);
 
     // ---- Player ----
     this.syncPlayer(state);
@@ -183,13 +239,26 @@ export class ThreeRenderer {
   resize(width: number, height: number): void {
     if (this.disposed) return;
     this.renderer.setSize(width, height, false);
+    this.applyFrustum(width / height);
+  }
 
-    const aspect = width / height;
-    const size = 900;
-    this.camera.left = (-size * aspect) / 2;
-    this.camera.right = (size * aspect) / 2;
-    this.camera.top = size / 2;
-    this.camera.bottom = -size / 2;
+  /**
+   * Set the orthographic frustum extents for a given aspect ratio.
+   *
+   * Horizontal is the binding constraint for this portrait field: the half-width
+   * covers the full lane width (FRUSTUM_HALF_WIDTH). The vertical half-extent
+   * follows from aspect, but is floored at FRUSTUM_DEPTH/2 so the foreshortened
+   * lane depth (rooted in ISO_TILT via FRUSTUM_DEPTH) always fits. All framing
+   * therefore derives from FRUSTUM_HALF_WIDTH / FRUSTUM_DEPTH — change the look
+   * by editing ISO_TILT, not numbers here.
+   */
+  private applyFrustum(aspect: number): void {
+    const halfWidth = FRUSTUM_HALF_WIDTH;
+    const halfHeight = Math.max(halfWidth / aspect, FRUSTUM_DEPTH / 2);
+    this.camera.left = -halfWidth;
+    this.camera.right = halfWidth;
+    this.camera.top = halfHeight;
+    this.camera.bottom = -halfHeight;
     this.camera.updateProjectionMatrix();
   }
 
