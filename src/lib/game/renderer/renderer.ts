@@ -17,6 +17,7 @@ import { SpriteBatch } from "./webgl/sprite-batch";
 import { GPUParticleRenderer } from "./webgl/gpu-particles";
 import { createFramebuffer } from "./webgl/gl-utils";
 import type { SpriteStyle } from "../sprites/sprite-style";
+import type { RenderScene } from "../scene/types";
 import { SpriteCache } from "./sprite-cache";
 
 export { SpriteCache };
@@ -161,6 +162,38 @@ export class GameRenderer {
       iso,
     );
   }
+
+  /** Unified entry point — consumes a RenderScene (GameRenderer interface). */
+  render(scene: RenderScene, _alpha: number): void {
+    this.beginFrame();
+    this.renderBackground(scene.animationTime);
+
+    const { x, y } = scene.shake;
+    const shaking = x !== 0 || y !== 0;
+    if (shaking) this.setShakeOffset(Math.round(x), Math.round(y));
+
+    this.renderLanes(scene as unknown as Parameters<GameRenderer["renderLanes"]>[0]);
+    this.renderAmbientEffects(scene as unknown as Parameters<GameRenderer["renderAmbientEffects"]>[0]);
+    this.renderCoins(scene as unknown as Parameters<GameRenderer["renderCoins"]>[0]);
+    this.renderPlayer(scene as unknown as Parameters<GameRenderer["renderPlayer"]>[0]);
+    this.renderParticles(scene.particles, scene.camera.y);
+
+    if (shaking) this.clearShakeOffset();
+    this.endFrame(scene.animationTime);
+  }
+
+  /** GameRenderer interface alias. */
+  setStyle(style: SpriteStyle): void {
+    this.setSpriteStyle(style);
+  }
+
+  /**
+   * GameRenderer interface conformance. The WebGL2 canvas is fixed at
+   * 416×640 (the play-field grid) and scaled to fit by CSS, so there is no
+   * GL viewport resize to perform here. Kept as a no-op to satisfy the
+   * shared interface.
+   */
+  resize(_width: number, _height: number): void {}
 
   clear(): void {
     // Handled by post-pipeline beginScene
