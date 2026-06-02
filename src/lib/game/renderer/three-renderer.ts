@@ -7,7 +7,6 @@
 
 import * as THREE from "three";
 import type { RenderScene } from "../scene/types";
-import type { RenderState } from "./render-pass";
 import type { SpriteStyle } from "../sprites/sprite-style";
 import type { LaneType, ObstacleType } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
@@ -124,18 +123,9 @@ export class ThreeRenderer {
   /**
    * Render one frame from the game's RenderScene (GameRenderer interface).
    * Synchronizes 3D objects with game positions, then renders.
-   *
-   * NOTE (transitional, Phase 2A): the param is widened to also accept the
-   * legacy `RenderState` and `_alpha` is optional so the existing game loop
-   * (`use-game-engine.ts`, untouched this dispatch) keeps compiling with its
-   * one-arg `tr.render(renderState)` call. The class still satisfies the
-   * `GameRenderer` interface (method params are bivariant; `RenderScene` is a
-   * structural superset of `RenderState`). Once the loop is cut over to
-   * `render(scene, alpha)` in a later dispatch, narrow this to
-   * `render(scene: RenderScene, _alpha: number)`.
    */
-  render(scene: RenderScene | RenderState, _alpha?: number): void {
-    const state = scene as RenderScene;
+  render(scene: RenderScene, _alpha: number): void {
+    const state = scene;
     if (this.disposed) return;
     this.frame++;
 
