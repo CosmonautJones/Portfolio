@@ -1,12 +1,14 @@
 // ============================================================================
 // ThreeRenderer — Three.js isometric 3D renderer for ClaudeBot's Adventure
 //
-// Reads RenderState from the game engine and positions 3D objects accordingly.
+// Reads RenderScene from the game engine and positions 3D objects accordingly.
 // No game logic changes — pure rendering layer.
 // ============================================================================
 
 import * as THREE from "three";
+import type { RenderScene } from "../scene/types";
 import type { RenderState } from "./render-pass";
+import type { SpriteStyle } from "../sprites/sprite-style";
 import type { LaneType, ObstacleType } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
 import {
@@ -120,10 +122,20 @@ export class ThreeRenderer {
   }
 
   /**
-   * Render one frame from the game's RenderState.
+   * Render one frame from the game's RenderScene (GameRenderer interface).
    * Synchronizes 3D objects with game positions, then renders.
+   *
+   * NOTE (transitional, Phase 2A): the param is widened to also accept the
+   * legacy `RenderState` and `_alpha` is optional so the existing game loop
+   * (`use-game-engine.ts`, untouched this dispatch) keeps compiling with its
+   * one-arg `tr.render(renderState)` call. The class still satisfies the
+   * `GameRenderer` interface (method params are bivariant; `RenderScene` is a
+   * structural superset of `RenderState`). Once the loop is cut over to
+   * `render(scene, alpha)` in a later dispatch, narrow this to
+   * `render(scene: RenderScene, _alpha: number)`.
    */
-  render(state: RenderState): void {
+  render(scene: RenderScene | RenderState, _alpha?: number): void {
+    const state = scene as RenderScene;
     if (this.disposed) return;
     this.frame++;
 
@@ -162,6 +174,20 @@ export class ThreeRenderer {
 
     this.renderer.render(this.scene, this.camera);
   }
+
+  /**
+   * GameRenderer interface conformance. The Three path is voxel-only —
+   * sprite-style switching (pixel↔voxel) is handled by toggling between the
+   * WebGL2 and Three canvases, not within this renderer, so this is a no-op.
+   */
+  setStyle(_style: SpriteStyle): void {}
+
+  /**
+   * GameRenderer interface conformance. There is no per-run GPU state to
+   * reset for the Three path yet; object pools are keyed by lane/obstacle id
+   * and self-purge, so a new game reuses them safely.
+   */
+  resetState(): void {}
 
   /** Resize the renderer when canvas dimensions change */
   resize(width: number, height: number): void {
@@ -212,7 +238,7 @@ export class ThreeRenderer {
 
   // ---- Sync helpers ----
 
-  private syncPlayer(state: RenderState): void {
+  private syncPlayer(state: RenderScene): void {
     const { player } = state;
 
     // Convert game pixel coordinates to Three.js world coordinates
@@ -245,7 +271,7 @@ export class ThreeRenderer {
     this.playerMesh.visible = true;
   }
 
-  private syncLanes(state: RenderState): void {
+  private syncLanes(state: RenderScene): void {
     const { lanes, camera } = state;
 
     // Mark all lane objects as unused this frame
@@ -275,7 +301,7 @@ export class ThreeRenderer {
     }
   }
 
-  private syncObstacles(state: RenderState): void {
+  private syncObstacles(state: RenderScene): void {
     const { lanes, camera } = state;
     const visibleIds = new Set<number>();
 
@@ -312,7 +338,7 @@ export class ThreeRenderer {
     }
   }
 
-  private syncCoins(state: RenderState): void {
+  private syncCoins(state: RenderScene): void {
     const { coins, camera, animationTime } = state;
 
     for (const coin of coins) {
@@ -351,7 +377,7 @@ export class ThreeRenderer {
     }
   }
 
-  private syncDecorations(state: RenderState): void {
+  private syncDecorations(state: RenderScene): void {
     const { lanes, camera } = state;
 
     for (const lane of lanes) {
