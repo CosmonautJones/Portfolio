@@ -47,3 +47,7 @@ Portfolio_backup/
 *.tsbuildinfo
 next-env.d.ts
 .claude/worktrees/
+
+# stray debug screenshots
+/3d-*.png
+/final-*.png
