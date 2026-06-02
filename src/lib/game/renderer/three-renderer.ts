@@ -108,7 +108,7 @@ export class ThreeRenderer {
     this.renderer.setSize(canvas.width, canvas.height, false);
     this.renderer.setPixelRatio(1);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1a1c2c);
