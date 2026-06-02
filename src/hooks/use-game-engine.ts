@@ -11,8 +11,9 @@ import type {
 } from "@/lib/game/types";
 import type { LeaderboardEntry } from "@/lib/types";
 import type { GameRenderer } from "@/lib/game/renderer";
-import type { RenderState } from "@/lib/game/renderer/render-pass";
+import type { GameRenderer as GameRendererInterface } from "@/lib/game/renderer/game-renderer";
 import type { ThreeRenderer } from "@/lib/game/renderer/three-renderer";
+import { buildScene } from "@/lib/game/scene";
 import { createInputHandler } from "@/lib/game/input";
 import { GameAudio } from "@/lib/game/audio";
 import {
@@ -415,60 +416,14 @@ export function useGameEngine({
 
         const shake = updateScreenShake(screenShakeRef.current, cappedDt);
 
-        // Three.js 3D renderer path — single render() call with RenderState
-        const tr = threeRendererRef?.current;
-        if (tr) {
-          const gs = gameStateRef.current;
-          let deathProgress = 0;
-          let deathPosition: { x: number; y: number } | null = null;
-          if (gs.phase === "game_over" && gs.deathCause !== null) {
-            deathProgress = Math.min(1, gs.dyingTimer / gs.dyingDuration);
-            deathPosition = { x: gs.player.worldPos.x, y: gs.player.worldPos.y };
-          }
-          const renderState: RenderState = {
-            phase: gs.phase,
-            player: gs.player,
-            lanes: gs.lanes,
-            camera: gs.camera,
-            particles: gs.particles,
-            coins: gs.coins,
-            animationTime: gs.animationTime,
-            score: gs.score,
-            level: gs.level,
-            deathCause: gs.deathCause,
-            deathProgress,
-            deathPosition,
-          };
-          tr.render(renderState);
-        }
-
-        // WebGL2 pixel renderer path
-        if (r && !tr) {
-          r.beginFrame();
-          r.renderBackground(gameStateRef.current.animationTime);
-
-          if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-            r.setShakeOffset(
-              Math.round(shake.offsetX),
-              Math.round(shake.offsetY),
-            );
-          }
-
-          r.renderLanes(gameStateRef.current);
-          r.renderAmbientEffects(gameStateRef.current);
-          r.renderCoins(gameStateRef.current);
-          r.renderPlayer(gameStateRef.current);
-          r.renderParticles(
-            gameStateRef.current.particles,
-            gameStateRef.current.camera.y,
-          );
-
-          if (shake.offsetX !== 0 || shake.offsetY !== 0) {
-            r.clearShakeOffset();
-          }
-
-          r.endFrame(gameStateRef.current.animationTime);
-        }
+        // Unified render dispatch — one interface, one scene.
+        const scene = buildScene(gameStateRef.current, {
+          shake: { x: shake.offsetX, y: shake.offsetY },
+        });
+        const active: GameRendererInterface | null =
+          (threeRendererRef?.current as GameRendererInterface | null) ??
+          (rendererRef.current as GameRendererInterface | null);
+        active?.render(scene, 0);
       }
 
       rafId = requestAnimationFrame(loop);
