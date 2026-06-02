@@ -216,12 +216,15 @@ export class GameRenderer {
       camera: { y: 0, targetY: 0, viewportWidth: this.resources.width, viewportHeight: this.resources.height },
       particles: [],
       coins: [],
+      powerUps: [],
+      weather: { type: "clear", intensity: 0, windDirection: 1 },
       animationTime,
       score: 0,
       level: 0,
       deathCause: null,
       deathProgress: 0,
       deathPosition: null,
+      shake: { x: 0, y: 0 },
     };
     this.postPipeline.composite(this.gl, postState, this.resources);
   }
@@ -237,12 +240,15 @@ export class GameRenderer {
         camera: { y: 0, targetY: 0, viewportWidth: this.resources.width, viewportHeight: this.resources.height },
         particles: [],
         coins: [],
+        powerUps: [],
+        weather: { type: "clear", intensity: 0, windDirection: 1 },
         animationTime,
         score: 0,
         level: 0,
         deathCause: null,
         deathProgress: 0,
         deathPosition: null,
+        shake: { x: 0, y: 0 },
       };
       bgPass.execute(this.gl, state, this.resources);
     }
