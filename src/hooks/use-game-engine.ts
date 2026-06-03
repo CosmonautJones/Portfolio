@@ -277,9 +277,20 @@ export function useGameEngine({
         resetCombo(comboRef.current);
 
         const current = gameStateRef.current;
-        setIsNewHighScore(
-          finalScore > 0 && current !== null && finalScore >= current.highScore,
-        );
+        // killPlayer() already overwrote state.highScore with the new total
+        // before this callback fired, so compare against the PRIOR best
+        // (persisted in localStorage) to detect a genuine new high score.
+        let priorHighScore = 0;
+        try {
+          const savedHigh = localStorage.getItem("adventure_high_score");
+          if (savedHigh) {
+            const parsedHigh = parseInt(savedHigh, 10);
+            if (!isNaN(parsedHigh)) priorHighScore = parsedHigh;
+          }
+        } catch {
+          priorHighScore = 0;
+        }
+        setIsNewHighScore(finalScore > 0 && finalScore > priorHighScore);
         if (current && current.highScore > 0) {
           try {
             localStorage.setItem(
