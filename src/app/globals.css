@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --animate-fade-up: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-scale-in: scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;

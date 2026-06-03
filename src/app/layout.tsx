@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
 import { TerminalProvider } from "@/components/terminal/terminal-provider";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 const TerminalSheet = dynamic(
   () => import("@/components/terminal/terminal-sheet").then((m) => ({ default: m.TerminalSheet })),
@@ -41,7 +44,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -49,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="font-sans" style={{ ["--font-inter" as string]: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" } as React.CSSProperties}>
+      <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <VisitorProvider>
             <TerminalProvider>
