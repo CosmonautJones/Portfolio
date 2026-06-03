@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { m, useInView, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
 type AnimationVariant =
@@ -62,7 +62,7 @@ export function AnimateOnScroll({
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
@@ -75,6 +75,6 @@ export function AnimateOnScroll({
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

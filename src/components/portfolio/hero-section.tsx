@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ArrowRight } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -41,31 +41,31 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative z-10 max-w-4xl">
         {/* Pill badge */}
-        <motion.div {...entry(0)}>
+        <m.div {...entry(0)}>
           <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
             <span className="inline-block h-1.5 w-1.5 rounded-full accent-dot" aria-hidden="true" />
             Software Developer
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Main headline — massive, Apple-style */}
-        <motion.h1
+        <m.h1
           {...entry(0.1)}
           className="gradient-text-animated text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight"
         >
           {SITE_CONFIG.name}
-        </motion.h1>
+        </m.h1>
 
         {/* Tagline */}
-        <motion.p
+        <m.p
           {...entry(0.2)}
           className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
         >
           {SITE_CONFIG.tagline}
-        </motion.p>
+        </m.p>
 
         {/* CTA buttons */}
-        <motion.div
+        <m.div
           {...entry(0.3)}
           className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
         >
@@ -87,7 +87,7 @@ export function HeroSection() {
           >
             <Link href="/contact">Get in Touch</Link>
           </Button>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Bottom fade — seamless transition to next section */}

@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
 import { TerminalProvider } from "@/components/terminal/terminal-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -56,10 +57,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <VisitorProvider>
             <TerminalProvider>
-              {children}
-              <TerminalSheet />
-              <KonamiEffects />
-              <LevelUpOverlay />
+              <MotionProvider>
+                {children}
+                <TerminalSheet />
+                <KonamiEffects />
+                <LevelUpOverlay />
+              </MotionProvider>
             </TerminalProvider>
           </VisitorProvider>
           <Toaster />

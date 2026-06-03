@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { m, useInView, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
 interface StaggerChildrenProps {
@@ -28,7 +28,7 @@ export function StaggerChildren({
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className={className}
       initial="hidden"
@@ -40,7 +40,7 @@ export function StaggerChildren({
       }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -52,7 +52,7 @@ export function StaggerItem({
   className?: string;
 }) {
   return (
-    <motion.div
+    <m.div
       className={className}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -64,6 +64,6 @@ export function StaggerItem({
       }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
