@@ -7,6 +7,7 @@ import { useGameEngine } from "@/hooks/use-game-engine";
 import { useGameSprites } from "@/hooks/use-game-sprites";
 import { useThreeRenderer } from "@/hooks/use-three-renderer";
 import { useVisitor } from "@/hooks/use-visitor";
+import { useEasterEgg } from "@/hooks/use-easter-egg";
 import { CRTOverlay } from "./CRTOverlay";
 import { MenuOverlay } from "./MenuOverlay";
 import { GameHUD } from "./GameHUD";
@@ -40,6 +41,12 @@ export default function GameCanvas({
   awardXPRef.current = awardXP;
   const unlockAchievementRef = useRef(unlockAchievement);
   unlockAchievementRef.current = unlockAchievement;
+
+  // Easter egg discovery bridge (uses the shared discovery/XP/achievement path)
+  const { discover } = useEasterEgg();
+  const discoverRef = useRef(discover);
+  discoverRef.current = discover;
+  const hitchhikerFiredRef = useRef(false);
   const [canvasWidth, setCanvasWidth] = useState(VIEWPORT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(VIEWPORT_HEIGHT);
   const [spriteStyle, setSpriteStyle] = useState<SpriteStyle>("pixel");
@@ -76,9 +83,23 @@ export default function GameCanvas({
   useEffect(() => {
     if (engineState.phase === "playing" && prevPhaseRef.current !== "playing") {
       awardXPRef.current("play_game");
+      // Allow the Hitchhiker egg to fire again on a fresh run
+      hitchhikerFiredRef.current = false;
     }
     prevPhaseRef.current = engineState.phase;
   }, [engineState.phase]);
+
+  // Hitchhiker "42" easter egg: the answer to everything
+  useEffect(() => {
+    if (
+      engineState.phase === "playing" &&
+      engineState.score === 42 &&
+      !hitchhikerFiredRef.current
+    ) {
+      hitchhikerFiredRef.current = true;
+      discoverRef.current("hitchhiker_42");
+    }
+  }, [engineState.phase, engineState.score]);
 
   // Award XP for score milestones on death
   useEffect(() => {
