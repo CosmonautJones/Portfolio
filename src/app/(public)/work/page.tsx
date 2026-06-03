@@ -31,9 +31,9 @@ export default function WorkPage() {
       {/* Featured projects */}
       {featured.length > 0 && (
         <StaggerChildren className="mb-12 grid gap-6 sm:grid-cols-2">
-          {featured.map((project) => (
+          {featured.map((project, index) => (
             <StaggerItem key={project.title}>
-              <ProjectCard project={project} featured />
+              <ProjectCard project={project} featured priority={index < 2} />
             </StaggerItem>
           ))}
         </StaggerChildren>
