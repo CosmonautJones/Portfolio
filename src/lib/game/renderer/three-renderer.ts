@@ -48,13 +48,21 @@ const LANE_WIDTH = DEFAULT_CONFIG.gridColumns * TILE_SIZE;
 // numbers in render().
 //
 // CAMERA_PITCH  : angle below horizontal the camera looks down (from ISO_TILT).
-// CAMERA_YAW    : small horizontal turn so lanes recede diagonally (the "iso"
-//                 feel) instead of dead-on front-to-back.
+//                 This pitch alone produces the isometric depth look — the
+//                 ground plane recedes into the distance, foreshortened by
+//                 ISO_TILT, exactly like the classic Crossy-Road camera.
+// CAMERA_YAW    : horizontal turn of the camera. MUST be 0 for a portrait lane
+//                 field: any yaw shears the deep field diagonally across screen-X
+//                 (a far lane row shifts sideways by depth·sin(yaw)), so the field
+//                 can no longer be horizontally centered in an orthographic
+//                 frustum and a large empty triangle appears. With yaw = 0 each
+//                 lane row projects to the full lane width centered on the lane
+//                 midpoint at every depth, so the field fills the viewport.
 // CAMERA_DISTANCE: how far back along the view ray the camera sits. Orthographic,
 //                 so this only affects the near/far clip framing, not scale.
 // ---------------------------------------------------------------------------
 const CAMERA_PITCH = Math.asin(ISO_TILT); // radians; sin(pitch) === ISO_TILT
-const CAMERA_YAW = Math.PI / 9; // 20° yaw for the dimetric / Crossy-Road look
+const CAMERA_YAW = 0; // no yaw — keeps the portrait field centered (see above)
 const CAMERA_DISTANCE = 900; // world units back along the view ray
 
 // Number of lanes that fit in the play viewport (gameplay viewport is 20 cells
@@ -72,6 +80,13 @@ const FRUSTUM_DEPTH = VISIBLE_LANES * TILE_SIZE * ISO_TILT + TILE_SIZE * 3;
 // and must remain at least FRUSTUM_DEPTH so the foreshortened lane depth fits.
 const FRUSTUM_HALF_WIDTH = LANE_WIDTH / 2 + TILE_SIZE;
 
+// How far FORWARD (toward more-negative world Y) the camera focus sits ahead of
+// the player. Pushing the focus forward drops the player toward the lower third
+// of the frame so the empty headroom (upcoming, not-yet-generated lanes) lands
+// at the TOP of the viewport rather than below the player. Derived from the
+// foreshortened lane depth (FRUSTUM_DEPTH), not a per-frame magic number.
+const CAMERA_LOOK_AHEAD = FRUSTUM_DEPTH * 0.2;
+
 /** Car color variants keyed by obstacle id % 3 */
 const CAR_COLORS = ["#b13e53", "#3b5dc9", "#ffcd75"] as const;
 
@@ -87,6 +102,13 @@ export class ThreeRenderer {
   private disposed = false;
   /** Unit*distance vector from the look-at focus toward the camera (iso angle). */
   private viewOffset: THREE.Vector3;
+  /**
+   * How far AHEAD of the 2D viewport top (in game px) the 3D frustum can see.
+   * The 3D ortho frustum is taller than the 2D viewport, so it reveals lanes
+   * further ahead; culling against only the 2D viewport would leave the top of
+   * the 3D view empty. Recomputed from the frustum half-height in applyFrustum().
+   */
+  private cullAheadPx = CELL_SIZE * 3;
 
   // Object pools — reuse meshes instead of recreating
   private lanePool = new Map<number, PooledObject>();
@@ -180,13 +202,15 @@ export class ThreeRenderer {
     // ---- Camera tracking ----
     // Follow the player vertically, mirroring how camera.y drives the 2D view.
     // The focus point rides the lane grid centerline at the camera's world Y;
-    // we look slightly FORWARD (toward more-negative Y) so the player sits in
-    // the lower third of the frame, Crossy-Road style. The camera position is
-    // the focus plus the fixed iso view offset — angle/framing never change,
-    // only the focus translates, so there are NO per-frame magic offsets.
+    // we look FORWARD (toward more-negative Y) by a fraction of the frustum
+    // height so the player sits in the lower third of the frame and the empty
+    // headroom (upcoming lanes) is at the TOP, Crossy-Road style — never split
+    // below the player. The camera position is the focus plus the fixed iso
+    // view offset — angle/framing never change, only the focus translates, so
+    // there are NO per-frame magic offsets.
     const centerX = LANE_WIDTH / 2;
     const cameraY = -state.camera.y * PX_TO_WORLD;
-    const focusY = cameraY - FRUSTUM_DEPTH * 0.2; // nudge focus ahead of player
+    const focusY = cameraY - CAMERA_LOOK_AHEAD; // nudge focus ahead of player
 
     this.camera.position.set(
       centerX + this.viewOffset.x,
@@ -260,6 +284,19 @@ export class ThreeRenderer {
     this.camera.top = halfHeight;
     this.camera.bottom = -halfHeight;
     this.camera.updateProjectionMatrix();
+
+    // Derive how far AHEAD (in game px) lanes must be drawn so they fill the
+    // 3D frustum's top. The frustum's vertical screen extent (halfHeight world)
+    // maps to world-forward depth via ISO_TILT, then to game px via PX_TO_WORLD.
+    // Add the forward focus nudge and a few cells of object-height headroom.
+    const forwardWorld = halfHeight / ISO_TILT; // world-forward units to frustum top
+    this.cullAheadPx = forwardWorld / PX_TO_WORLD + CAMERA_LOOK_AHEAD / PX_TO_WORLD + CELL_SIZE * 3;
+  }
+
+  /** True if a lane at game-y `laneY` is within the 3D view (forward-extended cull). */
+  private isLaneVisible(laneY: number, camera: RenderScene["camera"]): boolean {
+    const screenY = laneY * CELL_SIZE - camera.y;
+    return screenY >= -this.cullAheadPx && screenY <= camera.viewportHeight + CELL_SIZE * 3;
   }
 
   /** Clean up all Three.js resources */
@@ -337,9 +374,8 @@ export class ThreeRenderer {
     const visibleKeys = new Set<number>();
 
     for (const lane of lanes) {
-      // Frustum cull: skip lanes far off-screen
-      const screenY = lane.y * CELL_SIZE - camera.y;
-      if (screenY < -CELL_SIZE * 3 || screenY > camera.viewportHeight + CELL_SIZE * 3) {
+      // Frustum cull: skip lanes outside the (forward-extended) 3D view
+      if (!this.isLaneVisible(lane.y, camera)) {
         continue;
       }
 
@@ -365,8 +401,7 @@ export class ThreeRenderer {
     const visibleIds = new Set<number>();
 
     for (const lane of lanes) {
-      const screenY = lane.y * CELL_SIZE - camera.y;
-      if (screenY < -CELL_SIZE * 3 || screenY > camera.viewportHeight + CELL_SIZE * 3) {
+      if (!this.isLaneVisible(lane.y, camera)) {
         continue;
       }
 
@@ -410,8 +445,7 @@ export class ThreeRenderer {
         continue;
       }
 
-      const screenY = coin.laneY * CELL_SIZE - camera.y;
-      if (screenY < -CELL_SIZE * 2 || screenY > camera.viewportHeight + CELL_SIZE * 2) {
+      if (!this.isLaneVisible(coin.laneY, camera)) {
         continue;
       }
 
@@ -442,8 +476,7 @@ export class ThreeRenderer {
     for (const lane of lanes) {
       if (lane.type !== "grass") continue;
 
-      const screenY = lane.y * CELL_SIZE - camera.y;
-      if (screenY < -CELL_SIZE * 3 || screenY > camera.viewportHeight + CELL_SIZE * 3) {
+      if (!this.isLaneVisible(lane.y, camera)) {
         continue;
       }
 
