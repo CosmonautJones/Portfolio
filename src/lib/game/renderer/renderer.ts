@@ -230,7 +230,8 @@ export class GameRenderer {
   }
 
   renderBackground(animationTime: number): void {
-    // Background rendered via pass graph, but for backward compat we support direct call
+    // Internal render-pipeline step invoked by render(): executes the
+    // background pass directly via the pass graph.
     const bgPass = this.passGraph.getPass<BackgroundPass>("background");
     if (bgPass) {
       const state: RenderState = {
@@ -292,13 +293,15 @@ export class GameRenderer {
   }
 
   renderCoins(_scene: RenderScene): void {
-    // Coins are now rendered as part of SpritesPass.execute()
-    // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
+    // Coins are rendered as part of SpritesPass.execute(). This no-op is an
+    // internal render-pipeline step invoked by render() to preserve the
+    // pass call sequence.
   }
 
   renderPlayer(_scene: RenderScene): void {
-    // Player is now rendered as part of SpritesPass.execute()
-    // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
+    // Player is rendered as part of SpritesPass.execute(). This no-op is an
+    // internal render-pipeline step invoked by render() to preserve the
+    // pass call sequence.
   }
 
   renderParticles(particles: readonly Particle[], cameraY: number): void {
@@ -314,8 +317,9 @@ export class GameRenderer {
   }
 
   renderAmbientEffects(_scene: RenderScene): void {
-    // Ambient effects are now rendered as part of SpritesPass.execute()
-    // This is kept as a no-op for backward compat with GameCanvas.tsx call sequence
+    // Ambient effects are rendered as part of SpritesPass.execute(). This
+    // no-op is an internal render-pipeline step invoked by render() to
+    // preserve the pass call sequence.
   }
 
   /** Get the pass graph for adding custom passes */
