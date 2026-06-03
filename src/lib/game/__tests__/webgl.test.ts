@@ -32,13 +32,15 @@ describe("WebGL shader sources", () => {
       QUAD_FRAGMENT,
       PARTICLE_VERTEX,
       PARTICLE_FRAGMENT,
-      BACKGROUND_VERTEX,
       BACKGROUND_FRAGMENT,
       BLOOM_EXTRACT_FRAGMENT,
       BLUR_FRAGMENT,
       COMPOSITE_FRAGMENT,
       FULLSCREEN_VERTEX,
-    } = await import("../webgl/shaders");
+    } = await import("../renderer/shaders/loader");
+    // BACKGROUND_VERTEX is an alias for FULLSCREEN_VERTEX (background pass
+    // reuses the fullscreen vertex shader).
+    const BACKGROUND_VERTEX = FULLSCREEN_VERTEX;
 
     const shaders = [
       SPRITE_VERTEX,
@@ -62,23 +64,23 @@ describe("WebGL shader sources", () => {
   });
 
   it("sprite vertex shader uses #version 300 es", async () => {
-    const { SPRITE_VERTEX } = await import("../webgl/shaders");
+    const { SPRITE_VERTEX } = await import("../renderer/shaders/loader");
     expect(SPRITE_VERTEX).toContain("#version 300 es");
   });
 
   it("sprite fragment shader outputs fragColor", async () => {
-    const { SPRITE_FRAGMENT } = await import("../webgl/shaders");
+    const { SPRITE_FRAGMENT } = await import("../renderer/shaders/loader");
     expect(SPRITE_FRAGMENT).toContain("out vec4 fragColor");
   });
 
   it("particle shader supports circle and line shapes", async () => {
-    const { PARTICLE_FRAGMENT } = await import("../webgl/shaders");
+    const { PARTICLE_FRAGMENT } = await import("../renderer/shaders/loader");
     expect(PARTICLE_FRAGMENT).toContain("v_shape");
     expect(PARTICLE_FRAGMENT).toContain("smoothstep");
   });
 
   it("composite shader applies bloom and vignette", async () => {
-    const { COMPOSITE_FRAGMENT } = await import("../webgl/shaders");
+    const { COMPOSITE_FRAGMENT } = await import("../renderer/shaders/loader");
     expect(COMPOSITE_FRAGMENT).toContain("u_bloom");
     expect(COMPOSITE_FRAGMENT).toContain("u_bloomIntensity");
     // Vignette
@@ -86,21 +88,21 @@ describe("WebGL shader sources", () => {
   });
 
   it("background shader has aurora effect", async () => {
-    const { BACKGROUND_FRAGMENT } = await import("../webgl/shaders");
+    const { BACKGROUND_FRAGMENT } = await import("../renderer/shaders/loader");
     expect(BACKGROUND_FRAGMENT).toContain("aurora");
   });
 });
 
 describe("GL utilities", () => {
   it("ortho produces 16-element float array", async () => {
-    const { ortho } = await import("../webgl/gl-utils");
+    const { ortho } = await import("../renderer/webgl/gl-utils");
     const mat = ortho(0, 416, 640, 0);
     expect(mat).toBeInstanceOf(Float32Array);
     expect(mat.length).toBe(16);
   });
 
   it("ortho matrix has correct diagonal values for 416x640", async () => {
-    const { ortho } = await import("../webgl/gl-utils");
+    const { ortho } = await import("../renderer/webgl/gl-utils");
     const mat = ortho(0, 416, 640, 0);
     // mat[0] = 2 / (right - left) = 2 / 416
     expect(mat[0]).toBeCloseTo(2 / 416, 5);
@@ -111,7 +113,7 @@ describe("GL utilities", () => {
   });
 
   it("createIsometricSkew produces identity-like matrix with shear in column-major slot", async () => {
-    const { createIsometricSkew } = await import("../webgl/gl-utils");
+    const { createIsometricSkew } = await import("../renderer/webgl/gl-utils");
     const mat = createIsometricSkew(0.4);
     expect(mat).toBeInstanceOf(Float32Array);
     expect(mat.length).toBe(16);
@@ -130,7 +132,7 @@ describe("GL utilities", () => {
   });
 
   it("createIsometricSkew with zero shear produces identity", async () => {
-    const { createIsometricSkew } = await import("../webgl/gl-utils");
+    const { createIsometricSkew } = await import("../renderer/webgl/gl-utils");
     const mat = createIsometricSkew(0);
     expect(mat[0]).toBe(1);
     expect(mat[4]).toBe(0);
@@ -139,7 +141,7 @@ describe("GL utilities", () => {
   });
 
   it("multiplyMatrix4 with two identities produces identity", async () => {
-    const { multiplyMatrix4 } = await import("../webgl/gl-utils");
+    const { multiplyMatrix4 } = await import("../renderer/webgl/gl-utils");
     const id = new Float32Array(16);
     id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
     const result = multiplyMatrix4(id, id);
@@ -149,7 +151,7 @@ describe("GL utilities", () => {
   });
 
   it("multiplyMatrix4: identity × A = A", async () => {
-    const { multiplyMatrix4, ortho } = await import("../webgl/gl-utils");
+    const { multiplyMatrix4, ortho } = await import("../renderer/webgl/gl-utils");
     const id = new Float32Array(16);
     id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
     const a = ortho(0, 400, 600, 0);
@@ -160,7 +162,7 @@ describe("GL utilities", () => {
   });
 
   it("multiplyMatrix4: A × identity = A", async () => {
-    const { multiplyMatrix4, ortho } = await import("../webgl/gl-utils");
+    const { multiplyMatrix4, ortho } = await import("../renderer/webgl/gl-utils");
     const id = new Float32Array(16);
     id[0] = 1; id[5] = 1; id[10] = 1; id[15] = 1;
     const a = ortho(0, 400, 600, 0);
@@ -171,7 +173,7 @@ describe("GL utilities", () => {
   });
 
   it("multiplyMatrix4: ortho × skew modifies the expected elements", async () => {
-    const { multiplyMatrix4, ortho, createIsometricSkew } = await import("../webgl/gl-utils");
+    const { multiplyMatrix4, ortho, createIsometricSkew } = await import("../renderer/webgl/gl-utils");
     const proj = ortho(0, 416, 640, 0);
     const skew = createIsometricSkew(0.38);
     const result = multiplyMatrix4(proj, skew);
@@ -214,7 +216,7 @@ describe("Renderer exports", () => {
 
 describe("Atlas region types", () => {
   it("WHITE_REGION_KEY is a string constant", async () => {
-    const { WHITE_REGION_KEY } = await import("../webgl/sprite-atlas");
+    const { WHITE_REGION_KEY } = await import("../renderer/webgl/sprite-atlas");
     expect(typeof WHITE_REGION_KEY).toBe("string");
     expect(WHITE_REGION_KEY).toBe("__white__");
   });

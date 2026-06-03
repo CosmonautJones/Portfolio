@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SpriteAtlas } from "../webgl/sprite-atlas";
+import { SpriteAtlas } from "../renderer/webgl/sprite-atlas";
 
 describe("SpriteAtlas raw RGBA methods", () => {
   it("addRawSprite stores entry that can be checked via has()", () => {
