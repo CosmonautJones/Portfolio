@@ -52,7 +52,8 @@ export function MenuOverlay({
       <div className="pointer-events-auto flex gap-2 mt-4">
         <button
           onClick={onToggleMute}
-          className="p-1.5 rounded hover:bg-white/20 transition-colors"
+          className="p-1.5 rounded hover:bg-white/20 transition-colors min-w-11 min-h-11 flex items-center justify-center"
+          aria-label={muted ? "Unmute" : "Mute"}
         >
           {muted ? (
             <VolumeX
@@ -75,8 +76,9 @@ export function MenuOverlay({
         {voxelReady && (
           <button
             onClick={onToggleSpriteStyle}
-            className="p-1.5 rounded hover:bg-white/20 transition-colors"
+            className="p-1.5 rounded hover:bg-white/20 transition-colors min-w-11 min-h-11 flex items-center justify-center"
             title={`Sprite style: ${spriteStyle}`}
+            aria-label="Toggle 2D/3D mode"
           >
             <Palette
               className={spriteStyle === "voxel" ? "text-orange-400/80" : "text-white/50"}

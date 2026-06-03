@@ -72,8 +72,9 @@ export function GameHUD({
         {onToggleSpriteStyle && (
           <button
             onClick={onToggleSpriteStyle}
-            className="p-1 rounded hover:bg-white/20 transition-colors"
+            className="p-1 rounded hover:bg-white/20 transition-colors min-w-11 min-h-11 flex items-center justify-center"
             title={`Mode: ${spriteStyle === "voxel" ? "3D" : "2D"}`}
+            aria-label="Toggle 2D/3D mode"
           >
             <Palette
               className={spriteStyle === "voxel" ? "text-orange-400/80" : "text-white/70"}
@@ -86,7 +87,8 @@ export function GameHUD({
         )}
         <button
           onClick={onToggleMute}
-          className="p-1 rounded hover:bg-white/20 transition-colors"
+          className="p-1 rounded hover:bg-white/20 transition-colors min-w-11 min-h-11 flex items-center justify-center"
+          aria-label={muted ? "Unmute" : "Mute"}
         >
           {muted ? (
             <VolumeX
