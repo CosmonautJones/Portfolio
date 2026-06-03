@@ -58,6 +58,13 @@ function createMockState(coins: Coin[] = []): GameState {
     coinBonusScore: 0,
     dyingTimer: 0,
     dyingDuration: 0.5,
+    powerUps: [],
+    activePowerUps: [],
+    bossLanesUsed: [],
+    inBossSection: false,
+    weather: { type: "clear", intensity: 0, windDirection: 1 },
+    windDriftAccumulator: 0,
+    rainSlideApplied: false,
   };
 }
 
