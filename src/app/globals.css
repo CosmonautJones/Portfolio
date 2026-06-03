@@ -244,6 +244,9 @@
 .xp-bar-fill {
   background: linear-gradient(to right, var(--accent-1), var(--accent-3));
 }
+.scroll-progress-fill {
+  background: linear-gradient(to right, var(--accent-1), var(--accent-3));
+}
 .accent-dot {
   background: var(--accent-1);
 }

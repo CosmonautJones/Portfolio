@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/utils";
 
@@ -12,6 +13,7 @@ export default async function PublicLayout({ children }: { children: React.React
     <div className="flex min-h-screen flex-col">
       <div className="aurora-bg" aria-hidden="true" />
       <Navbar isAdmin={isAdmin} />
+      <ScrollProgress />
       <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </div>
