@@ -1,12 +1,23 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, Play } from "lucide-react";
+import {
+  m,
+  useReducedMotion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import type { Project } from "@/lib/types";
 
 const gradientClasses = ["project-gradient-1", "project-gradient-2"];
+const MAX_TILT = 6; // degrees
 
 interface ProjectCardProps {
   project: Project;
@@ -18,30 +29,72 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
   const gradientClass = gradientClasses[project.title.length % gradientClasses.length];
   const heightClass = featured ? "h-56" : "h-48";
 
+  const shouldReduce = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Pointer offset from card center, normalized to [-1, 1].
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+  const springConfig = { stiffness: 150, damping: 18, mass: 0.4 };
+  const sx = useSpring(px, springConfig);
+  const sy = useSpring(py, springConfig);
+  // Tilt: moving pointer right tilts to the right edge (rotateY), down tilts down (rotateX).
+  const rotateY = useTransform(sx, [-1, 1], [-MAX_TILT, MAX_TILT]);
+  const rotateX = useTransform(sy, [-1, 1], [MAX_TILT, -MAX_TILT]);
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (shouldReduce) return;
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    px.set(((e.clientX - rect.left) / rect.width) * 2 - 1);
+    py.set(((e.clientY - rect.top) / rect.height) * 2 - 1);
+  }
+
+  function handlePointerLeave() {
+    px.set(0);
+    py.set(0);
+  }
+
   return (
-    <Card className="glass-card gradient-border-glow hover-shadow-accent group flex flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1">
-      {project.image ? (
-        <div className={`relative ${heightClass} w-full overflow-hidden`}>
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority={priority}
-            className="object-cover rounded-t-lg"
-          />
-        </div>
-      ) : (
-        <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg ${gradientClass}`}>
-          {/* Large faded tag overlay */}
-          {project.tags[0] && (
-            <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-foreground/[0.06] select-none sm:text-6xl">
-              {project.tags[0]}
-            </span>
-          )}
-        </div>
-      )}
-      <CardHeader className="pb-3">
+    <m.div
+      ref={cardRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      style={
+        shouldReduce
+          ? undefined
+          : {
+              rotateX,
+              rotateY,
+              transformStyle: "preserve-3d",
+              transformPerspective: 900,
+            }
+      }
+      className="h-full"
+    >
+      <Card className="glass-card gradient-border-glow hover-shadow-accent group flex h-full flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1">
+        {project.image ? (
+          <div className={`relative ${heightClass} w-full overflow-hidden`}>
+            <Image
+              src={project.image}
+              alt={project.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority={priority}
+              className="rounded-t-lg object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+            />
+          </div>
+        ) : (
+          <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg ${gradientClass}`}>
+            {/* Large faded tag overlay */}
+            {project.tags[0] && (
+              <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-foreground/[0.06] select-none sm:text-6xl">
+                {project.tags[0]}
+              </span>
+            )}
+          </div>
+        )}
+        <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-lg font-semibold tracking-tight transition-colors duration-300 group-hover:text-foreground">
             {project.title}
@@ -106,7 +159,8 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
             </Button>
           )}
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </m.div>
   );
 }
