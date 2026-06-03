@@ -55,10 +55,16 @@ export default function GameCanvas({
   const canvasEl = canvasRef.current;
   const { rendererRef, voxelReady, initialSpriteStyle } = useGameSprites(canvasEl);
 
-  // Sync sprite style from loaded preference
-  if (initialSpriteStyle !== "pixel" && spriteStyle === "pixel") {
-    setSpriteStyle(initialSpriteStyle);
-  }
+  // Apply the saved sprite style EXACTLY ONCE on mount. After that, never
+  // fight the user — toggles in either direction must stick. (Previously this
+  // ran every render, so toggling voxel→pixel was instantly reverted.)
+  const appliedInitialStyleRef = useRef(false);
+  useEffect(() => {
+    if (!appliedInitialStyleRef.current && initialSpriteStyle !== "pixel") {
+      setSpriteStyle(initialSpriteStyle);
+      appliedInitialStyleRef.current = true;
+    }
+  }, [initialSpriteStyle]);
 
   // Three.js 3D renderer — managed by hook (lazy create, keep alive, destroy on unmount)
   const isThreeActive = spriteStyle === "voxel";
