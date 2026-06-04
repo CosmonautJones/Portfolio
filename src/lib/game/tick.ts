@@ -157,9 +157,12 @@ export function createInitialState(
     ridingLogId: null,
   };
 
+  const cameraY = startY * cellSize - viewportHeight * CAMERA_DEAD_ZONE;
   const camera = {
-    y: startY * cellSize - viewportHeight * CAMERA_DEAD_ZONE,
-    targetY: startY * cellSize - viewportHeight * CAMERA_DEAD_ZONE,
+    y: cameraY,
+    // prevY starts equal to y so the first rendered frame does not interpolate.
+    prevY: cameraY,
+    targetY: cameraY,
     viewportWidth: gridColumns * cellSize,
     viewportHeight,
   };
@@ -296,6 +299,9 @@ export function resetForNewGame(
   state.camera.y =
     startY * cellSize - state.camera.viewportHeight * CAMERA_DEAD_ZONE;
   state.camera.targetY = state.camera.y;
+  // Match prevY to the teleported y so the first frame of the new run does not
+  // interpolate across the camera reset (no rubber-band on restart).
+  state.camera.prevY = state.camera.y;
 
   // Reset game state (keep highScore)
   state.phase = "playing";

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { projectTopDown, projectIsometric } from "../camera-projection";
 import type { Camera } from "../../types";
 
-const cam: Camera = { y: 100, targetY: 100, viewportWidth: 416, viewportHeight: 640 };
+const cam: Camera = { y: 100, prevY: 100, targetY: 100, viewportWidth: 416, viewportHeight: 640 };
 
 describe("projectTopDown", () => {
   it("maps world to screen by subtracting camera.y", () => {

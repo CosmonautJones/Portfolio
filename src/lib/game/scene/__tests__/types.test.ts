@@ -8,7 +8,7 @@ describe("RenderScene", () => {
       phase: "playing",
       player: {} as RenderScene["player"],
       lanes: [],
-      camera: { y: 0, targetY: 0, viewportWidth: 416, viewportHeight: 640 },
+      camera: { y: 0, prevY: 0, targetY: 0, viewportWidth: 416, viewportHeight: 640 },
       particles: [],
       coins: [],
       powerUps: [],

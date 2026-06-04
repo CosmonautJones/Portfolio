@@ -27,6 +27,7 @@ function createMockState(overrides: Partial<GameState> = {}): GameState {
     lanes: [],
     camera: {
       y: 0,
+      prevY: 0,
       targetY: 0,
       viewportWidth: 13 * CELL,
       viewportHeight: 20 * CELL,

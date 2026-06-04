@@ -427,14 +427,25 @@ export function useGameEngine({
 
         const shake = updateScreenShake(screenShakeRef.current, cappedDt);
 
+        // Sub-frame interpolation fraction: how far we are between the last
+        // fixed step and the next. Smooths camera motion on >60Hz displays.
+        const alpha = Math.min(
+          1,
+          Math.max(
+            0,
+            gameStateRef.current.timeAccumulator / DEFAULT_CONFIG.fixedTimestep,
+          ),
+        );
+
         // Unified render dispatch — one interface, one scene.
         const scene = buildScene(gameStateRef.current, {
           shake: { x: shake.offsetX, y: shake.offsetY },
+          alpha,
         });
         const active: GameRendererInterface | null =
           (threeRendererRef?.current as GameRendererInterface | null) ??
           (rendererRef.current as GameRendererInterface | null);
-        active?.render(scene, 0);
+        active?.render(scene, alpha);
       }
 
       rafId = requestAnimationFrame(loop);

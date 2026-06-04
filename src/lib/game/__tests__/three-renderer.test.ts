@@ -46,6 +46,7 @@ function makePlayer(overrides: Partial<Player> = {}): Player {
 function makeCamera(overrides: Partial<Camera> = {}): Camera {
   return {
     y: 0,
+    prevY: 0,
     targetY: 0,
     viewportWidth: 416,
     viewportHeight: 640,

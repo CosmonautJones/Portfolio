@@ -13,8 +13,59 @@ describe("buildScene", () => {
     expect(scene.score).toBe(42);
     expect(scene.level).toBe(3);
     expect(scene.shake).toEqual({ x: 2, y: -1 });
-    expect(scene.camera).toBe(state.camera);
     expect(scene.weather).toBe(state.weather);
+  });
+
+  it("returns a fresh camera object with matching field values (no interpolation)", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    const scene = buildScene(state, { shake: { x: 0, y: 0 } });
+    // No longer reference-identical — buildScene returns a new camera so it can interpolate y.
+    expect(scene.camera).not.toBe(state.camera);
+    expect(scene.camera).toEqual({
+      y: state.camera.y,
+      targetY: state.camera.targetY,
+      viewportWidth: state.camera.viewportWidth,
+      viewportHeight: state.camera.viewportHeight,
+      prevY: state.camera.prevY,
+    });
+  });
+
+  it("returns the previous fixed-step y when alpha is 0 or omitted (standard interpolation convention)", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.camera.prevY = 100;
+    state.camera.y = 200;
+    // alpha=0 => fully at prevY (just ticked). This is the standard
+    // fixed-timestep render-interpolation convention; it never overshoots.
+    expect(buildScene(state).camera.y).toBe(100);
+    expect(buildScene(state, { alpha: 0 }).camera.y).toBe(100);
+  });
+
+  it("lerps camera.y between prevY and y by alpha", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.camera.prevY = 100;
+    state.camera.y = 200;
+    // lerp(100, 200, 0.5) = 150
+    expect(buildScene(state, { alpha: 0.5 }).camera.y).toBe(150);
+    // lerp(100, 200, 0.25) = 125
+    expect(buildScene(state, { alpha: 0.25 }).camera.y).toBe(125);
+    // alpha = 1 → fully at current y
+    expect(buildScene(state, { alpha: 1 }).camera.y).toBe(200);
+  });
+
+  it("clamps alpha to the [0, 1] range", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.camera.prevY = 100;
+    state.camera.y = 200;
+    // alpha below 0 clamps to 0 → prevY
+    expect(buildScene(state, { alpha: -2 }).camera.y).toBe(100);
+    // alpha above 1 clamps to 1 → y
+    expect(buildScene(state, { alpha: 5 }).camera.y).toBe(200);
+  });
+
+  it("does not interpolate when prevY equals y (no rubber-band)", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.camera.prevY = state.camera.y;
+    expect(buildScene(state, { alpha: 0.5 }).camera.y).toBe(state.camera.y);
   });
 
   it("computes deathProgress only when dying", () => {

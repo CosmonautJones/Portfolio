@@ -42,7 +42,7 @@ function createMockState(coins: Coin[] = []): GameState {
       ridingLogId: null,
     },
     lanes: [],
-    camera: { y: 0, targetY: 0, viewportWidth: 13 * CELL, viewportHeight: 20 * CELL },
+    camera: { y: 0, prevY: 0, targetY: 0, viewportWidth: 13 * CELL, viewportHeight: 20 * CELL },
     particles: [],
     actionQueue: [],
     score: 10,

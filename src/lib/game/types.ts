@@ -61,6 +61,8 @@ export interface Lane {
 
 export interface Camera {
   y: number;
+  /** Camera.y at the start of the previous fixed step — used for render interpolation. */
+  prevY: number;
   targetY: number;
   viewportWidth: number;
   viewportHeight: number;
