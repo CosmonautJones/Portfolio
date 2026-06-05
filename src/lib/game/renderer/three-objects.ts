@@ -53,6 +53,16 @@ function getCylinderGeo(
 }
 
 
+function getOctahedronGeo(radius: number): THREE.OctahedronGeometry {
+  const key = `octa_${radius}`;
+  let geo = geoCache.get(key);
+  if (!geo) {
+    geo = new THREE.OctahedronGeometry(radius);
+    geoCache.set(key, geo);
+  }
+  return geo as THREE.OctahedronGeometry;
+}
+
 /** Dispose all cached shared geometries (call on full teardown) */
 export function disposeSharedGeometries(): void {
   for (const geo of geoCache.values()) {
@@ -97,6 +107,11 @@ const COLORS = {
   coinSilver: "#c0c0c0",
   coinDiamond: "#73eff7",
   coinRuby: "#b13e53",
+
+  powerupShield: "#41a6f6",
+  powerupSpeed: "#ffcd75",
+  powerupMagnet: "#b13e53",
+  powerupSlowMo: "#3b5dc9",
 
   grassTop: "#50d090",
   grassSide: "#3a7d4a",
@@ -406,6 +421,29 @@ export function createCoin(type: string): THREE.Group {
   );
   coin.position.set(0, 0, 16);
   group.add(coin);
+
+  return group;
+}
+
+/**
+ * Power-up — a floating, spinning gem (octahedron) colored per type.
+ * Procedural (no voxel asset), mirroring the coin factory.
+ * @param type - Power-up type for color selection
+ */
+export function createPowerUp(type: string): THREE.Group {
+  const group = new THREE.Group();
+
+  const colorMap: Record<string, string> = {
+    shield: COLORS.powerupShield,
+    speed: COLORS.powerupSpeed,
+    magnet: COLORS.powerupMagnet,
+    slow_mo: COLORS.powerupSlowMo,
+  };
+  const color = colorMap[type] ?? COLORS.powerupShield;
+
+  const gem = new THREE.Mesh(getOctahedronGeo(8), getMaterial(color));
+  gem.position.set(0, 0, 18);
+  group.add(gem);
 
   return group;
 }

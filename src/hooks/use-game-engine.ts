@@ -355,6 +355,16 @@ export function useGameEngine({
           setCoinPopups((prev) => prev.filter((p) => p.id !== id));
         }, 800);
       },
+      onPowerUpCollect: () => {
+        // Minimal audio/haptic feedback on pickup. An active-effect HUD is
+        // intentionally deferred — the gameplay effect itself is the signal.
+        audio.playLevelUp();
+        triggerMicroShake(screenShakeRef.current);
+      },
+      onPowerUpExpire: () => {
+        // No-op for now (no HUD timer to clear). Kept wired so the engine's
+        // expire path has a sink and future feedback can hook in here.
+      },
       onLevelUp: (newLevel) => {
         setLevel(newLevel);
         audio.playLevelUp();

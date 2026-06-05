@@ -28,6 +28,11 @@ import {
   spawnWaterRipples,
   spawnAmbientParticles,
 } from "./particles";
+import {
+  checkPowerUpCollection,
+  applyMagnetEffect,
+  updatePowerUps,
+} from "./power-ups";
 
 // ---------------------------------------------------------------------------
 // Input processing helpers
@@ -219,7 +224,10 @@ export function tick(
       updateLogRiding(state, config, callbacks);
       updateObstacles(state, config);
       updateCoins(state, config);
+      applyMagnetEffect(state, config);
       checkCoinCollection(state, config, callbacks);
+      checkPowerUpCollection(state, config, callbacks);
+      updatePowerUps(state, config, callbacks);
       checkCollisions(state, config, callbacks);
       checkIdleTimeout(state, config, callbacks);
       checkBackDeath(state, config, callbacks);

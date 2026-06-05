@@ -138,6 +138,35 @@ export function spawnScoreSparkle(state: GameState, config: GameConfig): void {
   }
 }
 
+/** Spawn a blue/cyan burst when a shield absorbs an otherwise-fatal hit. */
+export function spawnShieldBreakParticles(
+  state: GameState,
+  config: GameConfig,
+): void {
+  const { player } = state;
+  const cellHalf = config.cellSize / 2;
+  const cx = player.worldPos.x + cellHalf;
+  const cy = player.worldPos.y + cellHalf;
+  const colors = ["#41a6f6", "#73eff7", "#e0e8ff"];
+
+  const count = 12 + Math.floor(Math.random() * 5); // 12-16
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const speed = 50 + Math.random() * 50;
+    state.particles.push({
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.3 + Math.random() * 0.2,
+      maxLife: 0.5,
+      color: pickRandom(colors),
+      size: 2 + Math.floor(Math.random() * 3),
+      shape: "circle",
+    });
+  }
+}
+
 /** Spawn death particles with per-cause colors and directional bias */
 export function spawnDeathParticles(
   state: GameState,

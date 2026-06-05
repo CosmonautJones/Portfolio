@@ -18,6 +18,7 @@ import {
   TOP_FACE_COLORS,
   SHADOW_OFFSET,
   SHADOW_ALPHA,
+  POWERUP_PARTICLE_COLORS,
 } from "../../constants";
 import { resolveSprite, type SpriteStyle } from "../../sprites/sprite-style";
 import { DECORATION_HEIGHTS } from "../../sprites/decorations";
@@ -71,6 +72,9 @@ export class SpritesPass implements RenderPass {
 
     // --- Render coins ---
     this.renderCoins(state, batch, atlas);
+
+    // --- Render ground power-ups ---
+    this.renderPowerUps(state, batch, whiteRegion);
 
     // --- Render player ---
     this.renderPlayer(state, batch, atlas, whiteRegion);
@@ -451,6 +455,80 @@ export class SpritesPass implements RenderPass {
       if (coinRegion) {
         batch.draw(coinRegion, coin.worldX + 8, screenY + 8 + bobOffset);
       }
+    }
+
+    batch.flush();
+  }
+
+  private renderPowerUps(
+    state: RenderState,
+    batch: SpriteBatch,
+    whiteRegion: AtlasRegion,
+  ): void {
+    const { camera, powerUps } = state;
+    const cellSize = DEFAULT_CONFIG.cellSize;
+
+    batch.begin();
+
+    for (const pu of powerUps) {
+      if (pu.collected) continue;
+
+      const screenY = pu.laneY * cellSize - camera.y;
+      if (screenY < -cellSize || screenY > camera.viewportHeight + cellSize)
+        continue;
+
+      // Bob + pulse, mirroring the coin animation cadence.
+      const bobOffset = Math.sin(state.animationTime * 2.5 + pu.id * 0.7) * 3;
+      const pulse = 0.5 + 0.5 * Math.sin(state.animationTime * 3.5 + pu.id);
+
+      const palette = POWERUP_PARTICLE_COLORS[pu.type];
+      const [gR, gG, gB] = hexToFloats(palette[0]);
+      const [cR, cG, cB] = hexToFloats(palette[palette.length - 1]);
+
+      const cx = pu.worldX + cellSize / 2;
+      const cyTop = screenY + bobOffset;
+      const cy = cyTop + cellSize / 2;
+
+      // Soft glow halo (low-alpha expanding square)
+      const glowSize = 22 + pulse * 6;
+      batch.drawQuad(
+        whiteRegion,
+        cx - glowSize / 2,
+        cy - glowSize / 2,
+        glowSize,
+        glowSize,
+        gR,
+        gG,
+        gB,
+        0.18 + 0.12 * pulse,
+      );
+
+      // Core diamond — two stacked quads approximating a gem facet
+      const coreSize = 12;
+      batch.drawQuad(
+        whiteRegion,
+        cx - coreSize / 2,
+        cy - coreSize / 2,
+        coreSize,
+        coreSize,
+        gR,
+        gG,
+        gB,
+        0.9,
+      );
+      // Bright inner highlight
+      const innerSize = 6;
+      batch.drawQuad(
+        whiteRegion,
+        cx - innerSize / 2,
+        cy - innerSize / 2 - 1,
+        innerSize,
+        innerSize,
+        cR,
+        cG,
+        cB,
+        0.95,
+      );
     }
 
     batch.flush();

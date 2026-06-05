@@ -6,6 +6,7 @@ import type { GameState, GameConfig, Lane, ObstacleType } from "./types";
 import { SPEED_RANGES } from "./constants";
 import { randomRange } from "./utils";
 import { difficultyMultiplier } from "./difficulty";
+import { getSlowMoMultiplier } from "./power-ups";
 
 // Obstacle width lookup (cells)
 const OBSTACLE_WIDTHS: Record<ObstacleType, number> = {
@@ -100,9 +101,13 @@ export function updateObstacles(state: GameState, config: GameConfig): void {
   const totalWidth = gridColumns * cellSize;
   const margin = cellSize * 2;
 
+  // slow_mo power-up scales ALL obstacle movement (including rideable logs) so
+  // the whole field eases off uniformly while it is active; 1 when inactive.
+  const slowMo = getSlowMoMultiplier(state);
+
   for (const lane of state.lanes) {
     for (const obs of lane.obstacles) {
-      obs.worldX += obs.speed * fixedTimestep;
+      obs.worldX += obs.speed * fixedTimestep * slowMo;
 
       const obsPixelWidth = obs.widthCells * cellSize;
       if (obs.speed > 0 && obs.worldX > totalWidth + margin) {

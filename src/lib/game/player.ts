@@ -14,6 +14,7 @@ import { SAFE_START_LANES, LOG_LANDING_MARGIN } from "./constants";
 import { lerp, clamp } from "./utils";
 import { getLevelForScore } from "./difficulty";
 import { killPlayer } from "./collision";
+import { getSpeedMultiplier } from "./power-ups";
 import {
   spawnHopDust,
   spawnScoreSparkle,
@@ -152,8 +153,10 @@ export function updatePlayer(
   const { cellSize, hopDuration, fixedTimestep } = config;
 
   if (player.hopTarget !== null) {
-    // Advance hop
-    player.hopProgress += fixedTimestep / hopDuration;
+    // Advance hop. The speed power-up shortens the effective hop duration
+    // (multiplier < 1) so hops complete faster; multiplier is 1 when inactive.
+    const effectiveHopDuration = hopDuration * getSpeedMultiplier(state);
+    player.hopProgress += fixedTimestep / effectiveHopDuration;
 
     const progress = clamp(player.hopProgress, 0, 1);
     player.worldPos.x = lerp(

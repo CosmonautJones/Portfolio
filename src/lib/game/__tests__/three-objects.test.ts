@@ -8,6 +8,7 @@ import {
   createLog,
   createTree,
   createCoin,
+  createPowerUp,
   createGrassLane,
   createRoadLane,
   createWaterLane,
@@ -126,6 +127,29 @@ describe("createCoin", () => {
     const coin = createCoin("unknown");
     expect(coin).toBeInstanceOf(THREE.Group);
     expect(coin.children.length).toBeGreaterThan(0);
+  });
+});
+
+describe("createPowerUp", () => {
+  it("creates a power-up gem for all types", () => {
+    const types = ["shield", "speed", "magnet", "slow_mo"];
+    for (const type of types) {
+      const pu = createPowerUp(type);
+      expect(pu).toBeInstanceOf(THREE.Group);
+      expect(pu.children.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("defaults gracefully for an unknown type", () => {
+    const pu = createPowerUp("unknown");
+    expect(pu).toBeInstanceOf(THREE.Group);
+    expect(pu.children.length).toBeGreaterThan(0);
+  });
+
+  it("gem uses octahedron geometry", () => {
+    const pu = createPowerUp("shield");
+    const gem = pu.children[0] as THREE.Mesh;
+    expect(gem.geometry).toBeInstanceOf(THREE.OctahedronGeometry);
   });
 });
 

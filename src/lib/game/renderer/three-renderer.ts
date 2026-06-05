@@ -19,6 +19,7 @@ import {
   createLog,
   createTree,
   createCoin,
+  createPowerUp,
   createGrassLane,
   createRoadLane,
   createWaterLane,
@@ -115,6 +116,7 @@ export class ThreeRenderer {
   private obstaclePool = new Map<number, PooledObject>();
   private playerMesh: THREE.Group;
   private coinPool = new Map<number, PooledObject>();
+  private powerUpPool = new Map<number, PooledObject>();
   private treePool = new Map<string, PooledObject>();
 
   // Frame counter for pool cleanup
@@ -231,6 +233,9 @@ export class ThreeRenderer {
     // ---- Coins ----
     this.syncCoins(state);
 
+    // ---- Power-ups ----
+    this.syncPowerUps(state);
+
     // ---- Decorations ----
     this.syncDecorations(state);
 
@@ -239,6 +244,7 @@ export class ThreeRenderer {
       this.purgeUnused(this.lanePool);
       this.purgeUnused(this.obstaclePool);
       this.purgeUnused(this.coinPool);
+      this.purgeUnused(this.powerUpPool);
       this.purgeUnused(this.treePool);
     }
 
@@ -315,6 +321,9 @@ export class ThreeRenderer {
     for (const entry of this.coinPool.values()) {
       entry.object.removeFromParent();
     }
+    for (const entry of this.powerUpPool.values()) {
+      entry.object.removeFromParent();
+    }
     for (const entry of this.treePool.values()) {
       entry.object.removeFromParent();
     }
@@ -322,6 +331,7 @@ export class ThreeRenderer {
     this.lanePool.clear();
     this.obstaclePool.clear();
     this.coinPool.clear();
+    this.powerUpPool.clear();
     this.treePool.clear();
 
     // Dispose renderer
@@ -466,6 +476,41 @@ export class ThreeRenderer {
       entry.object.position.set(worldX + TILE_SIZE / 2, worldY, bobZ);
 
       // Spin the coin
+      entry.object.rotation.z = animationTime * 2;
+    }
+  }
+
+  private syncPowerUps(state: RenderScene): void {
+    const { powerUps, camera, animationTime } = state;
+
+    for (const pu of powerUps) {
+      if (pu.collected) {
+        const entry = this.powerUpPool.get(pu.id);
+        if (entry) {
+          entry.object.visible = false;
+        }
+        continue;
+      }
+
+      if (!this.isLaneVisible(pu.laneY, camera)) {
+        continue;
+      }
+
+      let entry = this.powerUpPool.get(pu.id);
+      if (!entry) {
+        const obj = createPowerUp(pu.type);
+        this.scene.add(obj);
+        entry = { object: obj, lastUsedFrame: this.frame };
+        this.powerUpPool.set(pu.id, entry);
+      }
+      entry.lastUsedFrame = this.frame;
+      entry.object.visible = true;
+
+      // Bob + spin, mirroring the coin treatment.
+      const bobZ = Math.sin(animationTime * 2.5 + pu.id * 0.7) * 4;
+      const worldX = pu.worldX * PX_TO_WORLD;
+      const worldY = -pu.laneY * TILE_SIZE;
+      entry.object.position.set(worldX + TILE_SIZE / 2, worldY, bobZ);
       entry.object.rotation.z = animationTime * 2;
     }
   }

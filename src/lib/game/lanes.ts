@@ -20,6 +20,7 @@ import {
 import { pickRandom } from "./utils";
 import { spawnObstaclesForLane } from "./obstacles";
 import { spawnCoinsForLane, pruneCoins } from "./coins";
+import { spawnPowerUpsForLane, prunePowerUps } from "./power-ups";
 import { DECORATION_VARIANTS } from "./sprites/decorations";
 
 // ---------------------------------------------------------------------------
@@ -227,6 +228,17 @@ export function generateLanesIfNeeded(
     state.coins,
   );
 
+  // Occasionally spawn a ground power-up on freshly-generated grass lanes.
+  // Pushed straight into state.powerUps (no generateLanes signature change) so
+  // all existing callers stay untouched; spawnPowerUpsForLane self-gates on
+  // grass and on the per-type POWERUP_SPAWN_CHANCE roll.
+  for (const lane of newLanes) {
+    const spawned = spawnPowerUpsForLane(lane, config, nextId);
+    if (spawned.length > 0) {
+      state.powerUps.push(...spawned);
+    }
+  }
+
   state.lanes.push(...newLanes);
   state.nextEntityId = nextId.value;
   state.generatedUpTo = targetY;
@@ -240,4 +252,5 @@ export function pruneLanesBehindPlayer(state: GameState, config: GameConfig): vo
     }
   }
   pruneCoins(state, pruneY);
+  prunePowerUps(state, pruneY);
 }

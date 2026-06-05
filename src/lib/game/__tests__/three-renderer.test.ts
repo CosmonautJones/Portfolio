@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ThreeRenderer } from "../renderer/three-renderer";
 import type { GameRenderer } from "../renderer/game-renderer";
 import type { RenderScene } from "../scene/types";
-import type { Player, Camera, Lane, Obstacle, Coin } from "../types";
+import type { Player, Camera, Lane, Obstacle, Coin, PowerUp } from "../types";
 import { disposeSharedMaterials, disposeSharedGeometries } from "../renderer/three-objects";
 
 // Mock WebGLRenderer since jsdom doesn't have WebGL
@@ -86,6 +86,17 @@ function makeCoin(id: number, laneY: number, type: Coin["type"] = "gold"): Coin 
     worldX: 160,
     collected: false,
     logId: null,
+  };
+}
+
+function makePowerUp(id: number, laneY: number, type: PowerUp["type"] = "shield"): PowerUp {
+  return {
+    id,
+    type,
+    gridX: 6,
+    laneY,
+    worldX: 192,
+    collected: false,
   };
 }
 
@@ -184,6 +195,18 @@ describe("ThreeRenderer", () => {
     const state2 = makeRenderState({ coins: [collected] });
     renderer.render(state2, 0);
     // No error
+  });
+
+  it("syncs power-ups of all types and hides collected ones", () => {
+    const types: PowerUp["type"][] = ["shield", "speed", "magnet", "slow_mo"];
+    const powerUps = types.map((t, i) => makePowerUp(200 + i, 0, t));
+    const state = makeRenderState({ powerUps });
+    expect(() => renderer.render(state, 0)).not.toThrow();
+
+    // Render again with one collected — should hide without error.
+    const collected = powerUps.map((p, i) => (i === 0 ? { ...p, collected: true } : p));
+    const state2 = makeRenderState({ powerUps: collected });
+    expect(() => renderer.render(state2, 0)).not.toThrow();
   });
 
   it("handles player hop animation", () => {

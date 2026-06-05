@@ -12,6 +12,8 @@ import {
   POWERUP_COLLECT_RADIUS,
   POWERUP_MAGNET_RADIUS,
   POWERUP_PARTICLE_COLORS,
+  POWERUP_SPEED_MULTIPLIER,
+  POWERUP_SLOWMO_MULTIPLIER,
 } from "./constants";
 
 // ---------------------------------------------------------------------------
@@ -158,12 +160,21 @@ export function consumeShield(state: GameState): boolean {
   return false;
 }
 
+/**
+ * Hop-duration multiplier for the speed power-up. Returns a value < 1 while
+ * speed is active so hops complete faster (hopDuration * multiplier => shorter
+ * hop). Returns 1 (no change) otherwise.
+ */
 export function getSpeedMultiplier(state: GameState): number {
-  return hasActivePowerUp(state, "speed") ? 1 : 1; // speed modifies hop duration, not speed
+  return hasActivePowerUp(state, "speed") ? POWERUP_SPEED_MULTIPLIER : 1;
 }
 
+/**
+ * Obstacle-speed multiplier for the slow_mo power-up. Returns a value < 1 while
+ * slow_mo is active so obstacles move slower. Returns 1 (no change) otherwise.
+ */
 export function getSlowMoMultiplier(state: GameState): number {
-  return hasActivePowerUp(state, "slow_mo") ? 0.6 : 1;
+  return hasActivePowerUp(state, "slow_mo") ? POWERUP_SLOWMO_MULTIPLIER : 1;
 }
 
 // ---------------------------------------------------------------------------

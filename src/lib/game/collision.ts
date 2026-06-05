@@ -4,7 +4,8 @@
 
 import type { GameState, GameConfig, GameCallbacks, DeathCause } from "./types";
 import { COLLISION_MARGIN, SAFE_START_LANES } from "./constants";
-import { spawnDeathParticles } from "./particles";
+import { spawnDeathParticles, spawnShieldBreakParticles } from "./particles";
+import { consumeShield } from "./power-ups";
 
 // ---------------------------------------------------------------------------
 // Kill player
@@ -79,6 +80,15 @@ export function checkCollisions(
 
       // AABB overlap test
       if (px1 < ox2 && px2 > ox1 && py1 < oy2 && py2 > oy1) {
+        // Shield absorbs one otherwise-fatal vehicle/train hit. Consume it and
+        // survive instead of dying; fire the expire callback so feedback/HUD
+        // clear, then keep scanning (another lethal obstacle this same tick
+        // would still kill, which is fair — the shield only soaks one impact).
+        if (consumeShield(state)) {
+          spawnShieldBreakParticles(state, config);
+          callbacks.onPowerUpExpire?.("shield");
+          continue;
+        }
         const cause: DeathCause = obs.type === "train" ? "train" : "vehicle";
         killPlayer(state, cause, config, callbacks);
         return;
