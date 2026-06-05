@@ -9,6 +9,7 @@ import type {
   Player,
   Lane,
   Coin,
+  PowerUp,
   Direction,
   InputAction,
 } from "./types";
@@ -141,10 +142,11 @@ export function createInitialState(
 
   const nextId = { value: 1 };
   const coins: Coin[] = [];
+  const powerUps: PowerUp[] = [];
 
   // Generate procedural lanes ahead (negative y direction)
   const targetY = -generateAhead;
-  const generated = generateLanes(0, targetY, config, nextId, 0, lanes, coins);
+  const generated = generateLanes(0, targetY, config, nextId, 0, lanes, coins, powerUps);
   lanes.push(...generated);
 
   const player: Player = {
@@ -192,7 +194,7 @@ export function createInitialState(
     coinBonusScore: 0,
     dyingTimer: 0,
     dyingDuration: 0.5,
-    powerUps: [],
+    powerUps,
     activePowerUps: [],
     bossLanesUsed: [],
     inBossSection: false,
@@ -268,9 +270,12 @@ export function resetForNewGame(
   const { cellSize, gridColumns, generateAhead } = config;
   const startY = SAFE_START_LANES - 1;
 
-  // Clear lanes and coins, regenerate
+  // Clear lanes, coins, and power-ups, then regenerate. Power-ups are cleared
+  // here (not only in the state-reset block below) so generateLanes can
+  // repopulate the initial buffer's grass lanes for the new run.
   state.lanes.length = 0;
   state.coins.length = 0;
+  state.powerUps.length = 0;
   for (let y = 0; y < SAFE_START_LANES; y++) {
     const lane: Lane = {
       y,
@@ -287,7 +292,16 @@ export function resetForNewGame(
 
   const nextId = { value: 1 };
   const targetY = -generateAhead;
-  const generated = generateLanes(0, targetY, config, nextId, 0, state.lanes, state.coins);
+  const generated = generateLanes(
+    0,
+    targetY,
+    config,
+    nextId,
+    0,
+    state.lanes,
+    state.coins,
+    state.powerUps,
+  );
   state.lanes.push(...generated);
 
   // Reset player
@@ -325,7 +339,7 @@ export function resetForNewGame(
   state.coinsCollected = 0;
   state.coinBonusScore = 0;
   state.dyingTimer = 0;
-  state.powerUps = [];
+  // state.powerUps was cleared and repopulated above (before generateLanes).
   state.activePowerUps = [];
   state.bossLanesUsed = [];
   state.inBossSection = false;

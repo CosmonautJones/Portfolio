@@ -139,11 +139,18 @@ export const DECORATION_CHANCE = 0.7;
 export const DECORATIONS_PER_LANE = { min: 2, max: 5 };
 
 // Power-up system
+// Per-grass-lane, per-type spawn roll. spawnPowerUpsForLane rolls each type in
+// order and stops at the first hit (max one power-up per lane), so the combined
+// probability that ANY power-up spawns on a grass lane is
+//   1 - (1-shield)(1-speed)(1-magnet)(1-slow_mo) ≈ 0.151 (~1 per 6.6 grass lanes).
+// Tuned up from the original ~0.106 so power-ups are reliably encounterable in a
+// typical run while staying special. Mix kept sensible: speed most common,
+// slow_mo rarest.
 export const POWERUP_SPAWN_CHANCE: Record<PowerUpType, number> = {
-  shield: 0.02,
-  speed: 0.04,
-  magnet: 0.03,
-  slow_mo: 0.02,
+  shield: 0.035,
+  speed: 0.05,
+  magnet: 0.045,
+  slow_mo: 0.03,
 };
 
 export const POWERUP_DURATION: Record<PowerUpType, number> = {

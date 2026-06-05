@@ -8,6 +8,7 @@ import type {
   Lane,
   LaneType,
   Coin,
+  PowerUp,
   Decoration,
   DecorationType,
 } from "./types";
@@ -123,6 +124,7 @@ export function generateLanes(
   score: number,
   existingLanes: Lane[],
   coins?: Coin[],
+  powerUps?: PowerUp[],
 ): Lane[] {
   const newLanes: Lane[] = [];
 
@@ -199,6 +201,15 @@ export function generateLanes(
       coins.push(...newCoins);
     }
 
+    // Spawn ground power-ups (self-gates on grass + per-type roll). Done here so
+    // initial-state, reset, and runtime generation all populate power-ups
+    // uniformly — previously only the runtime path did, leaving the first ~30
+    // lanes of every run power-up-free.
+    if (powerUps) {
+      const newPowerUps = spawnPowerUpsForLane(lane, config, nextId);
+      if (newPowerUps.length > 0) powerUps.push(...newPowerUps);
+    }
+
     newLanes.push(lane);
   }
 
@@ -226,18 +237,8 @@ export function generateLanesIfNeeded(
     state.score,
     state.lanes,
     state.coins,
+    state.powerUps,
   );
-
-  // Occasionally spawn a ground power-up on freshly-generated grass lanes.
-  // Pushed straight into state.powerUps (no generateLanes signature change) so
-  // all existing callers stay untouched; spawnPowerUpsForLane self-gates on
-  // grass and on the per-type POWERUP_SPAWN_CHANCE roll.
-  for (const lane of newLanes) {
-    const spawned = spawnPowerUpsForLane(lane, config, nextId);
-    if (spawned.length > 0) {
-      state.powerUps.push(...spawned);
-    }
-  }
 
   state.lanes.push(...newLanes);
   state.nextEntityId = nextId.value;

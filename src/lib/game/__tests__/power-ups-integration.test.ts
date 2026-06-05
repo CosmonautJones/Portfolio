@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createInitialState, tick } from "../engine";
+import { createInitialState, tick, resetForNewGame } from "../engine";
 import { updateObstacles } from "../obstacles";
 import { updatePlayer } from "../player";
 import { checkCollisions } from "../collision";
@@ -320,7 +320,7 @@ describe("magnet pulls nearby coins via tick()", () => {
 describe("power-up spawning during lane generation", () => {
   it("populates state.powerUps over many generated grass lanes", () => {
     // Drive generation forward repeatedly; over enough lanes some grass lane
-    // should roll a power-up (total ~11% chance per grass lane).
+    // should roll a power-up (total ~15% chance per grass lane).
     let sawPowerUp = false;
     for (let attempt = 0; attempt < 40 && !sawPowerUp; attempt++) {
       const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
@@ -332,6 +332,48 @@ describe("power-up spawning during lane generation", () => {
       if (state.powerUps.length > 0) sawPowerUp = true;
     }
     expect(sawPowerUp).toBe(true);
+  });
+
+  it("populates power-ups on the INITIAL buffer lanes (createInitialState)", () => {
+    // Regression: previously createInitialState generated its starting lanes via
+    // generateLanes() without a powerUps sink, so the first ~30 lanes of every
+    // run were power-up-free. Across many fresh states, at least one initial
+    // buffer should now contain a power-up (combined ~15% per grass lane over
+    // several grass lanes in the buffer).
+    let sawInitialPowerUp = false;
+    for (let attempt = 0; attempt < 60 && !sawInitialPowerUp; attempt++) {
+      const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+      if (state.powerUps.length > 0) {
+        sawInitialPowerUp = true;
+        // Every initially-spawned power-up must sit on a grass lane.
+        for (const pu of state.powerUps) {
+          const lane = state.lanes.find((l) => l.y === pu.laneY);
+          expect(lane?.type).toBe("grass");
+        }
+      }
+    }
+    expect(sawInitialPowerUp).toBe(true);
+  });
+
+  it("repopulates power-ups on reset (resetForNewGame)", () => {
+    let sawResetPowerUp = false;
+    for (let attempt = 0; attempt < 60 && !sawResetPowerUp; attempt++) {
+      const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+      // Simulate a finished run carrying stale power-ups, then reset.
+      state.powerUps.push({
+        id: 99999,
+        type: "shield",
+        gridX: 6,
+        laneY: 100,
+        worldX: 6 * CELL,
+        collected: false,
+      });
+      resetForNewGame(state, DEFAULT_CONFIG);
+      // Stale power-up from the old run must be gone.
+      expect(state.powerUps.some((p) => p.id === 99999)).toBe(false);
+      if (state.powerUps.length > 0) sawResetPowerUp = true;
+    }
+    expect(sawResetPowerUp).toBe(true);
   });
 
   it("only spawns power-ups whose laneY corresponds to a grass lane", () => {
