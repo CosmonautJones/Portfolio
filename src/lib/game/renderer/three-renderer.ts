@@ -477,8 +477,11 @@ export class ThreeRenderer {
       }
       entry.lastUsedFrame = this.frame;
 
-      // Position: lane.y is a lane index, convert to Three.js Y
-      entry.object.position.set(0, -lane.y * TILE_SIZE, 0);
+      // Position: lane.y is a lane index → Three.js Y. Update ONLY Y so the
+      // per-lane-type X offset (width/2, set in createXLane to span [0,LANE_WIDTH]
+      // and align with obstacles/player) and Z height are preserved — overwriting
+      // the whole vector here shifted lanes half a field-width off the obstacles.
+      entry.object.position.y = -lane.y * TILE_SIZE;
     }
   }
 
