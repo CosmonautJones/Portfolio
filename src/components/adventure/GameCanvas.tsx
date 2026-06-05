@@ -1,7 +1,13 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import type { GamePhase, DeathCause, SkinId } from "@/lib/game/types";
+import type {
+  GamePhase,
+  DeathCause,
+  SkinId,
+  ChallengeProgress,
+} from "@/lib/game/types";
+import type { ChallengeReward } from "@/lib/game/challenges";
 import { saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
 import { getSelectedSkin, setSelectedSkin } from "@/lib/game/skins";
 import { getUnlockedSkinsFromStats } from "@/lib/game/stats";
@@ -23,6 +29,7 @@ interface GameCanvasProps {
   onPhaseChange?: (phase: GamePhase) => void;
   onDeath?: (score: number, deathCause: DeathCause) => void;
   onCoinUpdate?: (coinsCollected: number, coinBonus: number) => void;
+  onChallengeProgress?: (progress: ChallengeProgress[]) => void;
   hasSidebars?: boolean;
 }
 
@@ -31,6 +38,7 @@ export default function GameCanvas({
   onPhaseChange: onPhaseChangeExternal,
   onDeath: onDeathExternal,
   onCoinUpdate: onCoinUpdateExternal,
+  onChallengeProgress: onChallengeProgressExternal,
   hasSidebars = false,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,6 +51,21 @@ export default function GameCanvas({
   awardXPRef.current = awardXP;
   const unlockAchievementRef = useRef(unlockAchievement);
   unlockAchievementRef.current = unlockAchievement;
+
+  // Challenge completion → visitor XP. Fired by the engine on death with the
+  // challenges newly completed this run (already deduped + persisted by
+  // collectChallengeRewards). awardXP dedups again per challenge id via
+  // meta.key, so a daily/weekly challenge can only grant XP once per period.
+  const handleChallengeComplete = useCallback(
+    (rewards: ChallengeReward[]) => {
+      for (const reward of rewards) {
+        const action =
+          reward.period === "weekly" ? "challenge_weekly" : "challenge_daily";
+        awardXPRef.current(action, { key: reward.challenge.id });
+      }
+    },
+    [],
+  );
 
   // Easter egg discovery bridge (uses the shared discovery/XP/achievement path)
   const { discover } = useEasterEgg();
@@ -108,6 +131,8 @@ export default function GameCanvas({
     onPhaseChange: onPhaseChangeExternal,
     onDeath: onDeathExternal,
     onCoinUpdate: onCoinUpdateExternal,
+    onChallengeProgress: onChallengeProgressExternal,
+    onChallengeComplete: handleChallengeComplete,
   });
 
   // Award XP when game starts

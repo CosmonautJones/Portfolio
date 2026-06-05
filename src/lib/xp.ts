@@ -14,6 +14,11 @@ export const XP_AWARDS = {
   toggle_theme:      { xp: 5,   rule: "once_ever" },
   open_terminal:     { xp: 10,  rule: "once_ever" },
   open_hidden_terminal: { xp: 25, rule: "once_ever" },
+  // Daily/weekly challenge completions. Deduped per challenge via meta.key
+  // (the challenge id embeds the UTC date / week-start, so once_ever +
+  // per-id key means "once per that day/week's specific challenge").
+  challenge_daily:   { xp: 15,  rule: "once_ever" },
+  challenge_weekly:  { xp: 50,  rule: "once_ever" },
 } as const;
 
 export type XPAction = keyof typeof XP_AWARDS;

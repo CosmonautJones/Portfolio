@@ -8,6 +8,7 @@ import type {
   GameCallbacks,
   Coin,
   CoinType,
+  ChallengeProgress,
 } from "@/lib/game/types";
 import type { LeaderboardEntry } from "@/lib/types";
 import type { GameRenderer } from "@/lib/game/renderer";
@@ -33,6 +34,13 @@ import {
   getUserAchievements,
 } from "@/actions/game-scores";
 import { AchievementTracker } from "@/lib/game/achievement-tracker";
+import {
+  ChallengeTracker,
+  getDailyChallenges,
+  getWeeklyChallenges,
+  collectChallengeRewards,
+  type ChallengeReward,
+} from "@/lib/game/challenges";
 import { GhostRuntime } from "@/lib/game/ghost-runtime";
 import { incrementTotalDeaths, addDiamonds } from "@/lib/game/stats";
 import { ACHIEVEMENT_MAP } from "@/lib/game/achievements";
@@ -75,6 +83,10 @@ interface UseGameEngineProps {
   onPhaseChange?: (phase: GamePhase) => void;
   onDeath?: (score: number, deathCause: DeathCause) => void;
   onCoinUpdate?: (coinsCollected: number, coinBonus: number) => void;
+  /** Fired whenever live challenge progress changes (during a run). */
+  onChallengeProgress?: (progress: ChallengeProgress[]) => void;
+  /** Fired on death with the challenges newly completed this run (deduped + persisted). */
+  onChallengeComplete?: (rewards: ChallengeReward[]) => void;
 }
 
 export function useGameEngine({
@@ -86,6 +98,8 @@ export function useGameEngine({
   onPhaseChange: onPhaseChangeExternal,
   onDeath: onDeathExternal,
   onCoinUpdate: onCoinUpdateExternal,
+  onChallengeProgress: onChallengeProgressExternal,
+  onChallengeComplete: onChallengeCompleteExternal,
 }: UseGameEngineProps): [GameEngineState, GameEngineControls] {
   const gameStateRef = useRef<GameState | null>(null);
   const [phase, setPhase] = useState<GamePhase>("menu");
@@ -110,6 +124,7 @@ export function useGameEngine({
   const screenShakeRef = useRef(createScreenShake());
   const comboRef = useRef(createComboState());
   const achievementTrackerRef = useRef<AchievementTracker | null>(null);
+  const challengeTrackerRef = useRef<ChallengeTracker | null>(null);
   const ghostRuntimeRef = useRef<GhostRuntime | null>(null);
   const achievementPopupKeyRef = useRef(0);
 
@@ -122,6 +137,10 @@ export function useGameEngine({
   onDeathExternalRef.current = onDeathExternal;
   const onCoinUpdateExternalRef = useRef(onCoinUpdateExternal);
   onCoinUpdateExternalRef.current = onCoinUpdateExternal;
+  const onChallengeProgressExternalRef = useRef(onChallengeProgressExternal);
+  onChallengeProgressExternalRef.current = onChallengeProgressExternal;
+  const onChallengeCompleteExternalRef = useRef(onChallengeCompleteExternal);
+  onChallengeCompleteExternalRef.current = onChallengeCompleteExternal;
 
   const showAchievementPopup = useCallback(
     (achievementId: string) => {
@@ -150,6 +169,14 @@ export function useGameEngine({
     [showAchievementPopup],
   );
 
+  // Push the tracker's current challenge progress out to the UI. Called after
+  // any progress-changing callback. The external handler defers via microtask,
+  // so calling it synchronously from engine callbacks is safe.
+  const emitChallengeProgress = useCallback(() => {
+    const t = challengeTrackerRef.current;
+    if (t) onChallengeProgressExternalRef.current?.(t.getAllProgress());
+  }, []);
+
   const toggleMute = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -171,6 +198,14 @@ export function useGameEngine({
     const deathHistory = AchievementTracker.loadDeathHistory();
     const tracker = new AchievementTracker([], deathHistory);
     achievementTrackerRef.current = tracker;
+
+    // Initialize challenge tracker with today's daily + this week's weekly
+    // challenges. The tracker holds run progress; completion XP is awarded on
+    // death (collectChallengeRewards) and deduped via localStorage so a given
+    // day/week challenge only ever rewards once.
+    const activeChallenges = [...getDailyChallenges(), ...getWeeklyChallenges()];
+    challengeTrackerRef.current = new ChallengeTracker(activeChallenges);
+    emitChallengeProgress();
 
     // Fetch unlocked achievements from server
     getUserAchievements()
@@ -251,6 +286,13 @@ export function useGameEngine({
           const unlocks = t.onScoreChange(newScore);
           if (unlocks.length > 0) processUnlocks(unlocks);
         }
+
+        // Drive score-based + restriction challenges off the same score signal.
+        const ct = challengeTrackerRef.current;
+        if (ct) {
+          ct.onScoreChange(newScore);
+          emitChallengeProgress();
+        }
       },
       onPhaseChange: (newPhase) => {
         setPhase(newPhase);
@@ -269,6 +311,12 @@ export function useGameEngine({
           const current = gameStateRef.current;
           if (t && current) {
             t.resetForNewGame(current.highScore);
+          }
+          // Reset challenge run progress (keeps completed-this-session ones).
+          const ct = challengeTrackerRef.current;
+          if (ct) {
+            ct.resetForNewRun();
+            emitChallengeProgress();
           }
           // Arm the ghost: reset the recorder and rewind the replayer so a fresh
           // run records from tick 0 and the ghost replays from its start. Fires
@@ -330,6 +378,25 @@ export function useGameEngine({
           AchievementTracker.saveDeathHistory(t.getDeathCausesSeen());
         }
 
+        // Challenge completion + reward on death. Record the death cause first
+        // (flags no_water_death violations), then collect every challenge that
+        // is completed AND not violated AND not already persisted today/this
+        // week. collectChallengeRewards persists each (localStorage dedup) so
+        // it can never re-award the same day/week or twice in a session.
+        const ct = challengeTrackerRef.current;
+        if (ct) {
+          ct.onDeath(cause);
+          const rewards = collectChallengeRewards(
+            ct.getChallenges(),
+            ct.getAllProgress(),
+            finalScore,
+          );
+          emitChallengeProgress();
+          if (rewards.length > 0) {
+            onChallengeCompleteExternalRef.current?.(rewards);
+          }
+        }
+
         // Persist this run as the new best ghost iff it beats the stored one.
         // finalScore here is the same distance+coins total the leaderboard ranks
         // on, so shouldUpdateGhost and the in-run markBeaten share ONE score
@@ -367,6 +434,13 @@ export function useGameEngine({
           if (t) {
             const unlocks = t.onCoinCollect(coin.type, next, gs?.score ?? 0);
             if (unlocks.length > 0) processUnlocks(unlocks);
+          }
+
+          // Drive collection challenges + no_coins restriction violations.
+          const ct = challengeTrackerRef.current;
+          if (ct) {
+            ct.onCoinCollect(coin.type);
+            emitChallengeProgress();
           }
           return next;
         });
@@ -430,6 +504,13 @@ export function useGameEngine({
           const unlocks = t.onLevelUp(newLevel, gameStateRef.current?.score ?? 0);
           if (unlocks.length > 0) processUnlocks(unlocks);
         }
+
+        // Drive survival/level challenges.
+        const ct = challengeTrackerRef.current;
+        if (ct) {
+          ct.onLevelUp(newLevel);
+          emitChallengeProgress();
+        }
       },
     };
 
@@ -463,6 +544,10 @@ export function useGameEngine({
     // Game loop
     let rafId = 0;
     let lastTime = 0;
+    // Throttle survival-challenge updates to once per wall-clock second so the
+    // UI isn't re-pushed every animation frame (the tracker measures whole
+    // seconds anyway).
+    let lastChallengeSecond = -1;
 
     const loop = (time: number) => {
       const dt = lastTime === 0 ? 0 : (time - lastTime) / 1000;
@@ -481,6 +566,19 @@ export function useGameEngine({
         // reads player gridPos and writes only state.ghostPos (never gameplay).
         if (gameStateRef.current.phase === "playing") {
           ghostRuntimeRef.current?.recordAndAdvance(gameStateRef.current);
+
+          // Survival-time challenges advance on the wall clock. Tick the
+          // challenge tracker at most once per second to drive targetSeconds
+          // progress and surface it live without per-frame churn.
+          const nowSecond = Math.floor(time / 1000);
+          if (nowSecond !== lastChallengeSecond) {
+            lastChallengeSecond = nowSecond;
+            const ct = challengeTrackerRef.current;
+            if (ct) {
+              ct.onTick();
+              emitChallengeProgress();
+            }
+          }
         }
 
         const nowRiding = gameStateRef.current.player.ridingLogId;
@@ -534,7 +632,7 @@ export function useGameEngine({
     };
   // inputRef intentionally excluded — it's a stable ref and including it
   // would restart the entire game loop (audio, state, RAF) on ref changes
-  }, [canvasRef, rendererRef, threeRendererRef, processUnlocks]);
+  }, [canvasRef, rendererRef, threeRendererRef, processUnlocks, emitChallengeProgress]);
 
   const engineState: GameEngineState = {
     phase,

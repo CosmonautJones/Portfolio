@@ -8,8 +8,9 @@ import {
   loadCompletions,
   saveCompletion,
   isChallengeCompleted,
+  collectChallengeRewards,
 } from "../challenges";
-import type { Challenge } from "../types";
+import type { Challenge, ChallengeProgress } from "../types";
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -389,5 +390,123 @@ describe("Challenge completion persistence", () => {
   it("returns empty array for invalid JSON", () => {
     localStorageMock.getItem.mockReturnValueOnce("bad json");
     expect(loadCompletions()).toEqual([]);
+  });
+});
+
+describe("collectChallengeRewards", () => {
+  const dailyChallenge: Challenge = {
+    id: "daily_2026-03-31_0",
+    type: "score_target",
+    params: { targetScore: 50 },
+    description: "Reach a score of 50",
+    xpReward: 15,
+    period: "daily",
+  };
+  const weeklyChallenge: Challenge = {
+    id: "weekly_2026-03-30_0",
+    type: "score_target",
+    params: { targetScore: 150 },
+    description: "Reach a score of 150",
+    xpReward: 50,
+    period: "weekly",
+  };
+
+  const completedProgress = (id: string, violated = false): ChallengeProgress => ({
+    challengeId: id,
+    current: 999,
+    target: 50,
+    completed: true,
+    violated,
+  });
+
+  beforeEach(() => {
+    localStorageMock.clear();
+    vi.clearAllMocks();
+  });
+
+  it("returns rewards for completed, non-violated challenges", () => {
+    const rewards = collectChallengeRewards(
+      [dailyChallenge, weeklyChallenge],
+      [completedProgress(dailyChallenge.id), completedProgress(weeklyChallenge.id)],
+      120,
+    );
+    expect(rewards).toHaveLength(2);
+    expect(rewards.map((r) => r.challenge.id)).toEqual([
+      dailyChallenge.id,
+      weeklyChallenge.id,
+    ]);
+    expect(rewards[0].xpReward).toBe(15);
+    expect(rewards[0].period).toBe("daily");
+    expect(rewards[1].xpReward).toBe(50);
+    expect(rewards[1].period).toBe("weekly");
+  });
+
+  it("excludes incomplete challenges", () => {
+    const rewards = collectChallengeRewards(
+      [dailyChallenge],
+      [{ challengeId: dailyChallenge.id, current: 10, target: 50, completed: false }],
+      10,
+    );
+    expect(rewards).toHaveLength(0);
+  });
+
+  it("excludes completed-but-violated challenges (restriction)", () => {
+    const rewards = collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress(dailyChallenge.id, true)],
+      80,
+    );
+    expect(rewards).toHaveLength(0);
+  });
+
+  it("persists completion so it cannot be re-awarded the same day/week", () => {
+    const first = collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress(dailyChallenge.id)],
+      80,
+    );
+    expect(first).toHaveLength(1);
+    expect(isChallengeCompleted(dailyChallenge.id)).toBe(true);
+
+    // Second run, same challenge already persisted → no reward.
+    const second = collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress(dailyChallenge.id)],
+      90,
+    );
+    expect(second).toHaveLength(0);
+  });
+
+  it("does not award a challenge that was already persisted before the run", () => {
+    saveCompletion({
+      challengeId: dailyChallenge.id,
+      completedAt: "2026-03-31T00:00:00Z",
+      runScore: 60,
+    });
+    const rewards = collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress(dailyChallenge.id)],
+      80,
+    );
+    expect(rewards).toHaveLength(0);
+  });
+
+  it("ignores progress entries with no matching challenge", () => {
+    const rewards = collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress("orphan_id")],
+      80,
+    );
+    expect(rewards).toHaveLength(0);
+  });
+
+  it("records the run score in the persisted completion", () => {
+    collectChallengeRewards(
+      [dailyChallenge],
+      [completedProgress(dailyChallenge.id)],
+      137,
+    );
+    const stored = loadCompletions().find((c) => c.challengeId === dailyChallenge.id);
+    expect(stored?.runScore).toBe(137);
   });
 });

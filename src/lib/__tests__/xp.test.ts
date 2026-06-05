@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getLevelForXP, getNextLevelXP, getLevelProgress, LEVELS } from "../xp";
+import { getLevelForXP, getNextLevelXP, getLevelProgress, LEVELS, XP_AWARDS } from "../xp";
 
 describe("getLevelForXP", () => {
   it("returns level 1 for 0 XP", () => {
@@ -58,5 +58,17 @@ describe("getLevelProgress", () => {
 
   it("returns percentage within level", () => {
     expect(getLevelProgress(25)).toBe(50);
+  });
+});
+
+describe("challenge XP awards", () => {
+  it("defines daily and weekly challenge XP keys matching the challenge rewards", () => {
+    expect(XP_AWARDS.challenge_daily.xp).toBe(15);
+    expect(XP_AWARDS.challenge_weekly.xp).toBe(50);
+  });
+
+  it("uses once_ever dedup for challenge keys (deduped per challenge via meta.key)", () => {
+    expect(XP_AWARDS.challenge_daily.rule).toBe("once_ever");
+    expect(XP_AWARDS.challenge_weekly.rule).toBe("once_ever");
   });
 });

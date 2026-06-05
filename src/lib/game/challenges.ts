@@ -389,6 +389,11 @@ export class ChallengeTracker {
     return Array.from(this.progresses.values());
   }
 
+  /** Get the active challenge definitions this tracker is tracking */
+  getChallenges(): Challenge[] {
+    return this.challenges;
+  }
+
   /** Get completed challenge IDs from this session */
   getCompletedIds(): string[] {
     return Array.from(this.progresses.values())
@@ -434,4 +439,59 @@ export function saveCompletion(completion: StoredCompletion): void {
 /** Check if a challenge has already been completed */
 export function isChallengeCompleted(challengeId: string): boolean {
   return loadCompletions().some((c) => c.challengeId === challengeId);
+}
+
+// --- Reward Collection (death-time) ---
+
+export interface ChallengeReward {
+  /** The completed challenge */
+  challenge: Challenge;
+  /** XP to award for this completion */
+  xpReward: number;
+  /** Daily or weekly — selects the XP award key */
+  period: ChallengePeriod;
+}
+
+/**
+ * Given the active challenges and this run's progress, return the rewards that
+ * should be granted on death. A challenge qualifies iff its progress is marked
+ * `completed`, was NOT `violated`, and has not already been persisted as
+ * completed (localStorage dedup, keyed by challenge id which embeds the
+ * UTC date / week-start → naturally once-per-day / once-per-week).
+ *
+ * As a side effect, each qualifying completion is persisted via
+ * `saveCompletion` so it cannot be re-awarded on a later run the same
+ * day/week. Persistence is idempotent (saveCompletion ignores duplicates).
+ */
+export function collectChallengeRewards(
+  challenges: Challenge[],
+  progress: ChallengeProgress[],
+  runScore: number,
+  now: Date = new Date(),
+): ChallengeReward[] {
+  const byId = new Map(challenges.map((c) => [c.id, c]));
+  const completedAt = now.toISOString();
+  const rewards: ChallengeReward[] = [];
+
+  for (const p of progress) {
+    if (!p.completed || p.violated) continue;
+    const challenge = byId.get(p.challengeId);
+    if (!challenge) continue;
+    // Already rewarded today/this week — skip (cross-session dedup).
+    if (isChallengeCompleted(challenge.id)) continue;
+
+    saveCompletion({
+      challengeId: challenge.id,
+      completedAt,
+      runScore,
+    });
+
+    rewards.push({
+      challenge,
+      xpReward: challenge.xpReward,
+      period: challenge.period,
+    });
+  }
+
+  return rewards;
 }

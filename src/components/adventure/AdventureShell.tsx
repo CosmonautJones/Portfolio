@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import type { GamePhase } from "@/lib/game/types";
+import type { GamePhase, ChallengeProgress } from "@/lib/game/types";
 import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard";
 import { LeaderboardPanel } from "./LeaderboardPanel";
 import { StatsPanel } from "./StatsPanel";
@@ -21,6 +21,7 @@ export function AdventureShell() {
   const [coinsCollected, setCoinsCollected] = useState(0);
   const [coinBonus, setCoinBonus] = useState(0);
   const [playStartTime, setPlayStartTime] = useState<number | null>(null);
+  const [challengeProgress, setChallengeProgress] = useState<ChallengeProgress[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [, setTick] = useState(0); // force re-render for timer
 
@@ -67,6 +68,13 @@ export function AdventureShell() {
     refresh();
   }, [refresh]);
 
+  const handleChallengeProgress = useCallback((progress: ChallengeProgress[]) => {
+    // Fired from the engine's RAF loop / tick callbacks (mid-render of the
+    // GameCanvas child); defer to a microtask for the same reason as the score
+    // and phase handlers above.
+    queueMicrotask(() => setChallengeProgress(progress));
+  }, []);
+
   const handleCoinUpdate = useCallback((coins: number, bonus: number) => {
     // Deferred for the same reason as handleScoreUpdate/handlePhaseChange: this
     // fires from the engine's onCoinCollect callback (inside a child state
@@ -110,6 +118,7 @@ export function AdventureShell() {
           onPhaseChange={handlePhaseChange}
           onDeath={handleDeath}
           onCoinUpdate={handleCoinUpdate}
+          onChallengeProgress={handleChallengeProgress}
           hasSidebars
         />
       </div>
@@ -129,7 +138,7 @@ export function AdventureShell() {
           lastUpdated={lastUpdated}
         />
         <RecentScoresPanel refreshKey={deathCount} />
-        <ChallengePanel refreshKey={deathCount} />
+        <ChallengePanel liveProgress={challengeProgress} refreshKey={deathCount} />
         <GameInfoPanel />
       </div>
     </div>
