@@ -13,6 +13,8 @@ import { DEFAULT_CONFIG, FOG_VISIBLE_LANES } from "../constants";
 import { ISO_TILT } from "../scene/camera-projection";
 import {
   createPlayer,
+  createGhost,
+  disposeGhost,
   createCar,
   createTruck,
   createTrain,
@@ -115,6 +117,8 @@ export class ThreeRenderer {
   private lanePool = new Map<number, PooledObject>();
   private obstaclePool = new Map<number, PooledObject>();
   private playerMesh: THREE.Group;
+  /** Lazily-created translucent ghost mesh (best-run replay). Cosmetic only. */
+  private ghostMesh: THREE.Group | null = null;
   private coinPool = new Map<number, PooledObject>();
   private powerUpPool = new Map<number, PooledObject>();
   private treePool = new Map<string, PooledObject>();
@@ -238,6 +242,9 @@ export class ThreeRenderer {
     // ---- Player ----
     this.syncPlayer(state);
 
+    // ---- Ghost (translucent best-run replay) ----
+    this.syncGhost(state);
+
     // ---- Lanes ----
     this.syncLanes(state);
 
@@ -329,6 +336,12 @@ export class ThreeRenderer {
 
     // Remove all objects from scene
     this.playerMesh.removeFromParent();
+    if (this.ghostMesh) {
+      this.ghostMesh.removeFromParent();
+      // Ghost owns per-instance (non-cached) materials — dispose them.
+      disposeGhost(this.ghostMesh);
+      this.ghostMesh = null;
+    }
     for (const entry of this.lanePool.values()) {
       entry.object.removeFromParent();
     }
@@ -403,6 +416,41 @@ export class ThreeRenderer {
     }
 
     this.playerMesh.visible = true;
+  }
+
+  /**
+   * Position the translucent ghost mesh from scene.ghost (grid coords). Uses the
+   * SAME world conventions as syncPlayer so the ghost tracks correctly against
+   * the live player and the (interpolated) camera. Lazily creates a single mesh
+   * on first use and hides it when there is no ghost. Cosmetic only.
+   */
+  private syncGhost(state: RenderScene): void {
+    const { ghost } = state;
+    if (!ghost) {
+      if (this.ghostMesh) this.ghostMesh.visible = false;
+      return;
+    }
+
+    if (!this.ghostMesh) {
+      this.ghostMesh = createGhost();
+      this.scene.add(this.ghostMesh);
+    }
+    const mesh = this.ghostMesh;
+    mesh.visible = true;
+
+    // Grid → world: gridX*CELL_SIZE then PX_TO_WORLD, centered on the tile like
+    // the player; gridY maps to -laneY*TILE_SIZE.
+    const worldX = ghost.x * CELL_SIZE * PX_TO_WORLD;
+    const worldY = -ghost.y * CELL_SIZE * PX_TO_WORLD;
+    mesh.position.set(worldX + TILE_SIZE / 2, worldY, 0);
+
+    const rotationMap: Record<string, number> = {
+      up: 0,
+      down: Math.PI,
+      left: Math.PI / 2,
+      right: -Math.PI / 2,
+    };
+    mesh.rotation.z = rotationMap[ghost.dir] ?? 0;
   }
 
   private syncLanes(state: RenderScene): void {

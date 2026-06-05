@@ -185,6 +185,45 @@ export function createPlayer(): THREE.Group {
 }
 
 /**
+ * Ghost lobster — the player model rendered translucent for the best-run
+ * replay. Reuses createPlayer()'s geometry/layout, then swaps each mesh's
+ * shared material for a transparent, blue-tinted clone so the shared material
+ * cache is never mutated. Cosmetic only.
+ *
+ * The returned group OWNS its (non-cached) materials; ThreeRenderer disposes
+ * them via disposeGhost() on teardown.
+ */
+export function createGhost(): THREE.Group {
+  const group = createPlayer();
+  const ghostTint = new THREE.Color(0x7fc6ff);
+  for (const child of group.children) {
+    const mesh = child as THREE.Mesh;
+    const base = mesh.material as THREE.MeshLambertMaterial;
+    const ghostMat = base.clone();
+    ghostMat.transparent = true;
+    ghostMat.opacity = 0.35;
+    ghostMat.depthWrite = false;
+    // Lerp the body/claw colors toward a cyan "past self" tint.
+    ghostMat.color.lerp(ghostTint, 0.6);
+    mesh.material = ghostMat;
+  }
+  return group;
+}
+
+/** Dispose the per-instance (non-cached) materials owned by a ghost group. */
+export function disposeGhost(group: THREE.Group): void {
+  for (const child of group.children) {
+    const mesh = child as THREE.Mesh;
+    const mat = mesh.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) m.dispose();
+    } else if (mat) {
+      mat.dispose();
+    }
+  }
+}
+
+/**
  * Car — body + cabin + wheels + bumpers.
  * @param color - Body color hex string
  */

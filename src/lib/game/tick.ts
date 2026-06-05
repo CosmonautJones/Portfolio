@@ -211,6 +211,8 @@ export function createInitialState(
     weather: { type: "clear", intensity: 0, windDirection: 1 },
     windDriftAccumulator: 0,
     rainSlideApplied: false,
+    ghostTick: 0,
+    ghostPos: null,
   };
 }
 
@@ -367,6 +369,10 @@ export function resetForNewGame(
   state.weather = { type: "clear", intensity: 0, windDirection: 1 };
   state.windDriftAccumulator = 0;
   state.rainSlideApplied = false;
+  // Ghost replay cadence resets with the run; the ghost runtime (held in the
+  // React hook) re-arms recorder/replayer on the playing phase transition.
+  state.ghostTick = 0;
+  state.ghostPos = null;
 
   if (callbacks) {
     callbacks.onPhaseChange("playing");

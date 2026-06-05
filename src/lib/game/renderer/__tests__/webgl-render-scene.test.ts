@@ -20,6 +20,7 @@ function sceneStub(shake = { x: 0, y: 0 }): RenderScene {
     deathProgress: 0,
     deathPosition: null,
     shake,
+    ghost: null,
   };
 }
 

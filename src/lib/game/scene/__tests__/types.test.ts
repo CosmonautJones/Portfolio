@@ -20,6 +20,7 @@ describe("RenderScene", () => {
       deathProgress: 0,
       deathPosition: null,
       shake: { x: 0, y: 0 },
+      ghost: null,
     };
     expect(scene.camera.viewportHeight).toBe(640);
     expect(scene.shake.x).toBe(0);

@@ -86,6 +86,30 @@ describe("buildScene", () => {
     });
   });
 
+  it("surfaces state.ghostPos as scene.ghost while playing", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.phase = "playing";
+    state.ghostPos = { x: 6, y: -2, dir: "left" };
+    const scene = buildScene(state);
+    expect(scene.ghost).toEqual({ x: 6, y: -2, dir: "left" });
+  });
+
+  it("returns null ghost when there is no stored ghost (ghostPos null)", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.phase = "playing";
+    state.ghostPos = null;
+    expect(buildScene(state).ghost).toBeNull();
+  });
+
+  it("returns null ghost when not playing (no demo ghost on menu/game_over)", () => {
+    const state = createInitialState(DEFAULT_CONFIG, 640);
+    state.ghostPos = { x: 6, y: -2, dir: "up" };
+    state.phase = "menu";
+    expect(buildScene(state).ghost).toBeNull();
+    state.phase = "game_over";
+    expect(buildScene(state).ghost).toBeNull();
+  });
+
   it("defaults shake to zero when omitted", () => {
     const state = createInitialState(DEFAULT_CONFIG, 640);
     const scene = buildScene(state);

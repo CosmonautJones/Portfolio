@@ -55,6 +55,8 @@ function createMockState(overrides: Partial<GameState> = {}): GameState {
     weather: createWeather(),
     windDriftAccumulator: 0,
     rainSlideApplied: false,
+    ghostTick: 0,
+    ghostPos: null,
     ...overrides,
   };
 }

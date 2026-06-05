@@ -60,5 +60,9 @@ export function buildScene(
     deathProgress,
     deathPosition,
     shake: opts.shake ?? { x: 0, y: 0 },
+    // Surface the ghost only while actively playing — no demo ghost on the
+    // menu/game-over screens. state.ghostPos is already null when there is no
+    // stored ghost or it has been beaten.
+    ghost: state.phase === "playing" ? state.ghostPos : null,
   };
 }

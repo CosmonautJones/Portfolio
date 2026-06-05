@@ -80,6 +80,8 @@ function createMockState(
     weather: { type: "clear", intensity: 0, windDirection: 1 },
     windDriftAccumulator: 0,
     rainSlideApplied: false,
+    ghostTick: 0,
+    ghostPos: null,
   };
 }
 

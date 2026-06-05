@@ -33,6 +33,7 @@ import {
   getUserAchievements,
 } from "@/actions/game-scores";
 import { AchievementTracker } from "@/lib/game/achievement-tracker";
+import { GhostRuntime } from "@/lib/game/ghost-runtime";
 import { ACHIEVEMENT_MAP } from "@/lib/game/achievements";
 import type { AchievementPopup } from "@/components/adventure/game-helpers";
 
@@ -108,6 +109,7 @@ export function useGameEngine({
   const screenShakeRef = useRef(createScreenShake());
   const comboRef = useRef(createComboState());
   const achievementTrackerRef = useRef<AchievementTracker | null>(null);
+  const ghostRuntimeRef = useRef<GhostRuntime | null>(null);
   const achievementPopupKeyRef = useRef(0);
 
   // Stable refs for external callbacks
@@ -187,6 +189,13 @@ export function useGameEngine({
     const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
     gameStateRef.current = state;
 
+    // Ghost runtime — loads the best previous run from localStorage so the next
+    // round can replay a translucent ghost racing alongside the player. Gracefully
+    // no-ops (no ghost drawn) when nothing is stored (first-ever play).
+    const ghostRuntime = new GhostRuntime();
+    ghostRuntime.loadFromStorage();
+    ghostRuntimeRef.current = ghostRuntime;
+
     // Load high score from localStorage
     try {
       const saved = localStorage.getItem("adventure_high_score");
@@ -260,6 +269,10 @@ export function useGameEngine({
           if (t && current) {
             t.resetForNewGame(current.highScore);
           }
+          // Arm the ghost: reset the recorder and rewind the replayer so a fresh
+          // run records from tick 0 and the ghost replays from its start. Fires
+          // for both first-play and game_over→restart (the single arm point).
+          if (current) ghostRuntimeRef.current?.armForNewRun(current);
           rendererRef.current?.resetState();
         }
       },
@@ -313,6 +326,12 @@ export function useGameEngine({
           }
           AchievementTracker.saveDeathHistory(t.getDeathCausesSeen());
         }
+
+        // Persist this run as the new best ghost iff it beats the stored one.
+        // finalScore here is the same distance+coins total the leaderboard ranks
+        // on, so shouldUpdateGhost and the in-run markBeaten share ONE score
+        // definition (the ghost never vanishes at the wrong moment).
+        ghostRuntimeRef.current?.persistIfBest(finalScore);
 
         const gs = gameStateRef.current;
         submitScore(
@@ -449,6 +468,14 @@ export function useGameEngine({
       if (gameStateRef.current && (r || threeRendererRef?.current)) {
         const prevRiding = gameStateRef.current.player.ridingLogId;
         tick(gameStateRef.current, cappedDt, DEFAULT_CONFIG, callbacks);
+
+        // Ghost record + replay: drive once per rendered frame while playing.
+        // Recording cadence and replay cadence share this single call site, so
+        // the replayed ghost lines up with the live player. Cosmetic only — it
+        // reads player gridPos and writes only state.ghostPos (never gameplay).
+        if (gameStateRef.current.phase === "playing") {
+          ghostRuntimeRef.current?.recordAndAdvance(gameStateRef.current);
+        }
 
         const nowRiding = gameStateRef.current.player.ridingLogId;
         if (nowRiding !== null && prevRiding === null) {

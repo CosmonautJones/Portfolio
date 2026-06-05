@@ -225,6 +225,7 @@ export class GameRenderer {
       deathProgress: 0,
       deathPosition: null,
       shake: { x: 0, y: 0 },
+      ghost: null,
     };
     this.postPipeline.composite(this.gl, postState, this.resources);
   }
@@ -250,6 +251,7 @@ export class GameRenderer {
         deathProgress: 0,
         deathPosition: null,
         shake: { x: 0, y: 0 },
+        ghost: null,
       };
       bgPass.execute(this.gl, state, this.resources);
     }

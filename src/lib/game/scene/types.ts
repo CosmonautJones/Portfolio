@@ -1,5 +1,5 @@
 // src/lib/game/scene/types.ts
-import type { GameState, Particle } from "../types";
+import type { Direction, GameState, Particle } from "../types";
 
 /**
  * Render-agnostic scene description. The single contract both renderers
@@ -25,4 +25,12 @@ export interface RenderScene {
   deathPosition: { x: number; y: number } | null;
   /** Screen-space camera shake offset, in CSS pixels */
   shake: { x: number; y: number };
+  /**
+   * Translucent "ghost" of the player's best previous run at the current run
+   * progress, in grid coordinates. Renderers convert to their own space and
+   * draw a semi-transparent player at this position. Null when no ghost exists,
+   * it has been beaten, or we are not playing — purely cosmetic, never affects
+   * gameplay.
+   */
+  ghost: { x: number; y: number; dir: Direction } | null;
 }

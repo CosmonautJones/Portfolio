@@ -2,6 +2,8 @@ import { describe, it, expect, afterEach } from "vitest";
 import * as THREE from "three";
 import {
   createPlayer,
+  createGhost,
+  disposeGhost,
   createCar,
   createTruck,
   createTrain,
@@ -41,6 +43,39 @@ describe("createPlayer", () => {
     for (const child of player.children) {
       expect(child).toBeInstanceOf(THREE.Mesh);
     }
+  });
+});
+
+describe("createGhost", () => {
+  it("returns a player-shaped group", () => {
+    const ghost = createGhost();
+    expect(ghost).toBeInstanceOf(THREE.Group);
+    expect(ghost.children.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("uses transparent, low-opacity materials on every mesh", () => {
+    const ghost = createGhost();
+    for (const child of ghost.children) {
+      const mat = (child as THREE.Mesh).material as THREE.MeshLambertMaterial;
+      expect(mat.transparent).toBe(true);
+      expect(mat.opacity).toBeLessThan(1);
+      expect(mat.depthWrite).toBe(false);
+    }
+  });
+
+  it("does not mutate the shared player materials (uses cloned instances)", () => {
+    const player = createPlayer();
+    const ghost = createGhost();
+    const playerBody = (player.children[0] as THREE.Mesh).material;
+    const ghostBody = (ghost.children[0] as THREE.Mesh).material;
+    // Player body material stays opaque; ghost owns a distinct material.
+    expect(ghostBody).not.toBe(playerBody);
+    expect((playerBody as THREE.MeshLambertMaterial).transparent).toBe(false);
+  });
+
+  it("disposeGhost disposes its per-instance materials without error", () => {
+    const ghost = createGhost();
+    expect(() => disposeGhost(ghost)).not.toThrow();
   });
 });
 

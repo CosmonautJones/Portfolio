@@ -199,6 +199,17 @@ export interface GameState {
   windDriftAccumulator: number;
   /** Accumulated rain slide offset (applied once after hop) */
   rainSlideApplied: boolean;
+  /**
+   * Number of recorded playing ticks for the current run — the cadence that
+   * keeps ghost recording and replay aligned. Reset to 0 at the start of a run.
+   */
+  ghostTick: number;
+  /**
+   * The replayed ghost's grid position for the current tick (cosmetic overlay
+   * of the player's best previous run). Null when there is no stored ghost,
+   * the ghost has been beaten, or we are not actively playing.
+   */
+  ghostPos: { x: number; y: number; dir: Direction } | null;
 }
 
 export interface GameCallbacks {

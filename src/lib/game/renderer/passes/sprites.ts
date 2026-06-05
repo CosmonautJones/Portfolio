@@ -77,6 +77,9 @@ export class SpritesPass implements RenderPass {
     // --- Render ground power-ups ---
     this.renderPowerUps(state, batch, whiteRegion);
 
+    // --- Render ghost (translucent best-run replay, behind the player) ---
+    this.renderGhost(state, batch, atlas, whiteRegion);
+
     // --- Render player ---
     this.renderPlayer(state, batch, atlas, whiteRegion);
 
@@ -573,6 +576,77 @@ export class SpritesPass implements RenderPass {
       const y = height - (i + 1) * bandH;
       batch.drawQuad(whiteRegion, 0, y, width, bandH + 1, fogR, fogG, fogB, alpha);
     }
+    batch.flush();
+  }
+
+  /**
+   * Ghost replay: a translucent, blue-tinted lobster at the best-run grid
+   * position for the current run progress. Cosmetic only. Uses the SAME
+   * world→screen math as the player (gridX*cellSize, gridY*cellSize - camera.y)
+   * so it tracks correctly against the live player and the interpolated camera.
+   * No-op when scene.ghost is null (no stored ghost / beaten / not playing).
+   */
+  private renderGhost(
+    state: RenderState,
+    batch: SpriteBatch,
+    atlas: SpriteAtlas,
+    whiteRegion: AtlasRegion,
+  ): void {
+    const { ghost, camera } = state;
+    if (!ghost) return;
+
+    const cellSize = DEFAULT_CONFIG.cellSize;
+    const elevation = 10;
+    const ghostAlpha = 0.35;
+    // Cyan-ish "past self" tint multiplier (reads as a ghost in both styles).
+    const tintR = 0.5;
+    const tintG = 0.78;
+    const tintB = 1.0;
+
+    const screenX = ghost.x * cellSize;
+    const screenY = ghost.y * cellSize - camera.y;
+
+    // Viewport cull (same convention as other entities).
+    if (screenY < -cellSize * 2 || screenY > camera.viewportHeight + cellSize) {
+      return;
+    }
+
+    batch.begin();
+
+    // Faint shadow under the ghost.
+    const shadowY = screenY + cellSize - 6;
+    batch.drawQuad(
+      whiteRegion,
+      Math.round(screenX + cellSize / 2 - 12) + SHADOW_OFFSET.x,
+      Math.round(shadowY - 3) + SHADOW_OFFSET.y,
+      24,
+      6,
+      26 / 255,
+      28 / 255,
+      44 / 255,
+      0.12,
+    );
+
+    // Translucent tinted lobster idle sprite for the ghost's facing.
+    const spriteKey = `lobster_${ghost.dir}_idle`;
+    const resolved = resolveSprite(spriteKey, this.spriteStyle, (k) =>
+      atlas.has(k),
+    );
+    const region = atlas.getRegion(resolved);
+    if (region) {
+      batch.draw(
+        region,
+        screenX,
+        screenY - elevation,
+        region.width,
+        region.height,
+        tintR,
+        tintG,
+        tintB,
+        ghostAlpha,
+      );
+    }
+
     batch.flush();
   }
 

@@ -117,6 +117,7 @@ function makeRenderState(overrides: Partial<RenderScene> = {}): RenderScene {
     deathProgress: 0,
     deathPosition: null,
     shake: { x: 0, y: 0 },
+    ghost: null,
     ...overrides,
   };
 }
@@ -244,6 +245,25 @@ describe("ThreeRenderer", () => {
     });
     renderer.render(rainState, 0);
     expect(() => renderer.destroy()).not.toThrow();
+  });
+
+  it("renders a translucent ghost when scene.ghost is set, and hides it when null", () => {
+    const ghostState = makeRenderState({
+      ghost: { x: 6, y: -2, dir: "left" },
+    });
+    expect(() => renderer.render(ghostState, 0)).not.toThrow();
+
+    // Toggling the ghost off should hide it without error on the next frame.
+    const noGhost = makeRenderState({ ghost: null });
+    expect(() => renderer.render(noGhost, 0)).not.toThrow();
+  });
+
+  it("handles all ghost facing directions without error", () => {
+    const directions = ["up", "down", "left", "right"] as const;
+    for (const dir of directions) {
+      const state = makeRenderState({ ghost: { x: 6, y: -1, dir } });
+      expect(() => renderer.render(state, 0)).not.toThrow();
+    }
   });
 
   it("handles player hop animation", () => {
