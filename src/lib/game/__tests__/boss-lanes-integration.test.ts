@@ -84,10 +84,13 @@ describe("Boss section injection via generateLanesIfNeeded", () => {
     expect(state.generatedUpTo).toBeLessThanOrEqual(expectedEndY);
 
     // Boss road lanes must physically exist in the section's y-band. The
-    // forward-most boss road lane sits exactly at expectedEndY (the section's
-    // end lane is part of the section), so the lower bound is inclusive.
+    // injected section occupies [expectedEndY, frontierBefore): the forward-most
+    // boss road lane sits exactly at expectedEndY (inclusive lower bound), while
+    // the lane AT frontierBefore is the pre-existing frontier lane (NOT part of
+    // the section, and randomly a road) — so the upper bound is EXCLUSIVE to
+    // count only the section's own road lanes deterministically.
     const sectionRoadLanes = state.lanes.filter(
-      (l) => l.type === "road" && l.y <= frontierBefore && l.y >= expectedEndY,
+      (l) => l.type === "road" && l.y < frontierBefore && l.y >= expectedEndY,
     );
     expect(sectionRoadLanes.length).toBe(3);
     for (const lane of sectionRoadLanes) {
