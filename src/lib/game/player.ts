@@ -15,6 +15,7 @@ import { lerp, clamp } from "./utils";
 import { getLevelForScore } from "./difficulty";
 import { killPlayer } from "./collision";
 import { getSpeedMultiplier } from "./power-ups";
+import { applyRainSlide } from "./weather";
 import {
   spawnHopDust,
   spawnScoreSparkle,
@@ -215,6 +216,14 @@ export function updatePlayer(
       } else {
         // Not on water -- clear riding state
         player.ridingLogId = null;
+      }
+
+      // Rain weather: apply a gentle one-shot lateral slide on landing. Gated
+      // internally to rain at intensity >= 0.3 and clamped to half a cell, so
+      // it cannot shove the player into a hazard. The per-hop re-arm happens in
+      // tick.processActions when the next hop is initiated.
+      if (player.alive) {
+        applyRainSlide(state, config);
       }
     }
   } else {

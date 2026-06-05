@@ -28,12 +28,14 @@ import {
   spawnTrainWarning,
   spawnWaterRipples,
   spawnAmbientParticles,
+  spawnRain,
 } from "./particles";
 import {
   checkPowerUpCollection,
   applyMagnetEffect,
   updatePowerUps,
 } from "./power-ups";
+import { updateWeather, applyWindDrift } from "./weather";
 
 // ---------------------------------------------------------------------------
 // Input processing helpers
@@ -79,6 +81,9 @@ function processActions(
           const dir = actionToDirection(action);
           if (dir && state.player.hopTarget === null) {
             initiateHop(state.player, dir, config, callbacks);
+            // Re-arm the per-hop rain slide so it can fire on this hop's
+            // landing. Without this the slide would fire at most once per game.
+            state.rainSlideApplied = false;
           }
         }
         // pause in menu -> ignored
@@ -92,6 +97,9 @@ function processActions(
           const dir = actionToDirection(action);
           if (dir && state.player.hopTarget === null) {
             initiateHop(state.player, dir, config, callbacks);
+            // Re-arm the per-hop rain slide so it can fire on this hop's
+            // landing. Without this the slide would fire at most once per game.
+            state.rainSlideApplied = false;
           }
         }
         break;
@@ -224,6 +232,10 @@ export function tick(
     if (state.phase === "playing") {
       updatePlayer(state, config, callbacks);
       updateLogRiding(state, config, callbacks);
+      // Weather: advance transitions (score-driven) then apply lateral wind
+      // drift. Both are gated internally (intensity >= 0.3, idle-only drift).
+      updateWeather(state, config, callbacks);
+      applyWindDrift(state, config);
       updateObstacles(state, config);
       updateCoins(state, config);
       applyMagnetEffect(state, config);
@@ -239,6 +251,7 @@ export function tick(
       spawnTrainWarning(state, config);
       spawnWaterRipples(state, config);
       spawnAmbientParticles(state, config);
+      spawnRain(state, config);
     }
 
     // Update dying timer (slow-mo: timestep * 0.2 during death animation)

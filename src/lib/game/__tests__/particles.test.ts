@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createInitialState, tick } from "../engine";
+import { spawnRain } from "../particles";
 import {
   DEFAULT_CONFIG,
   GROUND_COLORS,
@@ -13,6 +14,7 @@ import {
   CAR_HEADLIGHT,
   WATER_SHIMMER_LIGHT,
   MAX_ATMOSPHERIC_PARTICLES,
+  MAX_RAIN_PARTICLES,
 } from "../constants";
 import type { GameCallbacks, GameState } from "../types";
 
@@ -475,5 +477,63 @@ describe("Atmospheric particle budget", () => {
     });
 
     expect(emberParticles.length).toBe(0);
+  });
+});
+
+describe("spawnRain (weather)", () => {
+  const RAIN = {
+    type: "rain" as const,
+    intensity: 1,
+    windDirection: 1 as const,
+  };
+
+  function isRainStreak(p: { shape?: string; trail?: boolean; vy: number }): boolean {
+    return p.shape === "line" && p.trail === true && p.vy > 150;
+  }
+
+  it("spawns falling rain streaks during established rain", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    state.weather = { ...RAIN };
+    spawnRain(state, DEFAULT_CONFIG);
+    const streaks = state.particles.filter(isRainStreak);
+    expect(streaks.length).toBeGreaterThan(0);
+  });
+
+  it("does not spawn rain in clear weather", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    state.weather = { type: "clear", intensity: 0, windDirection: 1 };
+    spawnRain(state, DEFAULT_CONFIG);
+    expect(state.particles.filter(isRainStreak).length).toBe(0);
+  });
+
+  it("does not spawn rain below the intensity gate", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    state.weather = { type: "rain", intensity: 0.1, windDirection: 1 };
+    spawnRain(state, DEFAULT_CONFIG);
+    expect(state.particles.filter(isRainStreak).length).toBe(0);
+  });
+
+  it("caps rain streaks at the dedicated rain budget", () => {
+    const state = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    state.weather = { ...RAIN };
+    // Spawn aggressively; spawnRain should refuse once the cap is reached.
+    for (let i = 0; i < 500; i++) spawnRain(state, DEFAULT_CONFIG);
+    expect(state.particles.filter(isRainStreak).length).toBeLessThanOrEqual(
+      MAX_RAIN_PARTICLES,
+    );
+  });
+
+  it("tilts rain streaks in the wind direction", () => {
+    const left = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    left.weather = { type: "rain", intensity: 1, windDirection: -1 };
+    for (let i = 0; i < 10; i++) spawnRain(left, DEFAULT_CONFIG);
+    const leftStreaks = left.particles.filter(isRainStreak);
+    expect(leftStreaks.every((p) => p.vx < 0)).toBe(true);
+
+    const right = createInitialState(DEFAULT_CONFIG, VIEWPORT_HEIGHT);
+    right.weather = { type: "rain", intensity: 1, windDirection: 1 };
+    for (let i = 0; i < 10; i++) spawnRain(right, DEFAULT_CONFIG);
+    const rightStreaks = right.particles.filter(isRainStreak);
+    expect(rightStreaks.every((p) => p.vx > 0)).toBe(true);
   });
 });

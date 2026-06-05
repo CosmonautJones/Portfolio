@@ -19,6 +19,7 @@ import {
   SHADOW_OFFSET,
   SHADOW_ALPHA,
   POWERUP_PARTICLE_COLORS,
+  FOG_MAX_OPACITY,
 } from "../../constants";
 import { resolveSprite, type SpriteStyle } from "../../sprites/sprite-style";
 import { DECORATION_HEIGHTS } from "../../sprites/decorations";
@@ -78,6 +79,9 @@ export class SpritesPass implements RenderPass {
 
     // --- Render player ---
     this.renderPlayer(state, batch, atlas, whiteRegion);
+
+    // --- Weather overlay (fog wash over distant lanes) ---
+    this.renderWeather(state, batch, whiteRegion);
   }
 
   destroy(_gl: WebGL2RenderingContext): void {
@@ -531,6 +535,44 @@ export class SpritesPass implements RenderPass {
       );
     }
 
+    batch.flush();
+  }
+
+  /**
+   * Fog weather overlay: a vertical gradient wash that thickens toward the TOP
+   * of the viewport (distant, upcoming lanes) and stays near-clear at the BOTTOM
+   * (where the player sits). This dims the far field for atmosphere while keeping
+   * approaching hazards partially visible — fog obscures, it never fully hides
+   * (fairness). Driven entirely by scene.weather; no-op for non-fog weather.
+   */
+  private renderWeather(
+    state: RenderState,
+    batch: SpriteBatch,
+    whiteRegion: AtlasRegion,
+  ): void {
+    const { weather, camera } = state;
+    if (weather.type !== "fog" || weather.intensity <= 0) return;
+
+    const width = camera.viewportWidth;
+    const height = camera.viewportHeight;
+    // Pale grey-blue fog tint matching the scene background mood.
+    const fogR = 0.62;
+    const fogG = 0.67;
+    const fogB = 0.78;
+    const peak = FOG_MAX_OPACITY * weather.intensity;
+
+    // Stack horizontal bands; alpha ramps from ~0 at the bottom to `peak` at the
+    // top so the near play area stays readable.
+    const bands = 8;
+    const bandH = height / bands;
+    batch.begin();
+    for (let i = 0; i < bands; i++) {
+      // i=0 is the bottom band (near), i=bands-1 is the top band (far).
+      const t = (i + 1) / bands; // 0..1 from bottom to top
+      const alpha = peak * t * t; // ease-in so the bottom stays clear
+      const y = height - (i + 1) * bandH;
+      batch.drawQuad(whiteRegion, 0, y, width, bandH + 1, fogR, fogG, fogB, alpha);
+    }
     batch.flush();
   }
 

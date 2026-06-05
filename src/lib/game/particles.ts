@@ -6,6 +6,7 @@ import type { GameState, GameConfig, DeathCause } from "./types";
 import {
   PARTICLE_GRAVITY,
   MAX_ATMOSPHERIC_PARTICLES,
+  MAX_RAIN_PARTICLES,
 } from "./constants";
 import { pickRandom } from "./utils";
 
@@ -342,6 +343,64 @@ export function spawnWaterRipples(state: GameState, config: GameConfig): void {
         shape: "circle",
       });
     }
+  }
+}
+
+/**
+ * Count active rain streaks for budget enforcement. Rain particles are the only
+ * fast, downward-falling line streaks, so this signature uniquely identifies
+ * them without adding a field to the shared Particle type.
+ */
+function countRainParticles(state: GameState): number {
+  let count = 0;
+  for (const p of state.particles) {
+    if (p.shape === "line" && p.trail && p.vy > 150) count++;
+  }
+  return count;
+}
+
+/**
+ * Spawn falling rain streaks across the visible viewport during rain weather.
+ * Streaks fall fast and are tilted by the wind direction. Driven each playing
+ * tick; count scales with weather intensity and is capped by MAX_RAIN_PARTICLES
+ * so it never starves the shared atmospheric budget. Rendered for free by the
+ * existing GPU particle renderer (shape "line" + trail).
+ */
+export function spawnRain(state: GameState, config: GameConfig): void {
+  const { weather, camera } = state;
+  if (weather.type !== "rain" || weather.intensity < 0.3) return;
+
+  const active = countRainParticles(state);
+  if (active >= MAX_RAIN_PARTICLES) return;
+
+  const { cellSize, gridColumns } = config;
+  const fieldWidth = gridColumns * cellSize;
+
+  // Spawn rate scales with intensity: ~1-2 streaks/tick at full intensity,
+  // never exceeding the remaining budget so the cap is a hard ceiling.
+  const desired = Math.random() < weather.intensity ? 2 : 1;
+  const spawnCount = Math.min(desired, MAX_RAIN_PARTICLES - active);
+  // Horizontal tilt follows wind direction (gentle slant).
+  const tiltVx = weather.windDirection * (40 + weather.intensity * 40);
+
+  for (let i = 0; i < spawnCount; i++) {
+    const x = Math.random() * fieldWidth;
+    // Spawn just above the visible top so streaks fall through the viewport.
+    const y = camera.y - cellSize + Math.random() * cellSize;
+    state.particles.push({
+      x,
+      y,
+      prevX: x,
+      prevY: y,
+      vx: tiltVx,
+      vy: 360 + Math.random() * 160, // fast fall (> 150 -> counted as rain)
+      life: 0.35 + Math.random() * 0.15,
+      maxLife: 0.5,
+      color: pickRandom(["#73eff7", "#41a6f6", "#a8d8f0"]),
+      size: 2,
+      shape: "line",
+      trail: true,
+    });
   }
 }
 

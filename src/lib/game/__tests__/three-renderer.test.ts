@@ -209,6 +209,43 @@ describe("ThreeRenderer", () => {
     expect(() => renderer.render(state2, 0)).not.toThrow();
   });
 
+  it("renders fog weather without throwing and sets/clears scene.fog", () => {
+    const fogState = makeRenderState({
+      weather: { type: "fog", intensity: 0.8, windDirection: 1 },
+    });
+    expect(() => renderer.render(fogState, 0)).not.toThrow();
+
+    // Clearing the weather should remove the fog on the next frame.
+    const clearState = makeRenderState({
+      weather: { type: "clear", intensity: 0, windDirection: 1 },
+    });
+    expect(() => renderer.render(clearState, 0)).not.toThrow();
+  });
+
+  it("renders rain weather without throwing across multiple frames", () => {
+    const rainState = makeRenderState({
+      weather: { type: "rain", intensity: 0.9, windDirection: -1 },
+    });
+    // Multiple frames exercise the lazy rain-field creation + animation/recycle.
+    for (let i = 0; i < 5; i++) {
+      expect(() => renderer.render(rainState, 0)).not.toThrow();
+    }
+
+    // Toggling rain off should hide the field without error.
+    const clearState = makeRenderState({
+      weather: { type: "clear", intensity: 0, windDirection: 1 },
+    });
+    expect(() => renderer.render(clearState, 0)).not.toThrow();
+  });
+
+  it("disposes cleanly after rain has been created", () => {
+    const rainState = makeRenderState({
+      weather: { type: "rain", intensity: 1, windDirection: 1 },
+    });
+    renderer.render(rainState, 0);
+    expect(() => renderer.destroy()).not.toThrow();
+  });
+
   it("handles player hop animation", () => {
     const player = makePlayer({
       animation: "hop",

@@ -194,3 +194,11 @@ export const WEATHER_TRANSITION_DURATION = 2; // seconds to lerp intensity
 export const RAIN_SLIDE_DISTANCE = 0.5; // cells of slide after hop
 export const FOG_VISIBLE_LANES = 4; // lanes visible ahead in fog
 export const WIND_DRIFT_PER_SECOND = 0.3; // cells per second of lateral drift
+
+// Weather rendering
+// Dedicated cap for falling-rain streak particles so heavy rain never starves
+// the shared atmospheric budget (grass motes / water ripples).
+export const MAX_RAIN_PARTICLES = 55;
+// Max overlay opacity for the 2D fog wash at full fog intensity. Kept low so
+// hazards stay partially visible (fairness): fog dims, never hides.
+export const FOG_MAX_OPACITY = 0.4;

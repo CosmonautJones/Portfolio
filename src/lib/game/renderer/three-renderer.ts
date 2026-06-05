@@ -9,7 +9,7 @@ import * as THREE from "three";
 import type { RenderScene } from "../scene/types";
 import type { SpriteStyle } from "../sprites/sprite-style";
 import type { LaneType, ObstacleType } from "../types";
-import { DEFAULT_CONFIG } from "../constants";
+import { DEFAULT_CONFIG, FOG_VISIBLE_LANES } from "../constants";
 import { ISO_TILT } from "../scene/camera-projection";
 import {
   createPlayer,
@@ -122,6 +122,20 @@ export class ThreeRenderer {
   // Frame counter for pool cleanup
   private frame = 0;
   private cleanupInterval = 60; // purge unused objects every N frames
+
+  // ---- Weather ----
+  /** Default (clear) scene background; restored when fog clears. */
+  private readonly baseBackground = new THREE.Color(0x1a1c2c);
+  /** Lazily-created falling-rain particle field (THREE.Points). */
+  private rainPoints: THREE.Points | null = null;
+  private rainGeometry: THREE.BufferGeometry | null = null;
+  private rainMaterial: THREE.PointsMaterial | null = null;
+  /** Number of rain droplets in the pooled field. */
+  private static readonly RAIN_COUNT = 320;
+  /** World-space half-extent of the rain volume around the camera focus. */
+  private static readonly RAIN_SPREAD_X = LANE_WIDTH;
+  private static readonly RAIN_SPREAD_Y = 700;
+  private static readonly RAIN_SPREAD_Z = 600;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -239,6 +253,9 @@ export class ThreeRenderer {
     // ---- Decorations ----
     this.syncDecorations(state);
 
+    // ---- Weather (fog + rain) ----
+    this.syncWeather(state, centerX, focusY);
+
     // Periodic pool cleanup
     if (this.frame % this.cleanupInterval === 0) {
       this.purgeUnused(this.lanePool);
@@ -333,6 +350,17 @@ export class ThreeRenderer {
     this.coinPool.clear();
     this.powerUpPool.clear();
     this.treePool.clear();
+
+    // Dispose rain field
+    if (this.rainPoints) {
+      this.rainPoints.removeFromParent();
+      this.rainGeometry?.dispose();
+      this.rainMaterial?.dispose();
+      this.rainPoints = null;
+      this.rainGeometry = null;
+      this.rainMaterial = null;
+    }
+    this.scene.fog = null;
 
     // Dispose renderer
     this.renderer.dispose();
@@ -544,6 +572,103 @@ export class ThreeRenderer {
         entry.object.position.set(worldX + TILE_SIZE / 2, worldY, 0);
       }
     }
+  }
+
+  /**
+   * Drive fog + rain from scene.weather. Fog sets THREE.Fog on the scene
+   * (near/far derived from FOG_VISIBLE_LANES, density via intensity); rain
+   * lazily creates a pooled THREE.Points field that follows the camera focus,
+   * with droplet Z animated to fall and wrap. Both toggle off (and rain hides)
+   * when their weather type is inactive. Cheap and disposed in destroy().
+   */
+  private syncWeather(state: RenderScene, centerX: number, focusY: number): void {
+    const { weather } = state;
+
+    // ---- Fog ----
+    if (weather.type === "fog" && weather.intensity > 0) {
+      // Foggy daylight tint blended toward the base background by intensity.
+      const fogColor = this.baseBackground
+        .clone()
+        .lerp(new THREE.Color(0x9aa6c0), 0.6 * weather.intensity);
+      this.scene.background = fogColor;
+      // Near edge sits at the camera focus; far edge is FOG_VISIBLE_LANES of
+      // foreshortened lane depth ahead. Higher intensity pulls `far` closer so
+      // distant lanes wash out, but never so close that adjacent hazards vanish.
+      const focusDist = CAMERA_DISTANCE;
+      const laneDepth = FOG_VISIBLE_LANES * TILE_SIZE;
+      const near = focusDist - laneDepth * 0.5;
+      const far = focusDist + laneDepth * (2.2 - weather.intensity * 1.1);
+      this.scene.fog = new THREE.Fog(fogColor.getHex(), near, far);
+    } else {
+      this.scene.fog = null;
+      this.scene.background = this.baseBackground;
+    }
+
+    // ---- Rain ----
+    const raining = weather.type === "rain" && weather.intensity > 0.1;
+    if (raining) {
+      this.ensureRain();
+      const points = this.rainPoints!;
+      points.visible = true;
+      // Center the rain volume on the camera focus so it tracks the player.
+      points.position.set(centerX, focusY, 0);
+      if (this.rainMaterial) {
+        this.rainMaterial.opacity = 0.25 + 0.45 * weather.intensity;
+      }
+      this.animateRain(weather.intensity, weather.windDirection);
+    } else if (this.rainPoints) {
+      this.rainPoints.visible = false;
+    }
+  }
+
+  /** Lazily build the pooled rain Points field (once). */
+  private ensureRain(): void {
+    if (this.rainPoints) return;
+    const count = ThreeRenderer.RAIN_COUNT;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * ThreeRenderer.RAIN_SPREAD_X;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * ThreeRenderer.RAIN_SPREAD_Y;
+      positions[i * 3 + 2] = Math.random() * ThreeRenderer.RAIN_SPREAD_Z;
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const material = new THREE.PointsMaterial({
+      color: 0x9fd8f0,
+      size: 3,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+    });
+    const points = new THREE.Points(geometry, material);
+    points.frustumCulled = false;
+    this.rainGeometry = geometry;
+    this.rainMaterial = material;
+    this.rainPoints = points;
+    this.scene.add(points);
+  }
+
+  /** Advance falling droplets (fall in Z, drift in X by wind, wrap). */
+  private animateRain(intensity: number, windDirection: number): void {
+    if (!this.rainGeometry) return;
+    const attr = this.rainGeometry.getAttribute("position") as THREE.BufferAttribute;
+    const arr = attr.array as Float32Array;
+    const fall = 12 + intensity * 10; // world units per frame
+    const drift = windDirection * (1.5 + intensity * 1.5);
+    const spreadX = ThreeRenderer.RAIN_SPREAD_X;
+    for (let i = 0; i < arr.length; i += 3) {
+      arr[i] += drift; // x drift
+      arr[i + 2] -= fall; // z fall
+      if (arr[i + 2] < 0) {
+        // Recycle to the top with a fresh x.
+        arr[i] = (Math.random() - 0.5) * spreadX;
+        arr[i + 2] = ThreeRenderer.RAIN_SPREAD_Z;
+      }
+      // Wrap x within the volume.
+      if (arr[i] > spreadX / 2) arr[i] -= spreadX;
+      else if (arr[i] < -spreadX / 2) arr[i] += spreadX;
+    }
+    attr.needsUpdate = true;
   }
 
   // ---- Factory helpers ----

@@ -365,6 +365,14 @@ export function useGameEngine({
         // No-op for now (no HUD timer to clear). Kept wired so the engine's
         // expire path has a sink and future feedback can hook in here.
       },
+      onWeatherChange: (weather) => {
+        // Minimal audio cue when the weather shifts to a non-clear state.
+        // Visual feedback is carried by the renderers (fog/rain/wind), so this
+        // is intentionally light-touch.
+        if (weather.type !== "clear") {
+          audio.playLevelUp();
+        }
+      },
       onLevelUp: (newLevel) => {
         setLevel(newLevel);
         audio.playLevelUp();
