@@ -10,28 +10,30 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-import { submitScore, getLeaderboard } from "../game-scores";
+import { submitScore, getLeaderboard, getPlayerStats } from "../game-scores";
 
 const fakeUser = { id: "user-1", user_metadata: { preferred_username: "testuser" } };
 
 function mockChain(data: unknown = null, error: unknown = null, count: number | null = null) {
+  // `.order()` is awaited directly (getPlayerStats) but is also chained with
+  // `.limit()` (getLeaderboard / getRecentScores). Make it both thenable and
+  // expose a `.limit()` that resolves to the same payload.
+  const orderResult = {
+    limit: vi.fn().mockResolvedValue({ data, error }),
+    then: (resolve: (v: { data: unknown; error: unknown }) => unknown) =>
+      resolve({ data, error }),
+  };
   const chain: Record<string, unknown> = {
     insert: vi.fn().mockResolvedValue({ data, error }),
     select: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          order: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue({ data, error }),
-          }),
+          order: vi.fn().mockReturnValue(orderResult),
         }),
         gte: vi.fn().mockResolvedValue({ count, error: null }),
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue({ data, error }),
-        }),
+        order: vi.fn().mockReturnValue(orderResult),
       }),
-      order: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue({ data, error }),
-      }),
+      order: vi.fn().mockReturnValue(orderResult),
     }),
   };
   mockFrom.mockReturnValue(chain);
@@ -80,5 +82,73 @@ describe("getLeaderboard", () => {
     const result = await getLeaderboard();
     expect(result.scores).toEqual([]);
     expect(result.error).toBe("fail");
+  });
+});
+
+describe("getPlayerStats", () => {
+  it("rejects unauthenticated users", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    const result = await getPlayerStats();
+    expect(result).toEqual({ error: "Not authenticated" });
+  });
+
+  it("returns null stats when there are no rows", async () => {
+    mockChain([], null);
+    const result = await getPlayerStats();
+    expect("stats" in result && result.stats).toBe(null);
+  });
+
+  it("counts coins exactly once: totalDistance excludes coin bonus", async () => {
+    // score column = distance + coin_bonus (ranking value).
+    // Row A: distance 100 + 10 coin bonus = score 110
+    // Row B: distance 200 + 0  coin bonus = score 200
+    const rows = [
+      {
+        score: 110,
+        death_cause: "car",
+        created_at: "2024-01-02",
+        coins_collected: 5,
+        coin_bonus: 10,
+      },
+      {
+        score: 200,
+        death_cause: "train",
+        created_at: "2024-01-01",
+        coins_collected: 0,
+        coin_bonus: 0,
+      },
+    ];
+    mockChain(rows);
+    const result = await getPlayerStats();
+    if (!("stats" in result) || !result.stats) throw new Error("expected stats");
+    const stats = result.stats;
+
+    // distance only: (110 - 10) + (200 - 0) = 300
+    expect(stats.totalDistance).toBe(300);
+    // coins reported once, via coins_collected
+    expect(stats.totalCoins).toBe(5);
+    // best/avg still rank on the score column (distance + coins), unchanged
+    expect(stats.bestScore).toBe(200);
+    expect(stats.avgScore).toBe(155);
+    expect(stats.bestCoins).toBe(5);
+    expect(stats.bestCoinBonus).toBe(10);
+    expect(stats.gamesPlayed).toBe(2);
+  });
+
+  it("treats missing coin_bonus as zero (legacy rows count fully as distance)", async () => {
+    const rows = [
+      {
+        score: 150,
+        death_cause: "car",
+        created_at: "2024-01-01",
+        coins_collected: 0,
+        coin_bonus: null,
+      },
+    ];
+    mockChain(rows);
+    const result = await getPlayerStats();
+    if (!("stats" in result) || !result.stats) throw new Error("expected stats");
+    // null coin_bonus -> subtract 0 -> distance equals raw score
+    expect(result.stats.totalDistance).toBe(150);
   });
 });

@@ -92,10 +92,17 @@ export async function getPlayerStats(gameType = "adventure") {
     if (error) return { error: error.message, stats: null };
     if (!data || data.length === 0) return { stats: null };
 
+    // The `score` column is the ranking value = distance + coin bonus.
+    // `coin_bonus` is metadata (the coin portion already folded into `score`).
     const scores = data.map((d) => d.score);
     const bestScore = Math.max(...scores);
     const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-    const totalDistance = scores.reduce((a, b) => a + b, 0);
+    // True distance excludes the coin bonus so coins are counted exactly once
+    // (here as `totalCoins` / `bestCoins`, not double-counted in distance).
+    const totalDistance = data.reduce(
+      (sum, d) => sum + (d.score - ((d.coin_bonus as number) ?? 0)),
+      0,
+    );
     const totalCoins = data.reduce(
       (sum, d) => sum + ((d.coins_collected as number) ?? 0),
       0,
