@@ -88,6 +88,11 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       const result = await getProfile();
       if (mounted && result.profile) {
         setProfile(result.profile);
+
+        // First visit — award XP (session-deduped) and unlock "first_steps"
+        // (achievement is once-ever via the includes() guard).
+        awardXPForProfile("first_visit", result.profile);
+        checkAndUnlockAchievement("first_steps", result.profile);
       }
       if (mounted) setLoading(false);
 
@@ -160,56 +165,67 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     serverUnlockAchievement(id);
   }
 
+  // Core XP-award logic operating on an explicit profile. Used both by the
+  // imperative awardXP callback and by lifecycle awards fired during profile
+  // load (where profileRef/isAuthenticated state may not have flushed yet).
+  function awardXPForProfile(
+    action: XPAction,
+    currentProfile: Profile | null,
+    meta?: Record<string, unknown>
+  ) {
+    if (!currentProfile) return;
+
+    const award = XP_AWARDS[action];
+    if (!award) return;
+
+    // Dedup check
+    const dedupKey = `${action}:${meta?.key ?? ""}`;
+    if (award.rule === "once_ever") {
+      if (sessionAwarded.has(dedupKey)) return;
+    }
+    if (award.rule === "per_session") {
+      if (sessionAwarded.has(dedupKey)) return;
+    }
+
+    sessionAwarded.add(dedupKey);
+
+    const oldLevel = currentProfile.level;
+
+    // Optimistic UI update
+    setProfile((prev) => {
+      if (!prev) return prev;
+      const newXP = prev.xp + award.xp;
+      const levelInfo = getLevelForXP(newXP);
+      return { ...prev, xp: newXP, level: levelInfo.level, title: levelInfo.title };
+    });
+
+    // Show XP toast
+    toast.success(`+${award.xp} XP`, {
+      description: action.replace(/_/g, " "),
+      duration: 3000,
+    });
+
+    // Check for level up
+    const newXP = currentProfile.xp + award.xp;
+    const newLevelInfo = getLevelForXP(newXP);
+    if (newLevelInfo.level > oldLevel) {
+      setTimeout(() => {
+        toast.success(`Level Up! Level ${newLevelInfo.level}`, {
+          description: `New title: ${newLevelInfo.title}`,
+          duration: 5000,
+        });
+      }, 500);
+    }
+
+    // Persist server-side (fire-and-forget)
+    serverAwardXP(award.xp, action);
+    serverTrackEvent(action, meta ?? {});
+  }
+
   const awardXP = useCallback(
     (action: XPAction, meta?: Record<string, unknown>) => {
-      const currentProfile = profileRef.current;
-      if (!isAuthenticated || !currentProfile) return;
-
-      const award = XP_AWARDS[action];
-      if (!award) return;
-
-      // Dedup check
-      const dedupKey = `${action}:${meta?.key ?? ""}`;
-      if (award.rule === "once_ever") {
-        if (sessionAwarded.has(dedupKey)) return;
-      }
-      if (award.rule === "per_session") {
-        if (sessionAwarded.has(dedupKey)) return;
-      }
-
-      sessionAwarded.add(dedupKey);
-
-      const oldLevel = currentProfile.level;
-
-      // Optimistic UI update
-      setProfile((prev) => {
-        if (!prev) return prev;
-        const newXP = prev.xp + award.xp;
-        const levelInfo = getLevelForXP(newXP);
-        return { ...prev, xp: newXP, level: levelInfo.level, title: levelInfo.title };
-      });
-
-      // Show XP toast
-      toast.success(`+${award.xp} XP`, {
-        description: action.replace(/_/g, " "),
-        duration: 3000,
-      });
-
-      // Check for level up
-      const newXP = currentProfile.xp + award.xp;
-      const newLevelInfo = getLevelForXP(newXP);
-      if (newLevelInfo.level > oldLevel) {
-        setTimeout(() => {
-          toast.success(`Level Up! Level ${newLevelInfo.level}`, {
-            description: `New title: ${newLevelInfo.title}`,
-            duration: 5000,
-          });
-        }, 500);
-      }
-
-      // Persist server-side (fire-and-forget)
-      serverAwardXP(award.xp, action);
-      serverTrackEvent(action, meta ?? {});
+      if (!isAuthenticated) return;
+      awardXPForProfile(action, profileRef.current, meta);
     },
     [isAuthenticated]
   );

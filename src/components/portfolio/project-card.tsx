@@ -15,6 +15,13 @@ import {
   useTransform,
 } from "motion/react";
 import type { Project } from "@/lib/types";
+import { useVisitor } from "@/hooks/use-visitor";
+import { shouldUnlockRoadScholar } from "@/lib/easter-eggs/triggers";
+
+// Distinct projects opened this session — feeds the "road_scholar"
+// achievement (view 3 distinct projects). Module-level so it survives
+// re-renders and route changes within a single session.
+const viewedProjects = new Set<string>();
 
 const gradientClasses = ["project-gradient-1", "project-gradient-2"];
 const MAX_TILT = 6; // degrees
@@ -31,6 +38,15 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
 
   const shouldReduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
+  const { awardXP, unlockAchievement } = useVisitor();
+
+  function handleViewProject() {
+    awardXP("view_project", { key: project.title });
+    viewedProjects.add(project.title);
+    if (shouldUnlockRoadScholar(viewedProjects)) {
+      unlockAchievement("road_scholar");
+    }
+  }
 
   // Pointer offset from card center, normalized to [-1, 1].
   const px = useMotionValue(0);
@@ -72,7 +88,10 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
       }
       className="h-full"
     >
-      <Card className="glass-card gradient-border-glow hover-shadow-accent group flex h-full flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1">
+      <Card
+        onClick={handleViewProject}
+        className="glass-card gradient-border-glow hover-shadow-accent group flex h-full flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1"
+      >
         {project.image ? (
           <div className={`relative ${heightClass} w-full overflow-hidden`}>
             <Image

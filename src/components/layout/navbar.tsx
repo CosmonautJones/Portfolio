@@ -22,15 +22,20 @@ interface NavbarProps {
 
 export function Navbar({ isAdmin = false }: NavbarProps) {
   const { theme, setTheme } = useTheme();
-  const { awardXP } = useVisitor();
+  const { awardXP, unlockAchievement } = useVisitor();
   const themeTracked = useRef(false);
   const pathname = usePathname();
 
   function handleToggleTheme() {
-    setTheme(theme === "dark" ? "light" : "dark");
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
     if (!themeTracked.current) {
       themeTracked.current = true;
       awardXP("toggle_theme");
+    }
+    // "Night Owl" — switching into dark mode.
+    if (nextTheme === "dark") {
+      unlockAchievement("night_owl");
     }
   }
 

@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useVisitor } from "@/hooks/use-visitor";
 import { getEasterEgg } from "@/lib/easter-eggs/registry";
+import { shouldUnlockCartographer } from "@/lib/easter-eggs/triggers";
 import { addDiscovery } from "@/actions/profiles";
 
 export function useEasterEgg() {
@@ -26,8 +27,17 @@ export function useEasterEgg() {
 
       // Persist discovery to profile
       addDiscovery(eggId);
+
+      // Unlock "cartographer" once all distinct eggs have been discovered.
+      // Build the distinct set from the current profile plus this discovery
+      // (profile.discoveries may not yet include the just-found egg).
+      const distinct = new Set(profile?.discoveries ?? []);
+      distinct.add(eggId);
+      if (shouldUnlockCartographer([...distinct])) {
+        unlockAchievement("cartographer");
+      }
     },
-    [awardXP, unlockAchievement, trackEvent]
+    [awardXP, unlockAchievement, trackEvent, profile]
   );
 
   const isDiscovered = useCallback(

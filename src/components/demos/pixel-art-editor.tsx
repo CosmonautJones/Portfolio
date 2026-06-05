@@ -5,6 +5,8 @@ import { Eraser, Download, Pencil, PaintBucket, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PALETTE } from "@/lib/game/sprites/palette";
 import { cn } from "@/lib/utils";
+import { useVisitor } from "@/hooks/use-visitor";
+import { isCanvasFull } from "@/lib/easter-eggs/triggers";
 
 function createEmptyGrid(size: number): number[][] {
   return Array.from({ length: size }, () => Array(size).fill(0));
@@ -44,9 +46,21 @@ export function PixelArtEditor() {
   const [tool, setTool] = useState<"pencil" | "eraser" | "fill">("pencil");
   const [isDrawing, setIsDrawing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { awardXP, trackEvent, unlockAchievement } = useVisitor();
+  const pixelPerfectFired = useRef(false);
 
   const cellSize = getCellSize(gridSize);
   const canvasDim = gridSize * cellSize;
+
+  // "Pixel Perfect" — fire once when the canvas becomes fully painted.
+  useEffect(() => {
+    if (pixelPerfectFired.current) return;
+    if (isCanvasFull(grid)) {
+      pixelPerfectFired.current = true;
+      trackEvent("fill_canvas", { gridSize });
+      unlockAchievement("pixel_perfect");
+    }
+  }, [grid, gridSize, trackEvent, unlockAchievement]);
 
   // Render canvas
   useEffect(() => {
@@ -239,7 +253,9 @@ export function PixelArtEditor() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, "image/png");
-  }, [grid, gridSize]);
+
+    awardXP("export_pixel_art");
+  }, [grid, gridSize, awardXP]);
 
   const handleGridSizeChange = useCallback((size: number) => {
     setGridSize(size);

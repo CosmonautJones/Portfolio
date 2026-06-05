@@ -16,6 +16,9 @@ const TerminalSheet = dynamic(
 const KonamiEffects = dynamic(
   () => import("@/components/easter-eggs/konami-effects").then((m) => ({ default: m.KonamiEffects })),
 );
+const RedPillTrigger = dynamic(
+  () => import("@/components/easter-eggs/red-pill-trigger").then((m) => ({ default: m.RedPillTrigger })),
+);
 const LevelUpOverlay = dynamic(
   () => import("@/components/progression/level-up-overlay").then((m) => ({ default: m.LevelUpOverlay })),
 );
@@ -61,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
                 <TerminalSheet />
                 <KonamiEffects />
+                <RedPillTrigger />
                 <LevelUpOverlay />
               </MotionProvider>
             </TerminalProvider>

@@ -112,7 +112,7 @@ export const SITE_ACHIEVEMENTS: Achievement[] = [
     icon: "Map",
     secret: true,
     xpReward: 150,
-    condition: { type: "event_count", eventType: "find_easter_egg", count: 5 },
+    condition: { type: "event_count", eventType: "find_easter_egg", count: 6 },
     context: "site",
   },
   {
