@@ -29,25 +29,36 @@ export function AdventureShell() {
     limit: 10,
   });
 
+  // These handlers are invoked from GameCanvas's engine (rAF loop / tick
+  // callbacks), which can fire while React is mid-render of GameCanvas. Calling
+  // the parent (AdventureShell) setters synchronously then triggers a
+  // "Cannot update a component while rendering a different component" warning.
+  // Deferring the state updates to a microtask moves them out of the render
+  // phase without changing observable behavior — score/phase still update on
+  // the next tick of the event loop.
   const handleScoreUpdate = useCallback((newScore: number, newLevel: number) => {
-    setScore(newScore);
-    setLevel(newLevel);
+    queueMicrotask(() => {
+      setScore(newScore);
+      setLevel(newLevel);
+    });
   }, []);
 
   const handlePhaseChange = useCallback((newPhase: GamePhase) => {
-    setPhase(newPhase);
-    if (newPhase === "playing") {
-      setPlayStartTime(Date.now());
-      setCoinsCollected(0);
-      setCoinBonus(0);
-      // Start timer for live time display
-      timerRef.current = setInterval(() => setTick((t) => t + 1), 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+    queueMicrotask(() => {
+      setPhase(newPhase);
+      if (newPhase === "playing") {
+        setPlayStartTime(Date.now());
+        setCoinsCollected(0);
+        setCoinBonus(0);
+        // Start timer for live time display
+        timerRef.current = setInterval(() => setTick((t) => t + 1), 1000);
+      } else {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
       }
-    }
+    });
   }, []);
 
   const handleDeath = useCallback(() => {
@@ -57,8 +68,13 @@ export function AdventureShell() {
   }, [refresh]);
 
   const handleCoinUpdate = useCallback((coins: number, bonus: number) => {
-    setCoinsCollected(coins);
-    setCoinBonus(bonus);
+    // Deferred for the same reason as handleScoreUpdate/handlePhaseChange: this
+    // fires from the engine's onCoinCollect callback (inside a child state
+    // updater) and must not run a parent setState during the child's render.
+    queueMicrotask(() => {
+      setCoinsCollected(coins);
+      setCoinBonus(bonus);
+    });
   }, []);
 
   return (
