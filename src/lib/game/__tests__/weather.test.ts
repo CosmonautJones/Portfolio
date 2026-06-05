@@ -51,6 +51,7 @@ function createMockState(overrides: Partial<GameState> = {}): GameState {
     activePowerUps: [],
     bossLanesUsed: [],
     inBossSection: false,
+    bossSectionEndY: null,
     weather: createWeather(),
     windDriftAccumulator: 0,
     rainSlideApplied: false,

@@ -29,6 +29,13 @@ function randomRange(min: number, max: number): number {
 /**
  * Check if a boss pattern should trigger based on the player's current score.
  * Returns the pattern to inject, or null if none.
+ *
+ * Dedup is handled entirely by `state.bossLanesUsed` (a pattern fires at most
+ * once per run) plus the `state.inBossSection` guard at the call site, so the
+ * trigger only needs a lower bound. The previous `< threshold + 3` upper bound
+ * made the trigger fragile: if generation/score timing skipped the 3-unit
+ * window the boss would never fire. Patterns are checked in fixed order so the
+ * earliest unused boss whose threshold is met fires first (deterministic).
  */
 export function checkBossTrigger(state: GameState): BossPattern | null {
   const patterns: BossPattern[] = ["gauntlet", "rapids", "train_yard"];
@@ -40,13 +47,62 @@ export function checkBossTrigger(state: GameState): BossPattern | null {
     const threshold = LEVEL_THRESHOLDS[triggerLevel - 1];
     if (threshold === undefined) continue;
 
-    // Trigger when score crosses the threshold (within a small window)
-    if (state.score >= threshold && state.score < threshold + 3) {
+    if (state.score >= threshold) {
       return pattern;
     }
   }
 
   return null;
+}
+
+/**
+ * Trigger + inject a boss section into the live lane stream if conditions are
+ * met. Called from generateLanesIfNeeded BEFORE normal lane generation so the
+ * boss block lands at the current generation frontier and normal generation
+ * then continues ahead of it. No-op while already inside a section.
+ *
+ * On injection it appends the section lanes, advances generatedUpTo past the
+ * block, records the pattern, sets inBossSection, stores the deterministic
+ * clear position (bossSectionEndY), and fires onBossStart.
+ *
+ * Returns true if a section was injected.
+ */
+export function injectBossSection(
+  state: GameState,
+  config: GameConfig,
+  callbacks?: GameCallbacks,
+): boolean {
+  if (state.inBossSection) return false;
+
+  const pattern = checkBossTrigger(state);
+  if (!pattern) return false;
+
+  const nextId = { value: state.nextEntityId };
+  const startY = state.generatedUpTo;
+  const bossLanes = generateBossSection(
+    pattern,
+    startY,
+    config,
+    nextId,
+    state.score,
+  );
+
+  state.lanes.push(...bossLanes);
+  state.nextEntityId = nextId.value;
+
+  const sectionSize = getBossSectionSize(pattern);
+  // Forward-most (lowest) lane y of the section. The player has fully traversed
+  // the section once gridPos.y drops below this.
+  const endY = startY - sectionSize;
+  state.generatedUpTo = endY;
+
+  state.bossLanesUsed.push(pattern);
+  state.inBossSection = true;
+  state.bossSectionEndY = endY;
+
+  callbacks?.onBossStart?.(pattern);
+
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,29 +172,29 @@ export function getBossSectionSize(pattern: BossPattern): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Check if the player has cleared a boss section.
- * A boss section is "cleared" when the player's score moves past the
- * boss section's end lane.
+ * Check if the player has cleared the active boss section.
+ *
+ * Deterministic position-based detection: the section is cleared once the
+ * player has physically traversed PAST the forward-most lane of the section
+ * (player.gridPos.y < bossSectionEndY). This replaces the old score-based
+ * heuristic, which could award the bonus without the player ever crossing the
+ * hazard lanes. The bonus flows through coinBonusScore (NOT raw distance) to
+ * stay consistent with the leaderboard's distance+coins separation.
  */
 export function checkBossClear(
   state: GameState,
   callbacks: GameCallbacks,
 ): void {
   if (!state.inBossSection) return;
+  if (state.bossSectionEndY === null) return;
 
-  // Boss is cleared when the player is beyond the boss section
-  // Simple heuristic: we entered the boss, and now score has advanced enough
   const pattern = state.bossLanesUsed[state.bossLanesUsed.length - 1];
   if (!pattern) return;
 
-  const triggerLevel = BOSS_LEVEL_TRIGGERS[pattern];
-  const threshold = LEVEL_THRESHOLDS[triggerLevel - 1];
-  if (threshold === undefined) return;
-
-  const bossSize = getBossSectionSize(pattern);
-  // Cleared when we've advanced past the boss section
-  if (state.score >= threshold + bossSize + BOSS_BUFFER_LANES) {
+  // Lower y = further forward. Cleared when the player is past the section end.
+  if (state.player.gridPos.y < state.bossSectionEndY) {
     state.inBossSection = false;
+    state.bossSectionEndY = null;
     state.coinBonusScore += BOSS_CLEAR_BONUS;
     callbacks.onBossClear?.(pattern);
   }

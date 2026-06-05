@@ -5,6 +5,7 @@
 import type {
   GameState,
   GameConfig,
+  GameCallbacks,
   Lane,
   LaneType,
   Coin,
@@ -22,6 +23,7 @@ import { pickRandom } from "./utils";
 import { spawnObstaclesForLane } from "./obstacles";
 import { spawnCoinsForLane, pruneCoins } from "./coins";
 import { spawnPowerUpsForLane, prunePowerUps } from "./power-ups";
+import { injectBossSection } from "./boss-lanes";
 import { DECORATION_VARIANTS } from "./sprites/decorations";
 
 // ---------------------------------------------------------------------------
@@ -223,7 +225,16 @@ export function generateLanes(
 export function generateLanesIfNeeded(
   state: GameState,
   config: GameConfig,
+  callbacks?: GameCallbacks,
 ): void {
+  // Inject a boss section at the current frontier (if one should trigger and we
+  // are not already inside one) BEFORE normal generation, so normal lanes keep
+  // being generated AHEAD of the injected block. injectBossSection advances
+  // state.generatedUpTo past the section, so the normal pass below fills in from
+  // the new frontier. This must precede the early-return so the boss can trigger
+  // even on a tick where the frontier already reaches generateAhead.
+  injectBossSection(state, config, callbacks);
+
   const targetY = state.player.gridPos.y - config.generateAhead;
 
   if (targetY >= state.generatedUpTo) return;

@@ -187,6 +187,12 @@ export interface GameState {
   bossLanesUsed: BossPattern[];
   /** Whether we are currently inside a boss section */
   inBossSection: boolean;
+  /**
+   * The forward-most (lowest) lane y of the active boss section. The section is
+   * "cleared" deterministically when the player traverses past it
+   * (player.gridPos.y < bossSectionEndY). Null when no section is active.
+   */
+  bossSectionEndY: number | null;
   /** Current weather state */
   weather: Weather;
   /** Accumulated wind drift since last hop (reset on hop) */

@@ -36,6 +36,7 @@ import {
   updatePowerUps,
 } from "./power-ups";
 import { updateWeather, applyWindDrift } from "./weather";
+import { checkBossClear } from "./boss-lanes";
 
 // ---------------------------------------------------------------------------
 // Input processing helpers
@@ -206,6 +207,7 @@ export function createInitialState(
     activePowerUps: [],
     bossLanesUsed: [],
     inBossSection: false,
+    bossSectionEndY: null,
     weather: { type: "clear", intensity: 0, windDirection: 1 },
     windDriftAccumulator: 0,
     rainSlideApplied: false,
@@ -246,7 +248,12 @@ export function tick(
       checkIdleTimeout(state, config, callbacks);
       checkBackDeath(state, config, callbacks);
       updateCamera(state, config);
-      generateLanesIfNeeded(state, config);
+      // Boss sections: inject at the frontier (inside generateLanesIfNeeded) and
+      // evaluate the deterministic clear. checkBossClear awards BOSS_CLEAR_BONUS
+      // via coinBonusScore and fires onBossClear once the player traverses past
+      // the section's end lane.
+      generateLanesIfNeeded(state, config, callbacks);
+      checkBossClear(state, callbacks);
       pruneLanesBehindPlayer(state, config);
       spawnTrainWarning(state, config);
       spawnWaterRipples(state, config);
@@ -356,6 +363,7 @@ export function resetForNewGame(
   state.activePowerUps = [];
   state.bossLanesUsed = [];
   state.inBossSection = false;
+  state.bossSectionEndY = null;
   state.weather = { type: "clear", intensity: 0, windDirection: 1 };
   state.windDriftAccumulator = 0;
   state.rainSlideApplied = false;

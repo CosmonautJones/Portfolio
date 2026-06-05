@@ -57,6 +57,7 @@ function createMockState(overrides: Partial<GameState> = {}): GameState {
     activePowerUps: [],
     bossLanesUsed: [],
     inBossSection: false,
+    bossSectionEndY: null,
     weather: { type: "clear", intensity: 0, windDirection: 1 },
     windDriftAccumulator: 0,
     rainSlideApplied: false,
@@ -235,19 +236,28 @@ describe("getBossSectionSize", () => {
 // ---------------------------------------------------------------------------
 
 describe("Boss clear detection", () => {
-  it("clears boss section when score advances past it", () => {
-    const threshold = LEVEL_THRESHOLDS[BOSS_LEVEL_TRIGGERS.gauntlet - 1];
-    const bossSize = getBossSectionSize("gauntlet");
-    const state = createMockState({
-      score: threshold + bossSize + BOSS_BUFFER_LANES,
-      inBossSection: true,
-      bossLanesUsed: ["gauntlet"],
-    });
+  function withPlayerY(state: GameState, y: number): GameState {
+    state.player.gridPos.y = y;
+    state.player.worldPos.y = y * CELL;
+    return state;
+  }
+
+  it("clears boss section when the player traverses past its end lane", () => {
+    const endY = -20;
+    const state = withPlayerY(
+      createMockState({
+        inBossSection: true,
+        bossSectionEndY: endY,
+        bossLanesUsed: ["gauntlet"],
+      }),
+      endY - 1, // player is past (below) the section end
+    );
     const callbacks = createMockCallbacks();
 
     checkBossClear(state, callbacks);
 
     expect(state.inBossSection).toBe(false);
+    expect(state.bossSectionEndY).toBeNull();
     expect(state.coinBonusScore).toBe(BOSS_CLEAR_BONUS);
     expect(callbacks.onBossClear).toHaveBeenCalledWith("gauntlet");
   });
@@ -261,11 +271,29 @@ describe("Boss clear detection", () => {
     expect(callbacks.onBossClear).not.toHaveBeenCalled();
   });
 
-  it("does not clear if score has not advanced enough", () => {
-    const threshold = LEVEL_THRESHOLDS[BOSS_LEVEL_TRIGGERS.gauntlet - 1];
+  it("does not clear while the player is still inside the section", () => {
+    const endY = -20;
+    const state = withPlayerY(
+      createMockState({
+        inBossSection: true,
+        bossSectionEndY: endY,
+        bossLanesUsed: ["gauntlet"],
+      }),
+      endY + 2, // player still above (not yet past) the section end
+    );
+    const callbacks = createMockCallbacks();
+
+    checkBossClear(state, callbacks);
+
+    expect(state.inBossSection).toBe(true);
+    expect(state.bossSectionEndY).toBe(endY);
+    expect(callbacks.onBossClear).not.toHaveBeenCalled();
+  });
+
+  it("does not clear when bossSectionEndY is null even if flagged in-section", () => {
     const state = createMockState({
-      score: threshold + 1,
       inBossSection: true,
+      bossSectionEndY: null,
       bossLanesUsed: ["gauntlet"],
     });
     const callbacks = createMockCallbacks();
@@ -273,5 +301,6 @@ describe("Boss clear detection", () => {
     checkBossClear(state, callbacks);
 
     expect(state.inBossSection).toBe(true);
+    expect(callbacks.onBossClear).not.toHaveBeenCalled();
   });
 });

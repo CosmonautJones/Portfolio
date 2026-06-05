@@ -373,6 +373,25 @@ export function useGameEngine({
           audio.playLevelUp();
         }
       },
+      onBossStart: () => {
+        // Telegraph the incoming difficulty spike: audio sting + screen shake.
+        // The hazard lanes themselves render via the generic lane/obstacle path
+        // (zero renderer changes), so no extra visual plumbing is needed here.
+        audio.playStart();
+        triggerScreenShake(screenShakeRef.current, 6, 0.3, 0, 0);
+      },
+      onBossClear: () => {
+        // Boss cleared: reward feedback. BOSS_CLEAR_BONUS was already added to
+        // state.coinBonusScore by checkBossClear, so surface it through the same
+        // coin-bonus path the UI/leaderboard already read (no raw-distance bump).
+        audio.playLevelUp();
+        triggerMicroShake(screenShakeRef.current);
+        const gs = gameStateRef.current;
+        if (gs) {
+          setCoinBonus(gs.coinBonusScore);
+          onCoinUpdateExternalRef.current?.(gs.coinsCollected, gs.coinBonusScore);
+        }
+      },
       onLevelUp: (newLevel) => {
         setLevel(newLevel);
         audio.playLevelUp();
