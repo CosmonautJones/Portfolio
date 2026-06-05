@@ -17,6 +17,16 @@ export class SpriteCache {
     this.atlas.addSprite(key, pixels, flipH);
   }
 
+  /** Register a skin-recolored sprite (palette indices remapped per overrides). */
+  prerenderSkinned(
+    key: string,
+    pixels: SpritePixels,
+    overrides: Record<number, number>,
+    flipH = false,
+  ): void {
+    this.atlas.addSkinnedSprite(key, pixels, overrides, flipH);
+  }
+
   prerenderShadow(key: string, pixels: SpritePixels, flipH = false): void {
     this.atlas.addShadow(key, pixels, flipH);
   }

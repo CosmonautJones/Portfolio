@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import type { GamePhase, DeathCause } from "@/lib/game/types";
+import type { GamePhase, DeathCause, SkinId } from "@/lib/game/types";
 import { saveSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
+import { getSelectedSkin, setSelectedSkin } from "@/lib/game/skins";
+import { getUnlockedSkinsFromStats } from "@/lib/game/stats";
 import { useGameEngine } from "@/hooks/use-game-engine";
 import { useGameSprites } from "@/hooks/use-game-sprites";
 import { useThreeRenderer } from "@/hooks/use-three-renderer";
@@ -50,6 +52,10 @@ export default function GameCanvas({
   const [canvasWidth, setCanvasWidth] = useState(VIEWPORT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(VIEWPORT_HEIGHT);
   const [spriteStyle, setSpriteStyle] = useState<SpriteStyle>("pixel");
+  // Player skin selection (cosmetic). Persisted in localStorage; unlocked set
+  // computed from persisted stats (deaths/diamonds/high score).
+  const [selectedSkin, setSkinState] = useState<SkinId>("default");
+  const [unlockedSkins, setUnlockedSkins] = useState<SkinId[]>(["default"]);
 
   // Sprite loading and renderer creation
   const canvasEl = canvasRef.current;
@@ -66,11 +72,31 @@ export default function GameCanvas({
     }
   }, [initialSpriteStyle]);
 
+  // Load persisted skin + unlocked set once on mount.
+  useEffect(() => {
+    setSkinState(getSelectedSkin());
+    setUnlockedSkins(getUnlockedSkinsFromStats(false));
+  }, []);
+
   // Three.js 3D renderer — managed by hook (lazy create, keep alive, destroy on unmount)
   const isThreeActive = spriteStyle === "voxel";
   const { threeRendererRef, threeCanvasRef } = useThreeRenderer(
     isThreeActive, canvasWidth, canvasHeight,
   );
+
+  // Apply the active skin to whichever renderer(s) exist. Runs each render so a
+  // newly-ready async renderer (2D atlas build or 3D activation) picks it up.
+  useEffect(() => {
+    rendererRef.current?.setSkin(selectedSkin);
+    threeRendererRef.current?.setSkin(selectedSkin);
+  });
+
+  const handleSelectSkin = useCallback((skin: SkinId) => {
+    setSelectedSkin(skin);
+    setSkinState(skin);
+    rendererRef.current?.setSkin(skin);
+    threeRendererRef.current?.setSkin(skin);
+  }, [rendererRef, threeRendererRef]);
 
   // Engine state management, game loop, callbacks
   const [engineState, controls] = useGameEngine({
@@ -91,6 +117,12 @@ export default function GameCanvas({
       awardXPRef.current("play_game");
       // Allow the Hitchhiker egg to fire again on a fresh run
       hitchhikerFiredRef.current = false;
+    }
+    // A finished run may have crossed a skin-unlock threshold (deaths/diamonds/
+    // high score are persisted by the engine). Recompute the unlocked set when
+    // the run ends so the menu picker reflects fresh unlocks.
+    if (engineState.phase === "game_over" && prevPhaseRef.current === "playing") {
+      setUnlockedSkins(getUnlockedSkinsFromStats(false));
     }
     prevPhaseRef.current = engineState.phase;
   }, [engineState.phase]);
@@ -306,6 +338,9 @@ export default function GameCanvas({
             muted={muted}
             spriteStyle={spriteStyle}
             voxelReady={voxelReady}
+            unlockedSkins={unlockedSkins}
+            selectedSkin={selectedSkin}
+            onSelectSkin={handleSelectSkin}
             onToggleMute={controls.toggleMute}
             onToggleSpriteStyle={toggleSpriteStyle}
           />

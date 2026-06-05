@@ -58,6 +58,48 @@ describe("SpriteAtlas raw RGBA methods", () => {
     atlas.addRawSprite("big_sprite", 64, 64, rgba);
   });
 
+  it("addSkinnedSprite remaps palette indices to override colors", () => {
+    const atlas = new SpriteAtlas();
+    // 1x2 sprite: index 17 (lobster red) then index 0 (transparent).
+    const pixels = [[17, 0]];
+    // Override 17 -> 5 (gold #ffcd75). The remapped pixel must read gold.
+    const rgba = atlas.renderSkinnedRGBA(pixels, { 17: 5 }, false);
+    // gold = #ffcd75 = (255, 205, 117)
+    expect(rgba[0]).toBe(255);
+    expect(rgba[1]).toBe(205);
+    expect(rgba[2]).toBe(117);
+    expect(rgba[3]).toBe(255);
+    // transparent pixel stays clear
+    expect(rgba[7]).toBe(0);
+  });
+
+  it("addSkinnedSprite leaves non-overridden indices unchanged", () => {
+    const atlas = new SpriteAtlas();
+    const pixels = [[17]];
+    // No override for 17 — should render the base lobster red (#d4513b).
+    const rgba = atlas.renderSkinnedRGBA(pixels, { 18: 5 }, false);
+    // #d4513b = (212, 81, 59)
+    expect(rgba[0]).toBe(212);
+    expect(rgba[1]).toBe(81);
+    expect(rgba[2]).toBe(59);
+  });
+
+  it("addSkinnedSprite registers an entry without throwing", () => {
+    const atlas = new SpriteAtlas();
+    const pixels = [
+      [17, 18],
+      [19, 88],
+    ];
+    expect(() =>
+      atlas.addSkinnedSprite("golden__lobster_up_idle", pixels, {
+        17: 5,
+        18: 42,
+        19: 43,
+        88: 13,
+      }),
+    ).not.toThrow();
+  });
+
   it("multiple raw sprites can be registered", () => {
     const atlas = new SpriteAtlas();
 

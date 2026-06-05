@@ -34,6 +34,7 @@ import {
 } from "@/actions/game-scores";
 import { AchievementTracker } from "@/lib/game/achievement-tracker";
 import { GhostRuntime } from "@/lib/game/ghost-runtime";
+import { incrementTotalDeaths, addDiamonds } from "@/lib/game/stats";
 import { ACHIEVEMENT_MAP } from "@/lib/game/achievements";
 import type { AchievementPopup } from "@/components/adventure/game-helpers";
 
@@ -278,6 +279,8 @@ export function useGameEngine({
       },
       onDeath: (cause, finalScore) => {
         setDeathCause(cause);
+        // Persist cumulative deaths for the ghost-skin unlock (deaths >= 50).
+        incrementTotalDeaths();
         if (cause === "water") {
           audio.playSplash();
         } else {
@@ -352,6 +355,9 @@ export function useGameEngine({
         audio.playHop();
       },
       onCoinCollect: (coin: Coin, bonusPoints: number) => {
+        // Persist cumulative diamond pickups for the diamond-skin unlock
+        // (diamonds >= 100). Counts diamond COINS, not the diamond skin.
+        if (coin.type === "diamond") addDiamonds(1);
         setCoinsCollected((prev) => {
           const next = prev + 1;
           const gs = gameStateRef.current;

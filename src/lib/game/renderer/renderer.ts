@@ -17,6 +17,7 @@ import { SpriteBatch } from "./webgl/sprite-batch";
 import { GPUParticleRenderer } from "./webgl/gpu-particles";
 import { createFramebuffer } from "./webgl/gl-utils";
 import type { SpriteStyle } from "../sprites/sprite-style";
+import type { SkinId } from "../types";
 import type { RenderScene } from "../scene/types";
 import { SpriteCache } from "./sprite-cache";
 
@@ -185,6 +186,11 @@ export class GameRenderer {
   /** GameRenderer interface alias. */
   setStyle(style: SpriteStyle): void {
     this.setSpriteStyle(style);
+  }
+
+  /** Set the active player skin — forwarded to the sprites pass. */
+  setSkin(skin: SkinId): void {
+    this.spritesPass.setSkin(skin);
   }
 
   /**

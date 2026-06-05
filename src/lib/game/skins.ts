@@ -80,6 +80,22 @@ export const SKIN_UNLOCK_CONDITIONS: Record<SkinId, SkinUnlockCondition | null> 
   rainbow: { type: "achievements", threshold: -1 }, // all game achievements
 };
 
+/** Human-readable hint describing how to unlock a skin (for locked UI rows). */
+export function getSkinUnlockHint(id: SkinId): string {
+  const condition = SKIN_UNLOCK_CONDITIONS[id];
+  if (!condition) return "Always unlocked";
+  switch (condition.type) {
+    case "score":
+      return `Reach ${condition.threshold} distance`;
+    case "deaths":
+      return `Die ${condition.threshold} times total`;
+    case "diamonds":
+      return `Collect ${condition.threshold} diamonds`;
+    case "achievements":
+      return "Earn all achievements";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Storage helpers (localStorage)
 // ---------------------------------------------------------------------------

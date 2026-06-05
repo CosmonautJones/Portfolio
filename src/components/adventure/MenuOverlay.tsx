@@ -1,15 +1,31 @@
 "use client";
 
-import { Volume2, VolumeX, Palette } from "lucide-react";
+import { Volume2, VolumeX, Palette, Lock } from "lucide-react";
 import type { SpriteStyle } from "@/lib/game/sprites/sprite-style";
+import type { SkinId } from "@/lib/game/types";
+import { SKINS, getSkinUnlockHint } from "@/lib/game/skins";
+import { PALETTE } from "@/lib/game/sprites/palette";
 
 interface MenuOverlayProps {
   canvasWidth: number;
   muted: boolean;
   spriteStyle: SpriteStyle;
   voxelReady: boolean;
+  unlockedSkins: SkinId[];
+  selectedSkin: SkinId;
+  onSelectSkin: (skin: SkinId) => void;
   onToggleMute: () => void;
   onToggleSpriteStyle: () => void;
+}
+
+const SKIN_ORDER: SkinId[] = ["default", "golden", "ghost", "diamond", "rainbow"];
+
+/** Representative swatch color for a skin (its body override, else lobster red). */
+function skinSwatch(skin: SkinId): string {
+  const overrides = SKINS[skin].paletteOverrides;
+  const bodyIndex = overrides[17] ?? 17;
+  const hex = PALETTE[bodyIndex];
+  return hex && hex !== "transparent" ? hex : "#d4513b";
 }
 
 export function MenuOverlay({
@@ -17,6 +33,9 @@ export function MenuOverlay({
   muted,
   spriteStyle,
   voxelReady,
+  unlockedSkins,
+  selectedSkin,
+  onSelectSkin,
   onToggleMute,
   onToggleSpriteStyle,
 }: MenuOverlayProps) {
@@ -49,6 +68,76 @@ export function MenuOverlay({
       >
         WASD or Arrow Keys to move
       </p>
+
+      {/* Skin picker */}
+      <div className="pointer-events-auto mt-5 flex flex-col items-center">
+        <p
+          id="skin-picker-label"
+          className="text-white/70 mb-1"
+          style={{ fontSize: canvasWidth * 0.032, textShadow: "1px 1px 0 #000" }}
+        >
+          SKIN
+        </p>
+        <div
+          role="radiogroup"
+          aria-labelledby="skin-picker-label"
+          className="flex gap-2 flex-wrap justify-center"
+        >
+          {SKIN_ORDER.map((skin) => {
+            const unlocked = unlockedSkins.includes(skin);
+            const selected = skin === selectedSkin;
+            const name = SKINS[skin].name;
+            const label = unlocked
+              ? `${name}${selected ? " (selected)" : ""}`
+              : `${name} — locked. ${getSkinUnlockHint(skin)}`;
+            return (
+              <button
+                key={skin}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                aria-label={label}
+                title={label}
+                disabled={!unlocked}
+                onClick={() => {
+                  if (unlocked) onSelectSkin(skin);
+                }}
+                className="relative rounded flex items-center justify-center min-w-11 min-h-11 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                style={{
+                  border: selected
+                    ? "2px solid #ffcd75"
+                    : "2px solid rgba(255,255,255,0.25)",
+                  background: "rgba(26,28,44,0.7)",
+                  opacity: unlocked ? 1 : 0.45,
+                  cursor: unlocked ? "pointer" : "not-allowed",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="rounded-sm"
+                  style={{
+                    width: canvasWidth * 0.045,
+                    height: canvasWidth * 0.045,
+                    background: skinSwatch(skin),
+                    boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.4)",
+                  }}
+                />
+                {!unlocked && (
+                  <Lock
+                    aria-hidden="true"
+                    className="absolute text-white/80"
+                    style={{
+                      width: canvasWidth * 0.03,
+                      height: canvasWidth * 0.03,
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="pointer-events-auto flex gap-2 mt-4">
         <button
           onClick={onToggleMute}

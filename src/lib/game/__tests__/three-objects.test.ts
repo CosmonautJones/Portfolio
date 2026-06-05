@@ -2,8 +2,10 @@ import { describe, it, expect, afterEach } from "vitest";
 import * as THREE from "three";
 import {
   createPlayer,
+  createSkinnedPlayer,
   createGhost,
   disposeGhost,
+  disposeSkinnedPlayer,
   createCar,
   createTruck,
   createTrain,
@@ -19,6 +21,8 @@ import {
   disposeSharedGeometries,
   COLORS,
 } from "../renderer/three-objects";
+import { SKINS } from "../skins";
+import { PALETTE } from "../sprites/palette";
 
 afterEach(() => {
   disposeSharedMaterials();
@@ -43,6 +47,48 @@ describe("createPlayer", () => {
     for (const child of player.children) {
       expect(child).toBeInstanceOf(THREE.Mesh);
     }
+  });
+});
+
+describe("createSkinnedPlayer", () => {
+  it("returns a player-shaped group", () => {
+    const p = createSkinnedPlayer(SKINS.golden);
+    expect(p).toBeInstanceOf(THREE.Group);
+    expect(p.children.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("default skin matches the base player colors", () => {
+    const p = createSkinnedPlayer(SKINS.default);
+    const body = (p.children[0] as THREE.Mesh)
+      .material as THREE.MeshLambertMaterial;
+    // Body stays the default player body color.
+    expect(`#${body.color.getHexString()}`).toBe(COLORS.playerBody);
+  });
+
+  it("golden skin recolors the body to the override palette color", () => {
+    const p = createSkinnedPlayer(SKINS.golden);
+    const body = (p.children[0] as THREE.Mesh)
+      .material as THREE.MeshLambertMaterial;
+    // golden maps body index 17 -> 5 (gold #ffcd75).
+    const expected = PALETTE[SKINS.golden.paletteOverrides[17]];
+    expect(`#${body.color.getHexString()}`).toBe(expected);
+  });
+
+  it("does not mutate the shared player materials (uses cloned instances)", () => {
+    const base = createPlayer();
+    const skinned = createSkinnedPlayer(SKINS.golden);
+    const baseBody = (base.children[0] as THREE.Mesh).material;
+    const skinnedBody = (skinned.children[0] as THREE.Mesh).material;
+    expect(skinnedBody).not.toBe(baseBody);
+    // base player keeps its default color after a skinned clone is made
+    expect(`#${(baseBody as THREE.MeshLambertMaterial).color.getHexString()}`).toBe(
+      COLORS.playerBody,
+    );
+  });
+
+  it("disposeSkinnedPlayer disposes per-instance materials without error", () => {
+    const p = createSkinnedPlayer(SKINS.diamond);
+    expect(() => disposeSkinnedPlayer(p)).not.toThrow();
   });
 });
 

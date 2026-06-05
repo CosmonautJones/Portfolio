@@ -76,6 +76,38 @@ function renderPixelsToRGBA(
   return data;
 }
 
+/**
+ * Render palette-indexed pixels to RGBA, applying a skin's palette overrides.
+ * Each source index is remapped via `overrides[idx] ?? idx` before the palette
+ * lookup, so a skin recolors the sprite without touching the base palette or
+ * any shared atlas data. Index 0 stays transparent.
+ */
+function renderSkinnedPixelsToRGBA(
+  pixels: SpritePixels,
+  overrides: Record<number, number>,
+  flipH: boolean,
+): Uint8Array {
+  const rows = pixels.length;
+  const cols = pixels[0].length;
+  const data = new Uint8Array(cols * rows * 4);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const srcC = flipH ? cols - 1 - c : c;
+      const idx = pixels[r][srcC];
+      if (idx === 0) continue;
+      const mapped = overrides[idx] ?? idx;
+      const rgba = PALETTE_RGBA[mapped];
+      if (!rgba) continue;
+      const offset = (r * cols + c) * 4;
+      data[offset] = rgba[0];
+      data[offset + 1] = rgba[1];
+      data[offset + 2] = rgba[2];
+      data[offset + 3] = rgba[3];
+    }
+  }
+  return data;
+}
+
 /** Render shadow silhouette (all non-transparent pixels as solid dark) */
 function renderShadowToRGBA(
   pixels: SpritePixels,
@@ -143,6 +175,38 @@ export class SpriteAtlas {
       width: cols,
       height: rows,
       rgba: renderPixelsToRGBA(pixels, flipH, PALETTE_RGBA),
+    });
+  }
+
+  /**
+   * Render palette-indexed pixels to RGBA with a skin's palette overrides
+   * applied. Exposed for unit testing the recolor mapping.
+   */
+  renderSkinnedRGBA(
+    pixels: SpritePixels,
+    overrides: Record<number, number>,
+    flipH = false,
+  ): Uint8Array {
+    return renderSkinnedPixelsToRGBA(pixels, overrides, flipH);
+  }
+
+  /**
+   * Register a skin-recolored sprite. Identical layout to addSprite, but each
+   * palette index is remapped through the skin's `paletteOverrides` first.
+   */
+  addSkinnedSprite(
+    key: string,
+    pixels: SpritePixels,
+    overrides: Record<number, number>,
+    flipH = false,
+  ): void {
+    const rows = pixels.length;
+    const cols = pixels[0].length;
+    this.entries.push({
+      key,
+      width: cols,
+      height: rows,
+      rgba: renderSkinnedPixelsToRGBA(pixels, overrides, flipH),
     });
   }
 

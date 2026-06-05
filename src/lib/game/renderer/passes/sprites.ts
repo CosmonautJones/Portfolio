@@ -3,7 +3,7 @@
 // ============================================================================
 
 import type { RenderPass, RenderResources, RenderState } from "../render-pass";
-import type { Lane } from "../../types";
+import type { Lane, SkinId } from "../../types";
 import type { AtlasRegion } from "../webgl/sprite-atlas";
 import type { SpriteBatch } from "../webgl/sprite-batch";
 import type { SpriteAtlas } from "../webgl/sprite-atlas";
@@ -41,9 +41,15 @@ export class SpritesPass implements RenderPass {
 
   private laneFirstVisible = new Map<number, number>();
   private spriteStyle: SpriteStyle = "pixel";
+  private skin: SkinId = "default";
 
   setSpriteStyle(style: SpriteStyle): void {
     this.spriteStyle = style;
+  }
+
+  /** Set the active player skin (cosmetic palette remap). */
+  setSkin(skin: SkinId): void {
+    this.skin = skin;
   }
 
   resetState(): void {
@@ -724,6 +730,16 @@ export class SpritesPass implements RenderPass {
         if (atlas.has(blinkKey)) {
           spriteKey = blinkKey;
         }
+      }
+    }
+
+    // Apply the active skin by preferring a "<skin>__<key>" recolored variant
+    // when one was pre-registered (pixel style only — voxel recolor lives in
+    // the Three renderer). Falls back to the base key when absent.
+    if (this.skin !== "default") {
+      const skinnedKey = `${this.skin}__${spriteKey}`;
+      if (atlas.has(skinnedKey)) {
+        spriteKey = skinnedKey;
       }
     }
 

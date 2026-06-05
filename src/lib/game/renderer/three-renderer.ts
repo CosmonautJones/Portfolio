@@ -8,11 +8,14 @@
 import * as THREE from "three";
 import type { RenderScene } from "../scene/types";
 import type { SpriteStyle } from "../sprites/sprite-style";
-import type { LaneType, ObstacleType } from "../types";
+import type { LaneType, ObstacleType, SkinId } from "../types";
+import { SKINS } from "../skins";
 import { DEFAULT_CONFIG, FOG_VISIBLE_LANES } from "../constants";
 import { ISO_TILT } from "../scene/camera-projection";
 import {
   createPlayer,
+  createSkinnedPlayer,
+  disposeSkinnedPlayer,
   createGhost,
   disposeGhost,
   createCar,
@@ -117,6 +120,14 @@ export class ThreeRenderer {
   private lanePool = new Map<number, PooledObject>();
   private obstaclePool = new Map<number, PooledObject>();
   private playerMesh: THREE.Group;
+  /** Active player skin. Default uses the base (shared-material) mesh. */
+  private currentSkin: SkinId = "default";
+  /**
+   * True when playerMesh is a skinned clone that OWNS its (non-cached)
+   * materials and must be disposed via disposeSkinnedPlayer() before replacing.
+   * False for the default mesh (shared cached materials — never dispose here).
+   */
+  private playerOwnsMaterials = false;
   /** Lazily-created translucent ghost mesh (best-run replay). Cosmetic only. */
   private ghostMesh: THREE.Group | null = null;
   private coinPool = new Map<number, PooledObject>();
@@ -283,6 +294,30 @@ export class ThreeRenderer {
   setStyle(_style: SpriteStyle): void {}
 
   /**
+   * Set the active player skin by rebuilding the player mesh with recolored
+   * (cloned) materials. The previous mesh is removed from the scene and, if it
+   * owned per-instance materials (a prior skinned clone), those are disposed.
+   * The shared material/geometry caches are NEVER mutated — the ghost and all
+   * other objects are unaffected. Cosmetic only.
+   */
+  setSkin(skin: SkinId): void {
+    if (this.disposed) return;
+    if (skin === this.currentSkin) return;
+    this.currentSkin = skin;
+
+    const prev = this.playerMesh;
+    const next =
+      skin === "default" ? createPlayer() : createSkinnedPlayer(SKINS[skin]);
+
+    this.scene.add(next);
+    prev.removeFromParent();
+    if (this.playerOwnsMaterials) disposeSkinnedPlayer(prev);
+
+    this.playerMesh = next;
+    this.playerOwnsMaterials = skin !== "default";
+  }
+
+  /**
    * GameRenderer interface conformance. There is no per-run GPU state to
    * reset for the Three path yet; object pools are keyed by lane/obstacle id
    * and self-purge, so a new game reuses them safely.
@@ -336,6 +371,9 @@ export class ThreeRenderer {
 
     // Remove all objects from scene
     this.playerMesh.removeFromParent();
+    // If the player is a skinned clone, it owns per-instance materials — dispose
+    // them. (The default mesh uses shared cached materials freed below.)
+    if (this.playerOwnsMaterials) disposeSkinnedPlayer(this.playerMesh);
     if (this.ghostMesh) {
       this.ghostMesh.removeFromParent();
       // Ghost owns per-instance (non-cached) materials — dispose them.

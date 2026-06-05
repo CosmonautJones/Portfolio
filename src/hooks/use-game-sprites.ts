@@ -7,6 +7,8 @@ import { COIN_SPRITES, COIN_GLOW_COLORS } from "@/lib/game/sprites/coins";
 import { DECORATION_SPRITES } from "@/lib/game/sprites/decorations";
 import { loadVoxelSprites, type VoxelSpriteData } from "@/lib/game/sprites/voxel-loader";
 import { loadSpriteStyle, type SpriteStyle } from "@/lib/game/sprites/sprite-style";
+import { SKINS } from "@/lib/game/skins";
+import type { SkinId } from "@/lib/game/types";
 
 interface UseGameSpritesResult {
   rendererRef: React.RefObject<GameRenderer | null>;
@@ -41,6 +43,26 @@ export function useGameSprites(
     }
     for (const { src, dest } of LOBSTER_FLIP_KEYS) {
       spriteCache.prerender(dest, LOBSTER_SPRITES[src], true);
+    }
+    // Skin variants: pre-register a palette-recolored copy of every lobster
+    // frame (and its flipped lefts) under a "<skinId>__<key>" prefix for each
+    // non-default skin. The build-once atlas can't rebuild on skin change, so
+    // all skins are registered up front; SpritesPass.renderPlayer picks the
+    // active skin's prefixed key at draw time (falling back to the base key).
+    for (const skinId of Object.keys(SKINS) as SkinId[]) {
+      const overrides = SKINS[skinId].paletteOverrides;
+      if (skinId === "default" || Object.keys(overrides).length === 0) continue;
+      for (const [key, pixels] of Object.entries(LOBSTER_SPRITES)) {
+        spriteCache.prerenderSkinned(`${skinId}__${key}`, pixels, overrides);
+      }
+      for (const { src, dest } of LOBSTER_FLIP_KEYS) {
+        spriteCache.prerenderSkinned(
+          `${skinId}__${dest}`,
+          LOBSTER_SPRITES[src],
+          overrides,
+          true,
+        );
+      }
     }
     for (const [key, pixels] of Object.entries(TILE_SPRITES)) {
       spriteCache.prerender(key, pixels);

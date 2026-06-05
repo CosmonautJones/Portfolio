@@ -366,7 +366,34 @@ describe("ThreeRenderer", () => {
     expect(typeof proto.render).toBe("function");
     expect(typeof proto.resize).toBe("function");
     expect(typeof proto.setStyle).toBe("function");
+    expect(typeof proto.setSkin).toBe("function");
     expect(typeof proto.resetState).toBe("function");
     expect(typeof proto.destroy).toBe("function");
+  });
+
+  it("setSkin recolors the player and still renders", () => {
+    renderer.setSkin("golden");
+    const state = makeRenderState();
+    expect(() => renderer.render(state, 0)).not.toThrow();
+  });
+
+  it("setSkin can switch between skins and back to default without error", () => {
+    const skins = ["golden", "ghost", "diamond", "rainbow", "default"] as const;
+    const state = makeRenderState();
+    for (const skin of skins) {
+      renderer.setSkin(skin);
+      expect(() => renderer.render(state, 0)).not.toThrow();
+    }
+  });
+
+  it("setSkin is a no-op after destroy", () => {
+    renderer.destroy();
+    expect(() => renderer.setSkin("golden")).not.toThrow();
+  });
+
+  it("destroys cleanly after a skin has been applied", () => {
+    renderer.setSkin("diamond");
+    renderer.render(makeRenderState(), 0);
+    expect(() => renderer.destroy()).not.toThrow();
   });
 });

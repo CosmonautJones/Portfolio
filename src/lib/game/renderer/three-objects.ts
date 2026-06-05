@@ -3,6 +3,8 @@
 // ============================================================================
 
 import * as THREE from "three";
+import { PALETTE } from "../sprites/palette";
+import type { Skin } from "../types";
 
 // Shared materials — reused across all instances for performance
 const materialCache = new Map<string, THREE.MeshLambertMaterial>();
@@ -182,6 +184,74 @@ export function createPlayer(): THREE.Group {
   group.add(rightClaw);
 
   return group;
+}
+
+/**
+ * Skinned lobster — the player model recolored per a cosmetic Skin. Reuses
+ * createPlayer()'s geometry/layout, then swaps each mesh's SHARED material for a
+ * recolored clone so the shared material cache is never mutated (same approach
+ * the ghost uses, so other objects and the ghost are unaffected). Cosmetic only.
+ *
+ * Skin overrides remap palette indices: 17 = body, 18 = highlight (head),
+ * 19 = claws/shadow, 88 = eyes. Each is resolved to a hex via PALETTE. Children
+ * built by createPlayer() are ordered:
+ *   0 body, 1 head, 2/3 eyes, 4/5 pupils, 6/7 claws.
+ *
+ * The returned group OWNS its (non-cached) materials; the renderer disposes them
+ * via disposeSkinnedPlayer() when the skin changes or on teardown.
+ */
+export function createSkinnedPlayer(skin: Skin): THREE.Group {
+  const group = createPlayer();
+  const overrides = skin.paletteOverrides;
+  if (Object.keys(overrides).length === 0) return group;
+
+  const hexFor = (index: number): string | null => {
+    const mapped = overrides[index];
+    if (mapped === undefined) return null;
+    const hex = PALETTE[mapped];
+    return hex && hex !== "transparent" ? hex : null;
+  };
+
+  const bodyHex = hexFor(17); // body + head
+  const headHex = hexFor(18) ?? bodyHex; // highlight → head (fall back to body)
+  const clawHex = hexFor(19); // claws
+  const eyeHex = hexFor(88); // eyes
+
+  // child index → target color (null = leave as base)
+  const colorByChild: Array<string | null> = [
+    bodyHex, // 0 body
+    headHex, // 1 head
+    eyeHex, // 2 left eye
+    eyeHex, // 3 right eye
+    null, // 4 left pupil
+    null, // 5 right pupil
+    clawHex, // 6 left claw
+    clawHex, // 7 right claw
+  ];
+
+  group.children.forEach((child, i) => {
+    const mesh = child as THREE.Mesh;
+    const base = mesh.material as THREE.MeshLambertMaterial;
+    const cloned = base.clone();
+    const target = colorByChild[i];
+    if (target) cloned.color.set(target);
+    mesh.material = cloned;
+  });
+
+  return group;
+}
+
+/** Dispose the per-instance (non-cached) materials owned by a skinned player. */
+export function disposeSkinnedPlayer(group: THREE.Group): void {
+  for (const child of group.children) {
+    const mesh = child as THREE.Mesh;
+    const mat = mesh.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) m.dispose();
+    } else if (mat) {
+      mat.dispose();
+    }
+  }
 }
 
 /**

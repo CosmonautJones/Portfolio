@@ -10,14 +10,16 @@ describe("GameRenderer interface", () => {
       resize: () => calls.push("resize"),
       render: (_scene: RenderScene, _alpha: number) => calls.push("render"),
       setStyle: () => calls.push("setStyle"),
+      setSkin: () => calls.push("setSkin"),
       resetState: () => calls.push("resetState"),
       destroy: () => calls.push("destroy"),
     };
     stub.resize(416, 640);
     stub.render({} as RenderScene, 0);
     stub.setStyle("pixel");
+    stub.setSkin("golden");
     stub.resetState();
     stub.destroy();
-    expect(calls).toEqual(["resize", "render", "setStyle", "resetState", "destroy"]);
+    expect(calls).toEqual(["resize", "render", "setStyle", "setSkin", "resetState", "destroy"]);
   });
 });
