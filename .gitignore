@@ -48,11 +48,11 @@ Portfolio_backup/
 next-env.d.ts
 .claude/worktrees/
 
-# stray debug screenshots
-/3d-*.png
-/final-*.png
-
-# playtest / browser-automation artifacts
-/smoke-*.png
+# stray debug screenshots — keep the repo root free of QA/automation captures.
+# Project assets live in public/ and src/; nothing at the repo root should be an image.
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
 /playtest-3d/
 /.playwright-mcp/
