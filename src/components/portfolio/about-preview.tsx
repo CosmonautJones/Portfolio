@@ -7,7 +7,7 @@ import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 export function AboutPreview() {
   return (
-    <section aria-label="About" className="container mx-auto max-w-3xl px-6 py-24 sm:py-32">
+    <section aria-label="About" className="container mx-auto max-w-3xl px-6 py-16 sm:py-24">
       <AnimateOnScroll>
         <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           About

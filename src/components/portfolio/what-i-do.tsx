@@ -27,7 +27,7 @@ const items = [
 
 export function WhatIDo() {
   return (
-    <section aria-label="What I Do" className="container mx-auto px-6 py-24 sm:py-32">
+    <section aria-label="What I Do" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
         <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           What I Do

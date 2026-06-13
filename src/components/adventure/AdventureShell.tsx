@@ -87,9 +87,10 @@ export function AdventureShell() {
 
   return (
     <div className="flex w-full h-full items-stretch justify-center">
-      {/* Left sidebar — desktop only */}
+      {/* Left sidebar — desktop only. Extra top padding clears the absolutely
+          positioned "Back to Projects" button so it never overlaps the first panel. */}
       <div
-        className="hidden lg:flex flex-col gap-3 p-3 overflow-y-auto shrink-0"
+        className="hidden lg:flex flex-col gap-3 p-3 pt-14 overflow-y-auto shrink-0"
         style={{
           width: 280,
           scrollbarWidth: "thin",
