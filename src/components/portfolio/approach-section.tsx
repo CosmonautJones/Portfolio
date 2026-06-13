@@ -29,7 +29,7 @@ export function ApproachSection() {
   return (
     <section aria-label="How I Work">
       <AnimateOnScroll>
-        <h2 className="mb-8 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="mb-8 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           How I Work
         </h2>
       </AnimateOnScroll>

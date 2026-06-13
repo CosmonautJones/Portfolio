@@ -16,7 +16,7 @@ export default function AboutPage() {
   return (
     <div className="container mx-auto max-w-3xl px-6 py-24 sm:py-32">
       <AnimateOnScroll>
-        <h1 className="gradient-text-animated inline-block text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="gradient-text-animated font-display inline-block text-4xl font-bold tracking-tight sm:text-5xl">
           About Me
         </h1>
       </AnimateOnScroll>
@@ -42,14 +42,14 @@ export default function AboutPage() {
       </AnimateOnScroll>
 
       <AnimateOnScroll className="mt-20">
-        <h2 className="mb-8 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="mb-8 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Experience
         </h2>
         <ExperienceTimeline />
       </AnimateOnScroll>
 
       <AnimateOnScroll className="mt-20">
-        <h2 className="mb-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="mb-6 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Tech Stack
         </h2>
         <SkillsGrid />

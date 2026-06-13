@@ -14,7 +14,7 @@ export function FeaturedProjects() {
   return (
     <section aria-label="Featured Work" className="container mx-auto px-6 py-24 sm:py-32">
       <AnimateOnScroll>
-        <h2 className="mb-12 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Featured Work
         </h2>
       </AnimateOnScroll>

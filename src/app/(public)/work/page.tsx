@@ -17,7 +17,7 @@ export default function WorkPage() {
     <div className="container mx-auto px-6 py-24 sm:py-32">
       <div className="mb-16 max-w-2xl">
         <AnimateOnScroll>
-          <h1 className="gradient-text-animated inline-block text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="gradient-text-animated font-display inline-block text-4xl font-bold tracking-tight sm:text-5xl">
             Projects
           </h1>
         </AnimateOnScroll>

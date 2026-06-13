@@ -106,7 +106,7 @@ export function HeroSection() {
         {/* Main headline — massive, Apple-style */}
         <m.h1
           {...entry(0.1)}
-          className="gradient-text-animated text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight"
+          className="gradient-text-animated font-display text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight"
         >
           {SITE_CONFIG.name}
         </m.h1>

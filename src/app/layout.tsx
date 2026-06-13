@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
@@ -8,7 +8,12 @@ import { TerminalProvider } from "@/components/terminal/terminal-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+// Body / UI — a clean, friendly grotesque with more character than Inter.
+const sans = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
+// Display / headings — distinctive editorial grotesque for big type moments.
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" });
+// Mono — real developer monospace for the game HUD, terminal, and code.
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
 
 const TerminalSheet = dynamic(
   () => import("@/components/terminal/terminal-sheet").then((m) => ({ default: m.TerminalSheet })),
@@ -48,7 +53,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{

@@ -9,12 +9,12 @@ export function AboutPreview() {
   return (
     <section aria-label="About" className="container mx-auto max-w-3xl px-6 py-24 sm:py-32">
       <AnimateOnScroll>
-        <h2 className="mb-12 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           About
         </h2>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.05}>
-        <blockquote className="border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
+        <blockquote className="font-display border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
           &ldquo;A developer who builds game engines for fun, hides easter eggs in production,
           and writes zero <code className="text-foreground/80">any</code> types.&rdquo;
         </blockquote>

@@ -11,7 +11,7 @@ export default function ContactPage() {
   return (
     <div className="container mx-auto max-w-2xl px-6 py-24 sm:py-32">
       <AnimateOnScroll>
-        <h1 className="gradient-text-animated mb-8 inline-block text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="gradient-text-animated font-display mb-8 inline-block text-4xl font-bold tracking-tight sm:text-5xl">
           Get in Touch
         </h1>
       </AnimateOnScroll>
