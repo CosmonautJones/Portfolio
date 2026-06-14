@@ -13,11 +13,7 @@ export function createClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
-/**
- * Fast synchronous check for Supabase auth cookies.
- * Returns true if any sb-*-auth-token cookies exist, meaning the user
- * likely has an active session worth verifying.
- */
-export function hasAuthCookies(): boolean {
-  return document.cookie.split(";").some((c) => c.trim().startsWith("sb-") && c.includes("auth-token"));
-}
+// Re-exported for backwards compatibility. `hasAuthCookies` now lives in its
+// own Supabase-free module so it can be imported without pulling in the
+// Supabase client bundle — see ./cookies.
+export { hasAuthCookies } from "./cookies";

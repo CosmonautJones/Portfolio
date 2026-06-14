@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,35 +9,51 @@ import { Label } from "@/components/ui/label";
 import { SITE_CONFIG } from "@/lib/constants";
 import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
 
-const contactSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().min(1, "Email is required").email("Please enter a valid email"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
+type ContactFormValues = { name: string; email: string; message: string };
+type ContactFormErrors = Partial<Record<keyof ContactFormValues, string>>;
 
-type ContactFormValues = z.infer<typeof contactSchema>;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validate the three contact fields. A tiny hand-rolled validator keeps the
+ * heavy form stack (react-hook-form + zod + resolver, ~45 kB) out of this
+ * route's bundle — overkill for a 3-field mailto form.
+ */
+export function validateContact(values: ContactFormValues): ContactFormErrors {
+  const errors: ContactFormErrors = {};
+  if (!values.name.trim()) errors.name = "Name is required";
+  if (!values.email.trim()) errors.email = "Email is required";
+  else if (!EMAIL_RE.test(values.email)) errors.email = "Please enter a valid email";
+  if (values.message.trim().length < 10) errors.message = "Message must be at least 10 characters";
+  return errors;
+}
+
+const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
 export function ContactForm() {
   const [copied, setCopied] = useState(false);
+  const [values, setValues] = useState<ContactFormValues>(EMPTY_VALUES);
+  const [errors, setErrors] = useState<ContactFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<ContactFormValues>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-  });
+  function updateField(field: keyof ContactFormValues, value: string) {
+    setValues((prev) => ({ ...prev, [field]: value }));
+    // Clear a field's error as soon as the user edits it.
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+  }
 
-  function onSubmit(data: ContactFormValues) {
-    const subject = encodeURIComponent(`Contact from ${data.name}`);
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const nextErrors = validateContact(values);
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    const subject = encodeURIComponent(`Contact from ${values.name}`);
     const body = encodeURIComponent(
-      `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`
+      `Name: ${values.name}\nEmail: ${values.email}\n\n${values.message}`
     );
     const mailtoUrl = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
 
@@ -50,7 +63,9 @@ export function ContactForm() {
       description: "Your message details have been pre-filled.",
     });
 
-    reset();
+    setValues(EMPTY_VALUES);
+    setErrors({});
+    setIsSubmitting(false);
   }
 
   async function copyEmail() {
@@ -69,18 +84,19 @@ export function ContactForm() {
         Got any questions? Want to collaborate? Feel free to reach out.
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
           <Input
             id="name"
             placeholder="Your name"
             className="focus-glow"
-            {...register("name")}
+            value={values.name}
+            onChange={(e) => updateField("name", e.target.value)}
             aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <p className="text-sm text-destructive" role="alert">{errors.name.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.name}</p>
           )}
         </div>
 
@@ -91,11 +107,12 @@ export function ContactForm() {
             type="email"
             placeholder="you@example.com"
             className="focus-glow"
-            {...register("email")}
+            value={values.email}
+            onChange={(e) => updateField("email", e.target.value)}
             aria-invalid={!!errors.email}
           />
           {errors.email && (
-            <p className="text-sm text-destructive" role="alert">{errors.email.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.email}</p>
           )}
         </div>
 
@@ -105,11 +122,12 @@ export function ContactForm() {
             id="message"
             placeholder="Your message..."
             className="min-h-[120px] focus-glow"
-            {...register("message")}
+            value={values.message}
+            onChange={(e) => updateField("message", e.target.value)}
             aria-invalid={!!errors.message}
           />
           {errors.message && (
-            <p className="text-sm text-destructive" role="alert">{errors.message.message}</p>
+            <p className="text-sm text-destructive" role="alert">{errors.message}</p>
           )}
         </div>
 

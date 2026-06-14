@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Barrel-import optimization: pull only the used exports from these
+    // packages instead of their full index, shrinking per-route bundles.
+    optimizePackageImports: ["lucide-react", "motion", "radix-ui"],
+  },
   turbopack: {
     rules: {
       "*.glsl": { loaders: ["raw-loader"], as: "*.js" },

@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { createClient, hasAuthCookies } from "@/lib/supabase/client";
+import { hasAuthCookies } from "@/lib/supabase/cookies";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getProfile,
   awardXP as serverAwardXP,
@@ -59,19 +60,22 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
   // Load profile on mount + listen to auth changes
   useEffect(() => {
     let mounted = true;
+    let cleanup = () => {};
 
-    async function loadProfile() {
-      // Fast path: skip all Supabase calls if no auth cookies exist
-      if (!hasAuthCookies()) {
-        if (mounted) {
-          setProfile(null);
-          setIsAuthenticated(false);
-          setLoading(false);
-        }
-        return;
-      }
+    // Fast path: anonymous visitors (no auth cookies) never need the Supabase
+    // client. Skipping the dynamic import keeps the ~55 kB auth/realtime bundle
+    // off the page entirely for the common unauthenticated case. A sign-in is a
+    // full-page OAuth redirect, so a fresh page load picks the session up.
+    if (!hasAuthCookies()) {
+      setProfile(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
 
-      const supabase = createClient();
+    async function loadProfile(supabase: SupabaseClient) {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
@@ -116,24 +120,32 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    loadProfile();
+    // Auth cookies exist — lazily pull in the Supabase client (off the
+    // critical path) and reuse a single instance for the session.
+    (async () => {
+      const { createClient } = await import("@/lib/supabase/client");
+      if (!mounted) return;
+      const supabase = createClient();
 
-    const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session) {
-          setIsAuthenticated(true);
-          loadProfile();
-        } else {
-          setProfile(null);
-          setIsAuthenticated(false);
+      await loadProfile(supabase);
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          if (session) {
+            setIsAuthenticated(true);
+            loadProfile(supabase);
+          } else {
+            setProfile(null);
+            setIsAuthenticated(false);
+          }
         }
-      }
-    );
+      );
+      cleanup = () => subscription.unsubscribe();
+    })();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      cleanup();
     };
   }, []);
 
