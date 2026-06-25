@@ -49,7 +49,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: https://*.supabase.co",
+              "img-src 'self' data: https://*.supabase.co https://avatars.githubusercontent.com",
               "connect-src 'self' https://*.supabase.co",
               "frame-src 'self'",
               "object-src 'none'",
