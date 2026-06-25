@@ -21,16 +21,31 @@ export function LoginForm({
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${window.location.origin}/auth/confirm?redirectTo=${encodeURIComponent(redirectTo)}`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/confirm?redirectTo=${encodeURIComponent(redirectTo)}`,
+        },
+      });
 
-    if (error) {
-      setError(error.message);
+      // On success the browser navigates away to GitHub, so leave `pending`
+      // true. Only a returned error means we stay on this page.
+      if (error) {
+        setError(error.message);
+        setPending(false);
+      }
+    } catch (err) {
+      // createClient() throws synchronously when the Supabase env vars are
+      // missing. Without this catch the spinner sticks on "Redirecting…"
+      // forever and the user sees nothing — the original login bug.
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        /Missing NEXT_PUBLIC_SUPABASE/i.test(message)
+          ? "Login isn't configured yet — Supabase environment variables are missing."
+          : message
+      );
       setPending(false);
     }
   }
