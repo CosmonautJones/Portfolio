@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getLeaderboard } from "@/actions/game-scores";
+import { getLeaderboard, type LeaderboardPeriod } from "@/actions/game-scores";
 import { createClient } from "@/lib/supabase/client";
 import type { LeaderboardEntry as BaseLeaderboardEntry } from "@/lib/types";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -15,6 +15,7 @@ interface UseRealtimeLeaderboardOptions {
   pollInterval?: number;
   limit?: number;
   gameType?: string;
+  period?: LeaderboardPeriod;
 }
 
 type ConnectionStatus = "connecting" | "realtime" | "polling";
@@ -22,7 +23,7 @@ type ConnectionStatus = "connecting" | "realtime" | "polling";
 export function useRealtimeLeaderboard(
   options: UseRealtimeLeaderboardOptions = {},
 ) {
-  const { pollInterval = 30000, limit = 10, gameType = "adventure" } = options;
+  const { pollInterval = 30000, limit = 10, gameType = "adventure", period = "all" } = options;
 
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,7 @@ export function useRealtimeLeaderboard(
   const mountedRef = useRef(true);
 
   const fetchLeaderboard = useCallback(async () => {
-    const result = await getLeaderboard(limit, gameType);
+    const result = await getLeaderboard(limit, gameType, period);
     if (!mountedRef.current) return;
 
     if ("scores" in result && result.scores) {
@@ -52,7 +53,7 @@ export function useRealtimeLeaderboard(
       setLastUpdated(new Date());
     }
     setIsLoading(false);
-  }, [limit, gameType]);
+  }, [limit, gameType, period]);
 
   const refresh = useCallback(async () => {
     await fetchLeaderboard();
@@ -160,7 +161,7 @@ export function useRealtimeLeaderboard(
       channelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameType, limit]);
+  }, [gameType, limit, period]);
 
   return { entries, isLoading, refresh, lastUpdated, connectionStatus };
 }

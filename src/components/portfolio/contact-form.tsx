@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +30,21 @@ export function validateContact(values: ContactFormValues): ContactFormErrors {
 
 const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
+// Minimum time a human should take to fill the form (ms). Bots submit instantly.
+const MIN_FILL_MS = 1500;
+
 export function ContactForm() {
   const [copied, setCopied] = useState(false);
   const [values, setValues] = useState<ContactFormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Honeypot field — read directly off the DOM so it stays out of React state.
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const mountedAt = useRef<number>(0);
+
+  useEffect(() => {
+    mountedAt.current = Date.now();
+  }, []);
 
   function updateField(field: keyof ContactFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -44,9 +54,24 @@ export function ContactForm() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    // Field validation first so genuine users always see what to fix.
     const nextErrors = validateContact(values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      return;
+    }
+
+    // Honeypot: real users leave it empty; bots typically autofill anything
+    // labeled "website". Silently bail with a generic error.
+    if (honeypotRef.current?.value) {
+      toast.error("Message couldn't be sent.");
+      return;
+    }
+
+    // Timing check — a submit faster than MIN_FILL_MS is almost certainly a bot.
+    if (Date.now() - mountedAt.current < MIN_FILL_MS) {
+      toast.error("That was quick! Give it another second and try again.");
       return;
     }
 
@@ -85,6 +110,26 @@ export function ContactForm() {
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {/* Honeypot: hidden from users + assistive tech, catches naive spam bots */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+        >
+          <label htmlFor="website">Website (leave blank)</label>
+          <input
+            id="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            ref={honeypotRef}
+          />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
           <Input

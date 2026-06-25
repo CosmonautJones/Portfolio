@@ -11,6 +11,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { XPBar } from "@/components/progression/xp-bar";
 import { AchievementPanel } from "@/components/progression/achievement-panel";
+import { DiscoveriesPanel } from "@/components/easter-eggs/discoveries-panel";
 import { useVisitor } from "@/hooks/use-visitor";
 import { Moon, Sun } from "lucide-react";
 import { TerminalToggle } from "@/components/terminal/terminal-toggle";
@@ -85,6 +86,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
         <div className="flex items-center gap-1">
           <XPBar />
           <AchievementPanel />
+          <DiscoveriesPanel />
           <TerminalToggle />
           <ColorSchemePicker />
           <Button

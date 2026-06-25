@@ -4,6 +4,8 @@ import { WhatIDo } from "@/components/portfolio/what-i-do";
 import { FeaturedProjects } from "@/components/portfolio/featured-projects";
 import { AboutPreview } from "@/components/portfolio/about-preview";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Home",
   description:

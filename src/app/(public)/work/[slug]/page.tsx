@@ -7,6 +7,9 @@ import type { Metadata } from "next";
 
 const VALID_SLUGS = ["pixel-art-editor", "cocktail-mixer"];
 
+export const revalidate = 3600;
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return VALID_SLUGS.map((slug) => ({ slug }));
 }

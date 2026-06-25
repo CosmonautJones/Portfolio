@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { Hanken_Grotesk, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
 import { TerminalProvider } from "@/components/terminal/terminal-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { PageviewTracker } from "@/components/analytics/pageview-tracker";
 import "./globals.css";
 
 // Body / UI — a clean, friendly grotesque with more character than Inter.
@@ -26,6 +28,9 @@ const RedPillTrigger = dynamic(
 );
 const LevelUpOverlay = dynamic(
   () => import("@/components/progression/level-up-overlay").then((m) => ({ default: m.LevelUpOverlay })),
+);
+const ShortcutsOverlay = dynamic(
+  () => import("@/components/ui/shortcuts-overlay").then((m) => ({ default: m.ShortcutsOverlay })),
 );
 
 
@@ -75,6 +80,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <KonamiEffects />
                 <RedPillTrigger />
                 <LevelUpOverlay />
+                <ShortcutsOverlay />
+                <Suspense fallback={null}>
+                  <PageviewTracker />
+                </Suspense>
               </MotionProvider>
             </TerminalProvider>
           </VisitorProvider>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import type { GamePhase, ChallengeProgress } from "@/lib/game/types";
+import type { LeaderboardPeriod } from "@/actions/game-scores";
 import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard";
 import { LeaderboardPanel } from "./LeaderboardPanel";
 import { StatsPanel } from "./StatsPanel";
@@ -22,12 +23,14 @@ export function AdventureShell() {
   const [coinBonus, setCoinBonus] = useState(0);
   const [playStartTime, setPlayStartTime] = useState<number | null>(null);
   const [challengeProgress, setChallengeProgress] = useState<ChallengeProgress[]>([]);
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState<LeaderboardPeriod>("all");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [, setTick] = useState(0); // force re-render for timer
 
   const { entries, isLoading, refresh, lastUpdated } = useRealtimeLeaderboard({
     pollInterval: 30000,
     limit: 10,
+    period: leaderboardPeriod,
   });
 
   // These handlers are invoked from GameCanvas's engine (rAF loop / tick
@@ -137,6 +140,8 @@ export function AdventureShell() {
           entries={entries}
           isLoading={isLoading}
           lastUpdated={lastUpdated}
+          period={leaderboardPeriod}
+          onPeriodChange={setLeaderboardPeriod}
         />
         <RecentScoresPanel refreshKey={deathCount} />
         <ChallengePanel liveProgress={challengeProgress} refreshKey={deathCount} />

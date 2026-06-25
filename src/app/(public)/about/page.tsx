@@ -7,6 +7,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "About",
   description: "Travis Jones — a developer who builds game engines for fun, hides easter eggs in production, and writes zero any types.",

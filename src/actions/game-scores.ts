@@ -40,17 +40,27 @@ export async function submitScore(
   });
 }
 
+export type LeaderboardPeriod = "all" | "week";
+
 export async function getLeaderboard(
   limit = 10,
   gameType = "adventure",
+  period: LeaderboardPeriod = "all",
 ): Promise<{ scores: LeaderboardEntry[]; error?: string }> {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("game_scores")
       .select("id, score, death_cause, created_at, user_id, display_name")
-      .eq("game_type", gameType)
+      .eq("game_type", gameType);
+
+    if (period === "week") {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte("created_at", weekAgo);
+    }
+
+    const { data, error } = await query
       .order("score", { ascending: false })
       .limit(limit);
 

@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Work",
   description: "Interactive demos and projects built by Travis Jones — full-stack applications, games, and developer tools.",

@@ -2,6 +2,7 @@
 
 import { RetroPanel } from "./RetroPanel";
 import type { LeaderboardEntry } from "@/hooks/use-realtime-leaderboard";
+import type { LeaderboardPeriod } from "@/actions/game-scores";
 import type { DeathCause } from "@/lib/game/types";
 
 function getDeathIcon(cause: string): string {
@@ -37,11 +38,47 @@ interface LeaderboardPanelProps {
   entries: LeaderboardEntry[];
   isLoading: boolean;
   lastUpdated: Date | null;
+  period?: LeaderboardPeriod;
+  onPeriodChange?: (period: LeaderboardPeriod) => void;
 }
 
-export function LeaderboardPanel({ entries, isLoading }: LeaderboardPanelProps) {
+export function LeaderboardPanel({
+  entries,
+  isLoading,
+  period = "all",
+  onPeriodChange,
+}: LeaderboardPanelProps) {
   return (
     <RetroPanel title="High Scores">
+      {/* Period toggle */}
+      {onPeriodChange && (
+        <div className="flex items-center justify-center gap-1 mb-2">
+          {(["all", "week"] as const).map((p) => {
+            const active = period === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPeriodChange(p)}
+                className="font-mono text-[10px] px-2 py-0.5 rounded-sm transition-colors"
+                style={{
+                  color: active ? "#ffcd75" : "#566c86",
+                  background: active
+                    ? "rgba(255, 205, 117, 0.12)"
+                    : "transparent",
+                  border: active
+                    ? "1px solid rgba(255, 205, 117, 0.3)"
+                    : "1px solid transparent",
+                }}
+                aria-pressed={active}
+              >
+                {p === "all" ? "ALL TIME" : "THIS WEEK"}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Live indicator */}
       <div className="flex items-center justify-center gap-1.5 mb-2">
         <span

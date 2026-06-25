@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { Trophy, Lock, Compass, Gamepad2 } from "lucide-react";
+import { toast } from "sonner";
+import { Trophy, Lock, Compass, Gamepad2, Share2 } from "lucide-react";
 import { getIcon } from "@/lib/icon-map";
 import {
   Sheet,
@@ -27,6 +28,28 @@ function AchievementIcon({ iconName, className }: { iconName: string; className?
   return <IconComponent className={className} />;
 }
 
+async function shareAchievement(achievement: Achievement) {
+  const shareUrl = `${window.location.origin}/api/achievement-card/${achievement.id}`;
+  const siteUrl = window.location.origin;
+  const text = `I unlocked "${achievement.name}" on travisjohnjones.com (+${achievement.xpReward} XP)`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: achievement.name, text, url: siteUrl });
+      return;
+    }
+  } catch {
+    // User cancelled or share failed — fall through to clipboard
+  }
+
+  try {
+    await navigator.clipboard.writeText(`${text} — ${shareUrl}`);
+    toast.success("Share link copied!");
+  } catch {
+    toast.error("Couldn't copy link.");
+  }
+}
+
 function AchievementGrid({
   achievements,
   unlockedIds,
@@ -44,12 +67,22 @@ function AchievementGrid({
           <div
             key={achievement.id}
             className={cn(
-              "flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-colors",
+              "group relative flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-colors",
               unlocked
                 ? "border-amber-500/30 bg-amber-500/5"
                 : "border-border/50 bg-muted/30 opacity-60"
             )}
           >
+            {unlocked && (
+              <button
+                type="button"
+                onClick={() => shareAchievement(achievement)}
+                className="absolute right-1.5 top-1.5 rounded-full p-1 text-muted-foreground opacity-0 transition-all hover:bg-amber-500/20 hover:text-amber-400 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-amber-400/50 group-hover:opacity-100"
+                aria-label={`Share ${achievement.name}`}
+              >
+                <Share2 className="h-3 w-3" />
+              </button>
+            )}
             <div
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-full",

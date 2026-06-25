@@ -23,16 +23,29 @@ function mockChain(data: unknown = null, error: unknown = null, count: number | 
     then: (resolve: (v: { data: unknown; error: unknown }) => unknown) =>
       resolve({ data, error }),
   };
+
+  // `.gte()` is used two ways:
+  //   - submitScore rate limit: `.eq().gte()` is awaited directly → { count }
+  //   - getLeaderboard week:     `.eq().gte().order().limit()` is chained → { data }
+  // So make it a thenable that also exposes `.order()`.
+  const gteResult = Object.assign(Promise.resolve({ count, error: null }), {
+    order: vi.fn().mockReturnValue(orderResult),
+  });
+
+  // `.eq()` must support: a second `.eq()` (player stats / recent scores),
+  // `.gte()` (rate limit + week filter), and `.order()` (leaderboard all).
+  const eqResult = {
+    eq: vi.fn().mockReturnValue({
+      order: vi.fn().mockReturnValue(orderResult),
+    }),
+    gte: vi.fn().mockReturnValue(gteResult),
+    order: vi.fn().mockReturnValue(orderResult),
+  };
+
   const chain: Record<string, unknown> = {
     insert: vi.fn().mockResolvedValue({ data, error }),
     select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          order: vi.fn().mockReturnValue(orderResult),
-        }),
-        gte: vi.fn().mockResolvedValue({ count, error: null }),
-        order: vi.fn().mockReturnValue(orderResult),
-      }),
+      eq: vi.fn().mockReturnValue(eqResult),
       order: vi.fn().mockReturnValue(orderResult),
     }),
   };
@@ -82,6 +95,16 @@ describe("getLeaderboard", () => {
     const result = await getLeaderboard();
     expect(result.scores).toEqual([]);
     expect(result.error).toBe("fail");
+  });
+
+  it("applies 7-day filter when period is 'week'", async () => {
+    const scores = [
+      { id: "1", score: 100, death_cause: "water", created_at: new Date().toISOString(), user_id: "user-1", display_name: "test" },
+    ];
+    mockChain(scores);
+    const result = await getLeaderboard(10, "adventure", "week");
+    expect(result.scores.length).toBe(1);
+    expect(result.error).toBeUndefined();
   });
 });
 
