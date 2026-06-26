@@ -50,7 +50,9 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https://*.supabase.co https://avatars.githubusercontent.com",
-              "connect-src 'self' https://*.supabase.co",
+              // wss:// is required for Supabase Realtime (live leaderboard) —
+              // the realtime client opens a WebSocket to <ref>.supabase.co.
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "frame-src 'self'",
               "object-src 'none'",
               "base-uri 'self'",
