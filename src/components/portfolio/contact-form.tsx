@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +30,28 @@ export function validateContact(values: ContactFormValues): ContactFormErrors {
 
 const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
+function errorId(field: keyof ContactFormValues) {
+  return `contact-${field}-error`;
+}
+
+function firstInvalidField(errors: ContactFormErrors): keyof ContactFormValues | undefined {
+  return (["name", "email", "message"] as const).find((field) => errors[field]);
+}
+
 export function ContactForm() {
   const [copied, setCopied] = useState(false);
   const [values, setValues] = useState<ContactFormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  const fieldRefs = {
+    name: nameRef,
+    email: emailRef,
+    message: messageRef,
+  } as const;
 
   function updateField(field: keyof ContactFormValues, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -47,6 +64,10 @@ export function ContactForm() {
     const nextErrors = validateContact(values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      const firstField = firstInvalidField(nextErrors);
+      if (firstField) {
+        fieldRefs[firstField].current?.focus();
+      }
       return;
     }
 
@@ -89,14 +110,18 @@ export function ContactForm() {
           <Label htmlFor="name">Name</Label>
           <Input
             id="name"
+            ref={nameRef}
             placeholder="Your name"
             className="focus-glow"
             value={values.name}
             onChange={(e) => updateField("name", e.target.value)}
             aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? errorId("name") : undefined}
           />
           {errors.name && (
-            <p className="text-sm text-destructive" role="alert">{errors.name}</p>
+            <p id={errorId("name")} className="text-sm text-destructive" role="alert">
+              {errors.name}
+            </p>
           )}
         </div>
 
@@ -104,15 +129,19 @@ export function ContactForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            ref={emailRef}
             type="email"
             placeholder="you@example.com"
             className="focus-glow"
             value={values.email}
             onChange={(e) => updateField("email", e.target.value)}
             aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? errorId("email") : undefined}
           />
           {errors.email && (
-            <p className="text-sm text-destructive" role="alert">{errors.email}</p>
+            <p id={errorId("email")} className="text-sm text-destructive" role="alert">
+              {errors.email}
+            </p>
           )}
         </div>
 
@@ -120,14 +149,18 @@ export function ContactForm() {
           <Label htmlFor="message">Message</Label>
           <Textarea
             id="message"
+            ref={messageRef}
             placeholder="Your message..."
             className="min-h-[120px] focus-glow"
             value={values.message}
             onChange={(e) => updateField("message", e.target.value)}
             aria-invalid={!!errors.message}
+            aria-describedby={errors.message ? errorId("message") : undefined}
           />
           {errors.message && (
-            <p className="text-sm text-destructive" role="alert">{errors.message}</p>
+            <p id={errorId("message")} className="text-sm text-destructive" role="alert">
+              {errors.message}
+            </p>
           )}
         </div>
 

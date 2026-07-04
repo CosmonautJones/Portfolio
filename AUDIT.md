@@ -47,7 +47,7 @@
 - **No CI/CD pipeline.** No GitHub Actions, no pre-commit hooks. Tests and lint run manually
 - **No E2E tests.** 434 unit/integration tests but zero Playwright flows
 - **No coverage reporting.** Can't quantify what's tested vs. not
-- **Accessibility has gaps.** No `aria-live` on form errors, iframes missing titles
+- **Accessibility has follow-up opportunities, not release blockers.** Missing `aria-live` on form errors and iframe titles should be fixed opportunistically when a selected polish task touches those surfaces, but this audit should not veto unrelated work or prevent the daily polish loop from landing a different shippable improvement.
 - **No service worker.** Offline support would be a nice touch
 
 | Category | Grade | Notes |
@@ -123,5 +123,9 @@
 4. **Set up GitHub Actions CI.** Tests + lint on every PR. 20 minutes of work that signals professionalism
 5. **Add E2E tests with Playwright.** Cover the golden path: visit → play game → unlock achievement
 6. **Write one technical blog post.** "How I Built a Game Engine in TypeScript" would go viral in dev circles
+
+### Automation guidance
+
+`AUDIT.md` is advisory context, not a hard gate. Daily polish automation should use it as a source of possible improvements, but it should not block an unrelated task just because an audit item exists. If the chosen task directly touches a known audit concern, improve that concern while there; otherwise land the smallest verified shippable improvement and leave the audit item for a targeted pass.
 
 The foundation is exceptional. The craft is obvious. The only thing missing is the *story*.

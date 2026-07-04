@@ -36,11 +36,32 @@ describe("ContactForm", () => {
     render(<ContactForm />);
     fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
 
+    const name = screen.getByLabelText("Name");
+    const email = screen.getByLabelText("Email");
+    const message = screen.getByLabelText("Message");
+
     expect(screen.getByText("Name is required")).toBeDefined();
     expect(screen.getByText("Email is required")).toBeDefined();
     expect(screen.getByText("Message must be at least 10 characters")).toBeDefined();
+    expect(name).toHaveAttribute("aria-invalid", "true");
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(message).toHaveAttribute("aria-invalid", "true");
+    expect(name).toHaveAccessibleDescription("Name is required");
+    expect(email).toHaveAccessibleDescription("Email is required");
+    expect(message).toHaveAccessibleDescription("Message must be at least 10 characters");
+    expect(name).toHaveFocus();
     expect(open).not.toHaveBeenCalled();
     open.mockRestore();
+  });
+
+  it("moves focus to the first invalid field in form order", () => {
+    render(<ContactForm />);
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Ada" } });
+    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+
+    expect(screen.getByLabelText("Email")).toHaveFocus();
+    expect(screen.getByLabelText("Email")).toHaveAccessibleDescription("Email is required");
   });
 
   it("opens a prefilled mailto link when the form is valid", () => {
