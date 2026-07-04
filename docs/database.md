@@ -192,10 +192,17 @@ Indexes:
 | `007_create_projects_tables.sql` | `projects` and `tasks` tables |
 | `008_create_game_scores.sql` | `game_scores` table |
 | `009_achievements_and_scoreboard.sql` | Scoreboard enhancements |
-| `009_create_profiles.sql` | `profiles` table + triggers |
+| `009b_create_profiles.sql` | `profiles` table + triggers |
 | `010_create_events.sql` | `events` audit table |
 | `011_add_game_type.sql` | `game_type` column on `game_scores` |
 | `012_add_coins_to_scores.sql` | `coins_collected` column on `game_scores` |
+| `013_add_performance_indexes.sql` | Indexes on `tools`, `notes`, `profiles`, `game_scores` |
+| `015_create_pland_tables.sql` | Plan'd trip-planning tables (`pland_*`) |
+| `016_seed_pland_demo_data.sql` | Plan'd demo data (no-op unless the demo user exists) |
+
+> Migration versions are the numeric prefix before the first underscore and must be
+> **unique**. The pland tables/seed were renumbered to `015`/`016` to resolve a
+> duplicate `013` collision; the seed sorts after the tables it depends on.
 
 ---
 
