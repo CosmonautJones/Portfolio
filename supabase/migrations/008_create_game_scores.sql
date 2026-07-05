@@ -1,4 +1,4 @@
-CREATE TABLE public.game_scores (
+CREATE TABLE IF NOT EXISTS public.game_scores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   score INT NOT NULL,
