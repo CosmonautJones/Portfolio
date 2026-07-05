@@ -67,6 +67,15 @@ supabase db push
 # in supabase/migrations/ — apply in numeric order
 ```
 
+Migrations apply in ascending order of their version — the numeric prefix before the
+first underscore (`001` … `016`). Each version must be unique across files.
+
+> **History drift?** If a push (or the Supabase branching check) fails with *"Remote
+> migration versions not found in local migrations directory,"* the remote history has
+> versions with no matching local file. Reconcile with `supabase link` →
+> `supabase migration list` (to see the mismatch) →
+> `supabase migration repair --status reverted|applied <version>`, then `supabase db push`.
+
 ## Step 5: Start the Dev Server
 
 ```bash

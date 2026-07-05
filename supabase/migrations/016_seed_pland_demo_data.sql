@@ -14,6 +14,23 @@ DECLARE
   expense_food uuid;
   expense_transport uuid;
 BEGIN
+  -- Only seed when the demo user actually exists in auth.users. On a fresh
+  -- database (e.g. a Supabase preview branch) that row is absent, and the
+  -- pland_trips.user_id -> auth.users(id) FK would otherwise abort the migration.
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = demo_user_id) THEN
+    RAISE NOTICE 'Plan''d demo seed skipped: demo user % not present in auth.users', demo_user_id;
+    RETURN;
+  END IF;
+
+  -- Idempotent: don't re-seed if the demo trip is already present.
+  IF EXISTS (
+    SELECT 1 FROM pland_trips
+    WHERE user_id = demo_user_id AND name = 'Tokyo Adventure 2026'
+  ) THEN
+    RAISE NOTICE 'Plan''d demo seed skipped: already seeded';
+    RETURN;
+  END IF;
+
   -- Create the demo trip
   INSERT INTO pland_trips (user_id, name, destination, description, cover_image_url, start_date, end_date, status)
   VALUES (

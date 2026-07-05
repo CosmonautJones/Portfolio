@@ -1,0 +1,21 @@
+# Supabase project configuration.
+#
+# A local identifier only — the REMOTE project this repo deploys to is chosen at
+# `supabase link --project-ref <ref>` time and stored outside version control.
+# Committing this file pins the CLI (and the GitHub Branching integration) to a
+# known configuration instead of falling back to implicit defaults.
+project_id = "portfolio"
+
+[db]
+# Postgres major version of the linked Supabase project.
+major_version = 15
+
+[db.migrations]
+# Migrations in supabase/migrations/ apply in ascending version order, where the
+# version is the numeric prefix before the first underscore (e.g. 001, 002, …016).
+# Versions must be unique; do not reuse a prefix across two files.
+
+[db.seed]
+# Demo/seed rows live inside versioned migrations (e.g. 016_seed_pland_demo_data.sql),
+# guarded to no-op on databases without the demo user. No separate seed file.
+enabled = false
