@@ -31,9 +31,12 @@ describe("LoginForm", () => {
   });
   afterEach(cleanup);
 
-  it("shows a surfaced error from a urlError prop", () => {
+  it("announces login errors to assistive technology", () => {
     render(<LoginForm urlError="Boom" />);
-    expect(screen.getByText("Boom")).toBeDefined();
+    const alert = screen.getByRole("alert");
+
+    expect(alert).toHaveTextContent("Boom");
+    expect(alert).toHaveAttribute("aria-live", "assertive");
   });
 
   it("calls signInWithOAuth with a redirectTo pointing at /auth/confirm", async () => {

@@ -68,7 +68,11 @@ export function LoginForm({
             <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs">Leaderboard</span>
           </div>
         </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive" role="alert" aria-live="assertive">
+            {error}
+          </p>
+        )}
         <Button
           onClick={handleGitHubLogin}
           className="h-10 w-full rounded-lg bg-foreground text-background transition-all duration-300 hover:opacity-90 active:scale-[0.98]"
