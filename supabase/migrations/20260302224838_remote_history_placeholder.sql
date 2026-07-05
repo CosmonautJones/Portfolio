@@ -1,0 +1,6 @@
+-- Remote migration history placeholder.
+--
+-- Supabase project lzscofbvecgpchokxhyb has this timestamp recorded in its
+-- migration history from an earlier migration layout. The current repo keeps the
+-- equivalent schema in the numbered migrations under supabase/migrations/.
+-- Keep this file as a no-op so Supabase Preview can reconcile remote history.

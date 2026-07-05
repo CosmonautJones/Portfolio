@@ -72,8 +72,9 @@ first underscore (`001` … `016`). Each version must be unique across files.
 
 > **History drift?** If a push (or the Supabase branching check) fails with *"Remote
 > migration versions not found in local migrations directory,"* the remote history has
-> versions with no matching local file. Reconcile with `supabase link` →
-> `supabase migration list` (to see the mismatch) →
+> versions with no matching local file. Keep no-op placeholder files for any legacy
+> remote-only versions that are already recorded in production, or reconcile with
+> `supabase link` → `supabase migration list` (to see the mismatch) →
 > `supabase migration repair --status reverted|applied <version>`, then `supabase db push`.
 
 ## Step 5: Start the Dev Server
