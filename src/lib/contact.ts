@@ -24,12 +24,3 @@ export function validateContact(values: ContactFormValues): ContactFormErrors {
   }
   return errors;
 }
-
-export function buildMailtoUrl(to: string, values: ContactFormValues) {
-  const normalized = normalizeContact(values);
-  const subject = encodeURIComponent(`Contact from ${normalized.name}`);
-  const body = encodeURIComponent(
-    `Name: ${normalized.name}\nEmail: ${normalized.email}\n\n${normalized.message}`
-  );
-  return `mailto:${to}?subject=${subject}&body=${body}`;
-}

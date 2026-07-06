@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { SITE_CONFIG } from "@/lib/constants";
-import { buildMailtoUrl, validateContact, type ContactFormErrors, type ContactFormValues } from "@/lib/contact";
-import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
+import { validateContact, type ContactFormErrors, type ContactFormValues } from "@/lib/contact";
+import { Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
 
 const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
@@ -63,9 +63,8 @@ export function ContactForm() {
       });
 
       if (!res.ok) {
-        window.open(buildMailtoUrl(SITE_CONFIG.email, values), "_blank");
-        toast.error("Opening your email client instead.", {
-          description: "The site email service is unavailable, but your message is pre-filled.",
+        toast.error("Message could not be sent.", {
+          description: "The site email service is unavailable. Please copy the email address below.",
         });
         return;
       }
@@ -77,9 +76,8 @@ export function ContactForm() {
       setValues(EMPTY_VALUES);
       setErrors({});
     } catch {
-      window.open(buildMailtoUrl(SITE_CONFIG.email, values), "_blank");
-      toast.error("Opening your email client instead.", {
-        description: "The site email service is unreachable, but your message is pre-filled.",
+      toast.error("Message could not be sent.", {
+        description: "The site email service is unreachable. Please copy the email address below.",
       });
     } finally {
       setIsSubmitting(false);
@@ -205,22 +203,10 @@ export function ContactForm() {
 
       <div className="border-t border-border/50 pt-8">
         <p className="mb-4 text-sm text-muted-foreground">
-          Or reach out directly:
+          Elsewhere:
         </p>
-        <Button
-          size="lg"
-          asChild
-          variant="outline"
-          className="h-12 rounded-full border-border/50 px-8 transition-all duration-300 hover:border-border hover:bg-secondary/80"
-        >
-          <a href={`mailto:${SITE_CONFIG.email}`}>
-            <Mail className="mr-2 h-4 w-4" />
-            {SITE_CONFIG.email}
-            <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-          </a>
-        </Button>
 
-        <div className="mt-6 flex gap-3">
+        <div className="flex gap-3">
           {[
             { href: SITE_CONFIG.github, icon: Github, label: "GitHub" },
             { href: SITE_CONFIG.linkedin, icon: Linkedin, label: "LinkedIn" },

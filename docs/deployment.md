@@ -20,6 +20,9 @@ See `.env.example` for the template. Configure these in the Netlify dashboard (S
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon (public) key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (bypasses RLS) |
 | `ADMIN_EMAIL` | Email address of the admin user |
+| `RESEND_API_KEY` | Resend API key for the baked-in contact form |
+| `RESEND_FROM_EMAIL` | Verified Resend sender address/domain |
+| `CONTACT_TO_EMAIL` | Destination inbox for contact form submissions |
 
 ### Optional
 
@@ -59,7 +62,7 @@ In the Supabase dashboard (Authentication → Providers → GitHub):
 ## Local Development
 
 1. Copy `.env.example` to `.env.local`
-2. Fill in Supabase URL, anon key, service role key, and admin email
+2. Fill in Supabase URL, anon key, service role key, admin email, and contact email variables
 3. Set Supabase redirect URL to `http://localhost:3000/auth/confirm`
 
 ```bash

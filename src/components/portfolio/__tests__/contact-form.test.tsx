@@ -7,6 +7,7 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+import { toast } from "sonner";
 import { validateContact } from "@/lib/contact";
 import { ContactForm } from "../contact-form";
 
@@ -28,8 +29,9 @@ describe("ContactForm", () => {
   });
 
   it("renders the send button", () => {
-    render(<ContactForm />);
+    const { container } = render(<ContactForm />);
     expect(screen.getByRole("button", { name: /send message/i })).toBeDefined();
+    expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
   });
 
   it("renders social links", () => {
@@ -93,7 +95,7 @@ describe("ContactForm", () => {
     open.mockRestore();
   });
 
-  it("opens a prefilled mailto link if the contact API is unavailable", async () => {
+  it("keeps failures in-page if the contact API is unavailable", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 503 }));
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     render(<ContactForm />);
@@ -105,8 +107,13 @@ describe("ContactForm", () => {
     });
     fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
 
-    await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
-    expect(String(open.mock.calls[0][0])).toMatch(/^mailto:/);
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(
+      "Message could not be sent.",
+      expect.objectContaining({
+        description: "The site email service is unavailable. Please copy the email address below.",
+      })
+    ));
+    expect(open).not.toHaveBeenCalled();
     open.mockRestore();
   });
 });
