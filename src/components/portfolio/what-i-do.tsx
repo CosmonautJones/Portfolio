@@ -9,19 +9,19 @@ const items = [
     icon: Code2,
     title: "Full-Stack Development",
     description:
-      "Database schemas with row-level security one hour, WebGL bloom shaders the next. If it runs on the web, I\u2019ve probably argued with it.",
+      "Product UI, server logic, auth, data, and the parts in between. I like when the whole thing has a reason to exist.",
   },
   {
     icon: Layers,
     title: "System Design",
     description:
-      "I write code like someone else will debug it at 2 AM \u2014 because that someone is usually me. Strict types, clear boundaries, zero any.",
+      "Clear boundaries, strict types, and enough restraint that the next change does not feel like a negotiation.",
   },
   {
     icon: Rocket,
     title: "Product Delivery",
     description:
-      "Working software beats perfect specs. I ship fast, gather feedback faster, and save the polish for what actually matters.",
+      "Move fast where it is cheap. Slow down where it counts. Ship the version people can actually use.",
   },
 ];
 
@@ -30,7 +30,7 @@ export function WhatIDo() {
     <section aria-label="What I Do" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
         <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          What I Do
+          Range
         </h2>
       </AnimateOnScroll>
       <StaggerChildren className="grid gap-6 sm:grid-cols-3">

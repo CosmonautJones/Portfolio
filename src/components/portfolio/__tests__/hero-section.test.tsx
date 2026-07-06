@@ -62,15 +62,15 @@ describe("HeroSection", () => {
 
   it("renders CTA links", () => {
     render(<HeroSection />);
-    expect(screen.getByText("View My Work")).toBeDefined();
-    expect(screen.getByText("Get in Touch")).toBeDefined();
+    expect(screen.getByText("See the Work")).toBeDefined();
+    expect(screen.getByText("Start a Thread")).toBeDefined();
   });
 
   it("surfaces concrete proof paths from the hero", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Play the game engine")).toBeDefined();
-    expect(screen.getByText("Try a browser tool")).toBeDefined();
-    expect(screen.getByText("Inspect a full-stack app")).toBeDefined();
+    expect(screen.getByText("Run the engine")).toBeDefined();
+    expect(screen.getByText("Open the editor")).toBeDefined();
+    expect(screen.getByText("See the stack")).toBeDefined();
   });
 
   it("renders a scroll cue chevron", () => {

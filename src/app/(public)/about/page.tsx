@@ -9,7 +9,7 @@ import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Travis Jones — a developer who builds game engines for fun, hides easter eggs in production, and writes zero any types.",
+  description: "Travis Jones - full-stack developer building sharp interfaces, real systems, and the occasional game engine.",
 };
 
 export default function AboutPage() {
@@ -17,22 +17,19 @@ export default function AboutPage() {
     <div className="container mx-auto max-w-3xl px-6 py-24 sm:py-32">
       <AnimateOnScroll>
         <h1 className="gradient-text-animated font-display inline-block text-4xl font-bold tracking-tight sm:text-5xl">
-          About Me
+          The Short Version
         </h1>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.1}>
         <div className="mt-8 space-y-5 text-lg leading-relaxed text-muted-foreground">
           <p>
-            I&apos;m the kind of developer who builds a game engine to prove TypeScript can ship
-            a real arcade game, hides easter eggs in a portfolio site because life&apos;s too
-            short for boring software, and writes zero <code className="text-foreground/80">any</code> types
-            because I actually like sleeping at night.
+            I build software with a point of view: clean interfaces, serious systems,
+            and just enough mischief to make the work memorable.
           </p>
           <p>
-            Full-stack means full-stack: I design database schemas with row-level security,
-            write game renderers with bloom post-processing, animate SVG cocktails layer by layer,
-            and still make sure the button has an <code className="text-foreground/80">aria-label</code>.
-            From concept to deploy, I care about every pixel and every millisecond.
+            Full-stack means I care about the whole cut: schema, auth, rendering,
+            interaction, performance, deployment, and the tiny line of copy that decides
+            whether a thing feels finished.
           </p>
         </div>
       </AnimateOnScroll>
@@ -57,7 +54,7 @@ export default function AboutPage() {
 
       <AnimateOnScroll className="mt-20 border-t border-border/40 pt-16 text-center">
         <p className="mb-8 text-lg text-muted-foreground">
-          Interested in working together or want to see what I&apos;ve built?
+          If the work feels like your kind of trouble, we should talk.
         </p>
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
@@ -66,7 +63,7 @@ export default function AboutPage() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Link href="/work">
-              View My Work
+              See the Work
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -76,7 +73,7 @@ export default function AboutPage() {
             asChild
             className="h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Get in Touch</Link>
+            <Link href="/contact">Start a Thread</Link>
           </Button>
         </div>
       </AnimateOnScroll>

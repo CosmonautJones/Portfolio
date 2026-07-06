@@ -97,7 +97,7 @@ export function ContactForm() {
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-        Got any questions? Want to collaborate? Feel free to reach out.
+        Tell me what you are building, what feels stuck, or where the system needs sharper hands.
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
@@ -167,18 +167,18 @@ export function ContactForm() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Send className="mr-2 h-4 w-4" />
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {isSubmitting ? "Sending..." : "Send the Note"}
             <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
           <p className="text-xs text-muted-foreground">
-            I usually reply within a day or two.
+            Clean signal gets a clean reply.
           </p>
         </div>
       </form>
 
       <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          Or email me directly at{" "}
+          Prefer the old route?{" "}
           <span className="font-medium text-foreground">{SITE_CONFIG.email}</span>
         </p>
         <Button

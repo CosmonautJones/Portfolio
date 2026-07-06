@@ -132,7 +132,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
         </p>
         {project.proof && (
           <p className="rounded-lg border border-border/50 bg-secondary/35 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">Proof: </span>
+            <span className="font-medium text-foreground">Under the hood: </span>
             {project.proof}
           </p>
         )}

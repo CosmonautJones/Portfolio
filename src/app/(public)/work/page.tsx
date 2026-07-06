@@ -6,7 +6,7 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
 export const metadata: Metadata = {
   title: "Work",
-  description: "Interactive demos and projects built by Travis Jones — full-stack applications, games, and developer tools.",
+  description: "Selected work by Travis Jones: full-stack apps, interactive tools, and browser-native game systems.",
 };
 
 export default function WorkPage() {
@@ -18,12 +18,12 @@ export default function WorkPage() {
       <div className="mb-16 max-w-2xl">
         <AnimateOnScroll>
           <h1 className="gradient-text-animated font-display inline-block text-4xl font-bold tracking-tight sm:text-5xl">
-            Projects
+            Work
           </h1>
         </AnimateOnScroll>
         <AnimateOnScroll delay={0.1}>
           <p className="mt-4 text-lg text-muted-foreground">
-            Each project started with &ldquo;I wonder if I could&hellip;&rdquo; &mdash; here&apos;s what happened next.
+            A few builds with enough surface to use and enough depth to inspect.
           </p>
         </AnimateOnScroll>
       </div>

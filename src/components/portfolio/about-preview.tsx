@@ -15,14 +15,13 @@ export function AboutPreview() {
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.05}>
         <blockquote className="font-display border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
-          &ldquo;A developer who builds game engines for fun, hides easter eggs in production,
-          and writes zero <code className="text-foreground/80">any</code> types.&rdquo;
+          &ldquo;I like software with a point of view: fast enough to disappear,
+          clear enough to maintain, and just strange enough to remember.&rdquo;
         </blockquote>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.1}>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-          From concept to deploy, I care about every pixel and every millisecond.
-          Want the full story?
+          The work is part product sense, part systems discipline, part tasteful trouble.
         </p>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.15}>
@@ -34,7 +33,7 @@ export function AboutPreview() {
             className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
             <Link href="/about">
-              More About Me
+              Read the Room
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

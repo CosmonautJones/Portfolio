@@ -12,6 +12,10 @@ import { validateContact } from "@/lib/contact";
 import { ContactForm } from "../contact-form";
 
 describe("ContactForm", () => {
+  function submitButton() {
+    return screen.getByRole("button", { name: /send the note/i });
+  }
+
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
   });
@@ -30,7 +34,7 @@ describe("ContactForm", () => {
 
   it("renders the send button", () => {
     const { container } = render(<ContactForm />);
-    expect(screen.getByRole("button", { name: /send message/i })).toBeDefined();
+    expect(submitButton()).toBeDefined();
     expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
   });
 
@@ -44,7 +48,7 @@ describe("ContactForm", () => {
   it("shows validation errors on empty submit and does not open the mail client", () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     render(<ContactForm />);
-    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+    fireEvent.submit(submitButton().closest("form")!);
 
     const name = screen.getByLabelText("Name");
     const email = screen.getByLabelText("Email");
@@ -68,7 +72,7 @@ describe("ContactForm", () => {
     render(<ContactForm />);
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Ada" } });
-    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+    fireEvent.submit(submitButton().closest("form")!);
 
     expect(screen.getByLabelText("Email")).toHaveFocus();
     expect(screen.getByLabelText("Email")).toHaveAccessibleDescription("Email is required");
@@ -83,7 +87,7 @@ describe("ContactForm", () => {
     fireEvent.change(screen.getByLabelText("Message"), {
       target: { value: "Hello there, this is a long enough message." },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+    fireEvent.submit(submitButton().closest("form")!);
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
@@ -105,7 +109,7 @@ describe("ContactForm", () => {
     fireEvent.change(screen.getByLabelText("Message"), {
       target: { value: "Hello there, this is a long enough message." },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+    fireEvent.submit(submitButton().closest("form")!);
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(
       "Message could not be sent.",

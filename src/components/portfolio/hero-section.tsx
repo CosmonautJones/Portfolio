@@ -116,7 +116,7 @@ export function HeroSection() {
           {...entry(0.2)}
           className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
         >
-          {SITE_CONFIG.tagline} Play the game, try the tools, and inspect the systems behind them.
+          {SITE_CONFIG.tagline} Games, tools, and full-stack work built to feel effortless and hold up under inspection.
         </m.p>
 
         {/* CTA buttons */}
@@ -130,7 +130,7 @@ export function HeroSection() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Link href="/work">
-              View My Work
+              See the Work
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -140,7 +140,7 @@ export function HeroSection() {
             asChild
             className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Get in Touch</Link>
+            <Link href="/contact">Start a Thread</Link>
           </Button>
         </m.div>
 

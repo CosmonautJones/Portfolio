@@ -7,7 +7,7 @@ import { AboutPreview } from "@/components/portfolio/about-preview";
 export const metadata: Metadata = {
   title: "Home",
   description:
-    "Travis Jones — I build things you actually want to click on. Full-stack developer, game engine tinkerer, easter egg hider.",
+    "Travis Jones - full-stack developer building sharp interfaces, game systems, and production software with a pulse.",
 };
 
 export default function HomePage() {

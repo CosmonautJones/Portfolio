@@ -3,7 +3,7 @@ import type { Project } from "@/lib/types";
 export const SITE_CONFIG = {
   name: "Travis Jones",
   title: "Software Developer",
-  tagline: "I build things you actually want to click on.",
+  tagline: "Software with a pulse. Systems with a spine.",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -12,9 +12,9 @@ export const SITE_CONFIG = {
 };
 
 export const PROOF_POINTS = [
-  { label: "Play the game engine", href: "/adventure", detail: "WebGL arcade proof" },
-  { label: "Try a browser tool", href: "/work/pixel-art-editor", detail: "Canvas editor demo" },
-  { label: "Inspect a full-stack app", href: "/pland", detail: "Supabase trip planner" },
+  { label: "Run the engine", href: "/adventure", detail: "WebGL arcade system" },
+  { label: "Open the editor", href: "/work/pixel-art-editor", detail: "Canvas drawing surface" },
+  { label: "See the stack", href: "/pland", detail: "Supabase-backed planner" },
 ] as const;
 
 export const NAV_LINKS = [
@@ -28,52 +28,52 @@ export const PROJECTS: Project[] = [
   {
     title: "Pixel Art Editor",
     description:
-      "I wanted to see how far the Canvas API could go in the browser. This is a full drawing tool with flood fill, a 32-color palette, and PNG export — no dependencies, just pixels and math.",
+      "A small, fast drawing surface built straight on the Canvas API: flood fill, palette state, PNG export, and no extra ceremony.",
     image: "/projects/pixel-art-editor.jpg",
     tags: ["Canvas API", "React", "TypeScript"],
     demoUrl: "/work/pixel-art-editor",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Interactive Demo",
     featured: true,
-    proof: "A real canvas drawing surface with flood fill, palette state, and PNG export.",
-    actionLabel: "Try editor",
+    proof: "Canvas state, flood fill, palette control, and export all running in-browser.",
+    actionLabel: "Open editor",
   },
   {
     title: "Cocktail Mixer",
     description:
-      "An animation playground disguised as a bartending app. Pick a drink, watch each ingredient pour in with layered SVG animations, and unlock a secret 7th cocktail if you try them all.",
+      "A quiet animation study wearing a bartender's jacket. Layered SVG pours, timing details, and one hidden drink for people who keep looking.",
     image: "/projects/cocktail-mixer.jpg",
     tags: ["Animation", "SVG", "React"],
     demoUrl: "/work/cocktail-mixer",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Interactive Demo",
     featured: true,
-    proof: "A polished animation sequence with layered SVG pours and a hidden unlock.",
-    actionLabel: "Mix a drink",
+    proof: "Layered SVG motion, sequenced ingredients, and a hidden unlock path.",
+    actionLabel: "Pour one",
   },
   {
     title: "ClaudeBot's Adventure",
     description:
-      "A from-scratch game engine: fixed-timestep loop, procedural level generation, WebGL rendering with bloom, and procedural audio — zero audio files. Built to prove that TypeScript can ship a real arcade game.",
+      "A TypeScript arcade engine with a fixed-timestep loop, procedural lanes, WebGL rendering, bloom, scoring, and procedural audio.",
     image: "/projects/claudebot-adventure.jpg",
     tags: ["Game Engine", "WebGL", "TypeScript", "Web Audio"],
     demoUrl: "/adventure",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Game",
-    proof: "A shipped TypeScript game engine with fixed timestep, WebGL, audio, and scoring.",
-    actionLabel: "Play game",
+    proof: "Fixed-step simulation, WebGL rendering, procedural audio, and scoring.",
+    actionLabel: "Start run",
   },
   {
     title: "Plan'd",
     description:
-      "Group trips fall apart in group chats. This is the fix: shared itineraries, expense splitting that tracks who owes what, an ideas board, and real-time chat — all backed by Supabase with row-level security.",
+      "A group-trip planner for the parts that usually get lost in chat: itineraries, expenses, ideas, and the decisions in between.",
     image: "/projects/pland.jpg",
     tags: ["Next.js", "Supabase", "TypeScript", "Real-time"],
     demoUrl: "/pland",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Full-Stack App",
-    proof: "A working group-trip planner with itineraries, expenses, ideas, chat, and RLS.",
-    actionLabel: "Open app",
+    proof: "Supabase auth, RLS, shared trip state, expenses, ideas, and chat.",
+    actionLabel: "Open Plan'd",
   },
 ];
 
@@ -102,24 +102,24 @@ export const EXPERIENCE = [
     year: "2024",
     title: "Senior Software Developer",
     description:
-      "Leading architecture for full-stack products. Built developer tools and AI integrations that shipped to production. This portfolio — game engine, progression system, admin panel — is the after-hours work.",
+      "Leading architecture for full-stack products, developer tools, and AI integrations that make it to production. The game engine, progression layer, and admin panel here are the after-hours receipts.",
   },
   {
     year: "2022",
     title: "Software Developer",
     description:
-      "Shipped production features across React and Node.js apps. Owned end-to-end delivery from database migrations to deployed UI. Got fast at turning product ideas into working software.",
+      "Shipped production features across React and Node.js apps, from schema changes to deployed UI. Got fast at turning rough product intent into working software.",
   },
   {
     year: "2019",
     title: "Junior Developer",
     description:
-      "First production apps in the wild. Built MERN stack projects, caught the open-source bug, and learned that the best code is the code someone else can read at 2 AM.",
+      "First production apps in the wild. Built MERN projects, caught the open-source bug, and learned that readable code is its own survival tool.",
   },
   {
     year: "2018",
     title: "Wrote My First Line of Code",
     description:
-      "Self-taught through online courses, side projects, and an unhealthy amount of Stack Overflow. Turned curiosity into a career.",
+      "Self-taught through online courses, side projects, and enough late-night debugging to make curiosity permanent.",
   },
 ];

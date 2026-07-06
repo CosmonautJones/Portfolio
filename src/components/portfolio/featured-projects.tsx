@@ -16,13 +16,13 @@ export function FeaturedProjects() {
       <AnimateOnScroll>
         <div className="mb-12 max-w-2xl">
           <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Featured Proof
+            Selected Work
           </h2>
           <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Working artifacts first. Claims second.
+            A few pieces with the machinery left visible.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Each project below is something a visitor can try, inspect, or use in the browser.
+            Built to be opened, tested, and judged on contact.
           </p>
         </div>
       </AnimateOnScroll>
@@ -41,7 +41,7 @@ export function FeaturedProjects() {
           className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
         >
           <Link href="/work">
-            View All Projects
+            See More Work
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
