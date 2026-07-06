@@ -34,6 +34,7 @@ npx vitest run src/path/to/file.test.tsx  # Single test file
 | [taste-bar.md](./taste-bar.md) | Product feel, UX/copy rules, quality bar |
 | [anti-goals.md](./anti-goals.md) | Product, UX, and engineering scope boundaries |
 | [agent-review-log.md](./agent-review-log.md) | Harness mission review notes and follow-ups |
+| [release-checklist.md](./release-checklist.md) | Local, commit, push, PR, and CI checks before done |
 | [architecture.md](./architecture.md) | Project structure, route groups, request flow, key libraries |
 | [auth.md](./auth.md) | GitHub OAuth, middleware routing rules, Supabase client factories |
 | [tool-system.md](./tool-system.md) | Tool types (internal/external/embedded), registry, admin CRUD, GitHub import |
