@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { signOut } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,8 @@ export function UserMenu({ isAdmin = false }: UserMenuProps) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    if (!hasSupabaseConfig()) return;
+
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);

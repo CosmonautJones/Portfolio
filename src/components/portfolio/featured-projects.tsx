@@ -14,9 +14,17 @@ export function FeaturedProjects() {
   return (
     <section aria-label="Featured Work" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
-        <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Featured Work
-        </h2>
+        <div className="mb-12 max-w-2xl">
+          <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Featured Proof
+          </h2>
+          <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Working artifacts first. Claims second.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Each project below is something a visitor can try, inspect, or use in the browser.
+          </p>
+        </div>
       </AnimateOnScroll>
       <StaggerChildren className="grid gap-6 sm:grid-cols-2">
         {featured.slice(0, 2).map((project) => (

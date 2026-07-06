@@ -130,6 +130,12 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
         <p className="text-sm leading-relaxed text-muted-foreground">
           {project.description}
         </p>
+        {project.proof && (
+          <p className="rounded-lg border border-border/50 bg-secondary/35 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="font-medium text-foreground">Proof: </span>
+            {project.proof}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {project.tags.map((tag) => (
             <span
@@ -149,7 +155,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
               className="h-8 rounded-full border-border/50 text-xs transition-all duration-300 hover:border-border hover:bg-secondary/80"
             >
               <Link href={project.demoUrl}>
-                <Play className="mr-1.5 h-3 w-3" /> Demo
+                <Play className="mr-1.5 h-3 w-3" /> {project.actionLabel ?? "Demo"}
               </Link>
             </Button>
           )}

@@ -7,26 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { SITE_CONFIG } from "@/lib/constants";
+import { buildMailtoUrl, validateContact, type ContactFormErrors, type ContactFormValues } from "@/lib/contact";
 import { Mail, Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
-
-type ContactFormValues = { name: string; email: string; message: string };
-type ContactFormErrors = Partial<Record<keyof ContactFormValues, string>>;
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Validate the three contact fields. A tiny hand-rolled validator keeps the
- * heavy form stack (react-hook-form + zod + resolver, ~45 kB) out of this
- * route's bundle — overkill for a 3-field mailto form.
- */
-export function validateContact(values: ContactFormValues): ContactFormErrors {
-  const errors: ContactFormErrors = {};
-  if (!values.name.trim()) errors.name = "Name is required";
-  if (!values.email.trim()) errors.email = "Email is required";
-  else if (!EMAIL_RE.test(values.email)) errors.email = "Please enter a valid email";
-  if (values.message.trim().length < 10) errors.message = "Message must be at least 10 characters";
-  return errors;
-}
 
 const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
@@ -59,7 +41,7 @@ export function ContactForm() {
     setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const nextErrors = validateContact(values);
     if (Object.keys(nextErrors).length > 0) {
@@ -72,21 +54,36 @@ export function ContactForm() {
     }
 
     setIsSubmitting(true);
-    const subject = encodeURIComponent(`Contact from ${values.name}`);
-    const body = encodeURIComponent(
-      `Name: ${values.name}\nEmail: ${values.email}\n\n${values.message}`
-    );
-    const mailtoUrl = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
 
-    window.open(mailtoUrl, "_blank");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-    toast.success("Opening your email client!", {
-      description: "Your message details have been pre-filled.",
-    });
+      if (!res.ok) {
+        window.open(buildMailtoUrl(SITE_CONFIG.email, values), "_blank");
+        toast.error("Opening your email client instead.", {
+          description: "The site email service is unavailable, but your message is pre-filled.",
+        });
+        return;
+      }
 
-    setValues(EMPTY_VALUES);
-    setErrors({});
-    setIsSubmitting(false);
+      toast.success("Message sent!", {
+        description: "Thanks for reaching out. I will get back to you soon.",
+      });
+
+      setValues(EMPTY_VALUES);
+      setErrors({});
+    } catch {
+      window.open(buildMailtoUrl(SITE_CONFIG.email, values), "_blank");
+      toast.error("Opening your email client instead.", {
+        description: "The site email service is unreachable, but your message is pre-filled.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function copyEmail() {
@@ -172,11 +169,11 @@ export function ContactForm() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Send className="mr-2 h-4 w-4" />
-            Send Message
+            {isSubmitting ? "Sending..." : "Send Message"}
             <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
           <p className="text-xs text-muted-foreground">
-            Opens your email client with the message pre-filled
+            I usually reply within a day or two.
           </p>
         </div>
       </form>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
 import type { User } from "@supabase/supabase-js";
 
 export function useUser() {
@@ -9,6 +10,11 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasSupabaseConfig()) {
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);

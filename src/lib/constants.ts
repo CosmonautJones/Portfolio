@@ -11,6 +11,12 @@ export const SITE_CONFIG = {
   instagram: "https://www.instagram.com/tj_jones/",
 };
 
+export const PROOF_POINTS = [
+  { label: "Play the game engine", href: "/adventure", detail: "WebGL arcade proof" },
+  { label: "Try a browser tool", href: "/work/pixel-art-editor", detail: "Canvas editor demo" },
+  { label: "Inspect a full-stack app", href: "/pland", detail: "Supabase trip planner" },
+] as const;
+
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/work", label: "Work" },
@@ -29,6 +35,8 @@ export const PROJECTS: Project[] = [
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Interactive Demo",
     featured: true,
+    proof: "A real canvas drawing surface with flood fill, palette state, and PNG export.",
+    actionLabel: "Try editor",
   },
   {
     title: "Cocktail Mixer",
@@ -40,6 +48,8 @@ export const PROJECTS: Project[] = [
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Interactive Demo",
     featured: true,
+    proof: "A polished animation sequence with layered SVG pours and a hidden unlock.",
+    actionLabel: "Mix a drink",
   },
   {
     title: "ClaudeBot's Adventure",
@@ -50,6 +60,8 @@ export const PROJECTS: Project[] = [
     demoUrl: "/adventure",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Game",
+    proof: "A shipped TypeScript game engine with fixed timestep, WebGL, audio, and scoring.",
+    actionLabel: "Play game",
   },
   {
     title: "Plan'd",
@@ -60,6 +72,8 @@ export const PROJECTS: Project[] = [
     demoUrl: "/pland",
     githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
     role: "Full-Stack App",
+    proof: "A working group-trip planner with itineraries, expenses, ideas, chat, and RLS.",
+    actionLabel: "Open app",
   },
 ];
 

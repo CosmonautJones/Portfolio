@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { SITE_CONFIG } from "@/lib/constants";
+import { PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { m, useReducedMotion, useMotionValue, useSpring, useTransform } from "motion/react";
 
@@ -116,7 +116,7 @@ export function HeroSection() {
           {...entry(0.2)}
           className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
         >
-          {SITE_CONFIG.tagline}
+          {SITE_CONFIG.tagline} Play the game, try the tools, and inspect the systems behind them.
         </m.p>
 
         {/* CTA buttons */}
@@ -142,6 +142,26 @@ export function HeroSection() {
           >
             <Link href="/contact">Get in Touch</Link>
           </Button>
+        </m.div>
+
+        <m.div
+          {...entry(0.4)}
+          className="mx-auto mt-10 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
+        >
+          {PROOF_POINTS.map((proof) => (
+            <Link
+              key={proof.href}
+              href={proof.href}
+              className="group rounded-lg border border-border/50 bg-background/45 px-4 py-3 backdrop-blur-md transition-colors hover:border-border hover:bg-secondary/70"
+            >
+              <span className="block text-sm font-medium text-foreground transition-colors group-hover:underline">
+                {proof.label}
+              </span>
+              <span className="mt-1 block text-xs text-muted-foreground">
+                {proof.detail}
+              </span>
+            </Link>
+          ))}
         </m.div>
       </div>
 

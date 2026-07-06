@@ -29,6 +29,11 @@ npx vitest run src/path/to/file.test.tsx  # Single test file
 
 | Document | Description |
 |---|---|
+| [vision.md](./vision.md) | Product intent, target visitor, wedge, enemy, success criteria |
+| [core-loop.md](./core-loop.md) | Primary visitor/admin loops, first 60 seconds, magic moment |
+| [taste-bar.md](./taste-bar.md) | Product feel, UX/copy rules, quality bar |
+| [anti-goals.md](./anti-goals.md) | Product, UX, and engineering scope boundaries |
+| [agent-review-log.md](./agent-review-log.md) | Harness mission review notes and follow-ups |
 | [architecture.md](./architecture.md) | Project structure, route groups, request flow, key libraries |
 | [auth.md](./auth.md) | GitHub OAuth, middleware routing rules, Supabase client factories |
 | [tool-system.md](./tool-system.md) | Tool types (internal/external/embedded), registry, admin CRUD, GitHub import |

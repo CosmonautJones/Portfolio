@@ -66,6 +66,13 @@ describe("HeroSection", () => {
     expect(screen.getByText("Get in Touch")).toBeDefined();
   });
 
+  it("surfaces concrete proof paths from the hero", () => {
+    render(<HeroSection />);
+    expect(screen.getByText("Play the game engine")).toBeDefined();
+    expect(screen.getByText("Try a browser tool")).toBeDefined();
+    expect(screen.getByText("Inspect a full-stack app")).toBeDefined();
+  });
+
   it("renders a scroll cue chevron", () => {
     const { container } = render(<HeroSection />);
     // lucide ChevronDown renders an svg with class lucide-chevron-down

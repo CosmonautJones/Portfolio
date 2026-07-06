@@ -62,6 +62,8 @@ const baseProject: Project = {
   tags: ["React", "TypeScript"],
   image: "/test.png",
   featured: false,
+  proof: "A working proof point.",
+  actionLabel: "Try it",
 };
 
 describe("ProjectCard", () => {
@@ -76,6 +78,7 @@ describe("ProjectCard", () => {
     expect(screen.getByText("A test project description.")).toBeDefined();
     expect(screen.getByText("Builder")).toBeDefined();
     expect(screen.getByText("React")).toBeDefined();
+    expect(screen.getByText("A working proof point.")).toBeDefined();
   });
 
   it("applies hover zoom class to the image", () => {

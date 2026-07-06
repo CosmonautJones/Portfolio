@@ -1,16 +1,24 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-import { ContactForm, validateContact } from "../contact-form";
+import { validateContact } from "@/lib/contact";
+import { ContactForm } from "../contact-form";
 
 describe("ContactForm", () => {
-  afterEach(cleanup);
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
   it("renders name, email, and message fields", () => {
     render(<ContactForm />);
@@ -64,7 +72,7 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText("Email")).toHaveAccessibleDescription("Email is required");
   });
 
-  it("opens a prefilled mailto link when the form is valid", () => {
+  it("sends through the contact API when the form is valid", async () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     render(<ContactForm />);
 
@@ -75,7 +83,29 @@ describe("ContactForm", () => {
     });
     fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
 
-    expect(open).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/contact",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+    expect(open).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it("opens a prefilled mailto link if the contact API is unavailable", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 503 }));
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(<ContactForm />);
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Ada" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ada@example.com" } });
+    fireEvent.change(screen.getByLabelText("Message"), {
+      target: { value: "Hello there, this is a long enough message." },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: /send message/i }).closest("form")!);
+
+    await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
     expect(String(open.mock.calls[0][0])).toMatch(/^mailto:/);
     open.mockRestore();
   });

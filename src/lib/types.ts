@@ -32,6 +32,8 @@ export interface Project {
   githubUrl?: string;
   role: string;
   featured?: boolean;
+  proof?: string;
+  actionLabel?: string;
 }
 
 export interface TrackerProject {
