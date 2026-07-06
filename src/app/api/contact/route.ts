@@ -78,6 +78,11 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    console.error("Resend email failed", {
+      status: res.status,
+      body: errorBody,
+    });
     return NextResponse.json({ error: "Email failed to send" }, { status: 502 });
   }
 
