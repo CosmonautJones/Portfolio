@@ -54,9 +54,19 @@ describe("ContactForm", () => {
     const email = screen.getByLabelText("Email");
     const message = screen.getByLabelText("Message");
 
-    expect(screen.getByText("Name is required")).toBeDefined();
-    expect(screen.getByText("Email is required")).toBeDefined();
-    expect(screen.getByText("Message must be at least 10 characters")).toBeDefined();
+    const [summary] = screen.getAllByRole("alert").filter((alert) =>
+      alert.classList.contains("sr-only")
+    );
+
+    expect(summary).toHaveTextContent(
+      "Name is required Email is required Message must be at least 10 characters"
+    );
+
+    expect(summary).toHaveAttribute("aria-live", "assertive");
+    expect(summary).toHaveClass("sr-only");
+    expect(screen.getByText("Name is required", { selector: "p:not(.sr-only)" })).toBeDefined();
+    expect(screen.getByText("Email is required", { selector: "p:not(.sr-only)" })).toBeDefined();
+    expect(screen.getByText("Message must be at least 10 characters", { selector: "p:not(.sr-only)" })).toBeDefined();
     expect(name).toHaveAttribute("aria-invalid", "true");
     expect(email).toHaveAttribute("aria-invalid", "true");
     expect(message).toHaveAttribute("aria-invalid", "true");

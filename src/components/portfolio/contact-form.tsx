@@ -20,6 +20,13 @@ function firstInvalidField(errors: ContactFormErrors): keyof ContactFormValues |
   return (["name", "email", "message"] as const).find((field) => errors[field]);
 }
 
+function errorSummary(errors: ContactFormErrors) {
+  return (["name", "email", "message"] as const)
+    .map((field) => errors[field])
+    .filter(Boolean)
+    .join(" ");
+}
+
 export function ContactForm() {
   const [copied, setCopied] = useState(false);
   const [values, setValues] = useState<ContactFormValues>(EMPTY_VALUES);
@@ -101,6 +108,12 @@ export function ContactForm() {
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {Object.keys(errors).length > 0 && (
+          <p className="sr-only" role="alert" aria-live="assertive">
+            {errorSummary(errors)}
+          </p>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
           <Input
