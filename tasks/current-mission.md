@@ -2,62 +2,62 @@
 
 ## Mission
 
-Sharpen the first-run portfolio path so a new visitor can move from Travis's
-claim to concrete interactive proof to contact without needing to explore the
-whole site.
+Clean up release health debt so `main` is quieter, safer, and easier for the
+harness to babysit.
 
 ## Why This Mission
 
-The repo already contains strong proof points: interactive demos, a game engine,
-progression, terminal/easter eggs, Plan'd, and an admin tool system. The next
-high-value slice is to make the public path connect those proof points into a
-clear first impression.
+The last run shipped successfully, but the release surface still has three
+known signals: GitHub reports dependency vulnerabilities, GitHub Actions warns
+about Node 20 action runtime deprecation, and ESLint reports one existing React
+hook dependency warning. These are small enough to handle as one quality pass
+without expanding product scope.
 
 ## Scope
 
-Focus only on the public visitor path:
-
-- Home hero and featured proof framing.
-- Featured project cards or project detail intros.
-- Contact CTA placement and wording.
-- Loading/error/empty states if they affect the first-run path.
+- Investigate GitHub dependency alerts and update safe dependency ranges.
+- Fix or intentionally document the `inputRef` hook dependency warning in
+  `src/hooks/use-game-engine.ts`.
+- Update CI workflow runtime/action configuration if needed.
+- Keep changes limited to release health, dependency metadata, and focused
+  tests.
 
 ## Out Of Scope
 
-- New games.
-- New auth behavior.
-- Supabase schema changes.
-- Admin CRUD changes.
-- Broad redesign of every page.
-- New analytics, billing, teams, or settings.
+- New portfolio features.
+- Visual redesign.
+- Auth or Supabase schema behavior changes.
+- Broad package upgrades unrelated to the reported alerts.
+- Migrating deployment providers.
 
 ## Likely Files
 
-- `src/components/portfolio/hero-section.tsx`
-- `src/components/portfolio/featured-projects.tsx`
-- `src/components/portfolio/project-card.tsx`
-- `src/app/(public)/work/[slug]/page.tsx`
-- `src/components/portfolio/contact-form.tsx`
-- `src/lib/constants.ts`
+- `package.json`
+- `package-lock.json`
+- `.github/workflows/*`
+- `src/hooks/use-game-engine.ts`
+- Tests near any dependency-sensitive code path.
 
 ## Acceptance Criteria
 
-- The home page states the interactive-proof wedge clearly.
-- At least three proof points are easy to reach from the first public path.
-- Project framing explains what the visitor can inspect or try.
-- Contact remains reachable after proof, not only from the nav.
-- Mobile layout remains readable without text overlap.
-- Existing tests pass or any skipped checks are documented.
+- `npm run lint` has no project warnings unless an exception is explicitly
+  documented.
+- `npm run test` passes, using worker limits only if needed.
+- `npm run build` passes.
+- GitHub CI passes after push.
+- Dependency alert count is reduced, or remaining alerts are categorized with a
+  reason they cannot be safely fixed in this slice.
 
 ## Test Plan
 
-- Run relevant portfolio component tests.
+- Run `npm audit` or GitHub/dependabot inspection for the vulnerable packages.
 - Run `npm run lint`.
-- Run `npm run build` if runtime code changes.
-- Manually inspect `/`, `/work`, one project detail page, and `/contact` on
-  desktop and mobile viewport widths.
+- Run `npm run test`.
+- Run `npm run build`.
+- Watch GitHub CI after push.
 
 ## Done Definition
 
-The visitor path is clearer without adding new feature surface area, and the
-diff stays limited to public portfolio files plus any necessary tests.
+The release surface is quieter and better explained: local checks pass, CI
+passes, and remaining security or tooling warnings are either fixed or captured
+as explicit follow-up work.

@@ -86,6 +86,12 @@ npx vitest run src/path/to/file.test.tsx  # Single test file
 
 ## Cross-Reference Guide
 
+### "What is the current harness mission?"
+See [../tasks/current-mission.md](../tasks/current-mission.md)
+
+### "What harness missions already shipped?"
+See [../tasks/completed.md](../tasks/completed.md)
+
 ### "How do I add a new tool?"
 See [guides/adding-a-tool.md](./guides/adding-a-tool.md) and [tool-system.md](./tool-system.md#internal)
 
