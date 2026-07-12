@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { SkywatchGlint } from "@/components/portfolio/skywatch-glint";
 import { PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { m, useReducedMotion, useMotionValue, useSpring, useTransform } from "motion/react";
@@ -60,6 +61,8 @@ export function HeroSection() {
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
+      <SkywatchGlint />
+
       {/* Ambient glow — large, soft, slow-moving.
           Outer m.div carries pointer parallax (transform); inner div carries the
           CSS keyframe animation so the two transforms don't fight. */}
@@ -103,12 +106,11 @@ export function HeroSection() {
           </div>
         </m.div>
 
-        {/* Main headline — massive, Apple-style */}
         <m.h1
           {...entry(0.1)}
-          className="gradient-text-animated font-display text-[clamp(3rem,8vw,7rem)] font-extrabold leading-[0.95] tracking-tight"
+          className="gradient-text-animated font-display text-[clamp(3rem,8vw,6.5rem)] font-extrabold leading-[0.98] tracking-tight"
         >
-          {SITE_CONFIG.name}
+          Hi, I&apos;m Travis.
         </m.h1>
 
         {/* Tagline */}
@@ -116,7 +118,7 @@ export function HeroSection() {
           {...entry(0.2)}
           className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
         >
-          {SITE_CONFIG.tagline} Games, tools, and full-stack work built to feel effortless and hold up under inspection.
+          {SITE_CONFIG.tagline}
         </m.p>
 
         {/* CTA buttons */}
@@ -140,7 +142,7 @@ export function HeroSection() {
             asChild
             className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Start a Thread</Link>
+            <Link href="/contact">Get in Touch</Link>
           </Button>
         </m.div>
 

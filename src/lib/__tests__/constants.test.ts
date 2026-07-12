@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { PROJECTS } from "@/lib/constants";
 
 describe("PROJECTS", () => {
-  it("every project has a non-empty image path", () => {
+  it("every provided project image uses the local jpg path format", () => {
     for (const project of PROJECTS) {
-      expect(project.image, `${project.title} is missing an image`).toBeTruthy();
-      expect(project.image).toMatch(/^\/projects\/.+\.jpg$/);
+      if (project.image) {
+        expect(project.image).toMatch(/^\/projects\/.+\.jpg$/);
+      }
     }
   });
 
@@ -18,11 +19,14 @@ describe("PROJECTS", () => {
     }
   });
 
-  it("featured projects have a demoUrl", () => {
+  it("featured projects have a primary action", () => {
     const featured = PROJECTS.filter((p) => p.featured);
     expect(featured.length).toBeGreaterThan(0);
     for (const project of featured) {
-      expect(project.demoUrl, `${project.title} is featured but has no demoUrl`).toBeTruthy();
+      expect(
+        project.demoUrl || project.liveUrl || project.githubUrl,
+        `${project.title} is featured but has no action`
+      ).toBeTruthy();
     }
   });
 });

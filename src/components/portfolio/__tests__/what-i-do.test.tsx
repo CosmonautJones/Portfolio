@@ -19,13 +19,13 @@ describe("WhatIDo", () => {
 
   it("renders all three cards with titles", () => {
     render(<WhatIDo />);
-    expect(screen.getByText("Full-Stack Development")).toBeDefined();
-    expect(screen.getByText("System Design")).toBeDefined();
-    expect(screen.getByText("Product Delivery")).toBeDefined();
+    expect(screen.getByText("Building useful software")).toBeDefined();
+    expect(screen.getByText("Learning the system")).toBeDefined();
+    expect(screen.getByText("Collaborating well")).toBeDefined();
   });
 
   it("has an accessible section label", () => {
     render(<WhatIDo />);
-    expect(screen.getByRole("region", { name: "What I Do" })).toBeDefined();
+    expect(screen.getByRole("region", { name: "What I enjoy working on" })).toBeDefined();
   });
 });

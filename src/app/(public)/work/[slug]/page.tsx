@@ -5,7 +5,12 @@ import { PROJECTS } from "@/lib/constants";
 import { DemoLoader } from "@/components/demos/demo-loader";
 import type { Metadata } from "next";
 
-const VALID_SLUGS = ["pixel-art-editor", "cocktail-mixer"];
+const VALID_SLUGS = [
+  "pixel-art-editor",
+  "cocktail-mixer",
+  "release-signal",
+  "table-stakes",
+];
 
 export function generateStaticParams() {
   return VALID_SLUGS.map((slug) => ({ slug }));

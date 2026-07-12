@@ -6,7 +6,7 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
 export const metadata: Metadata = {
   title: "Work",
-  description: "Selected work by Travis Jones: full-stack apps, interactive tools, and browser-native game systems.",
+  description: "A few projects, interactive tools, and browser-native systems by Travis Jones.",
 };
 
 export default function WorkPage() {
@@ -23,7 +23,7 @@ export default function WorkPage() {
         </AnimateOnScroll>
         <AnimateOnScroll delay={0.1}>
           <p className="mt-4 text-lg text-muted-foreground">
-            A few builds with enough surface to use and enough depth to inspect.
+            Here are a few things I have made. Some are practical, some are playful, and all of them are built to be explored.
           </p>
         </AnimateOnScroll>
       </div>

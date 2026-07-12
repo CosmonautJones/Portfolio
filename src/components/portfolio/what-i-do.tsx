@@ -1,42 +1,42 @@
 "use client";
 
-import { Code2, Layers, Rocket } from "lucide-react";
+import { Code2, Handshake, Layers } from "lucide-react";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
 const items = [
   {
     icon: Code2,
-    title: "Full-Stack Development",
+    title: "Building useful software",
     description:
-      "Product UI, server logic, auth, data, and the parts in between. I like when the whole thing has a reason to exist.",
+      "Product UI, server logic, auth, data, and the glue in between. I like when a tool earns its place by helping someone do a real thing.",
   },
   {
     icon: Layers,
-    title: "System Design",
+    title: "Learning the system",
     description:
-      "Clear boundaries, strict types, and enough restraint that the next change does not feel like a negotiation.",
+      "Clear boundaries, strict types, and enough patience to understand the shape of a problem before trying to make it behave.",
   },
   {
-    icon: Rocket,
-    title: "Product Delivery",
+    icon: Handshake,
+    title: "Collaborating well",
     description:
-      "Move fast where it is cheap. Slow down where it counts. Ship the version people can actually use.",
+      "Good software is usually a team sport. I care about readable handoffs, honest tradeoffs, and leaving the next person a little more room.",
   },
 ];
 
 export function WhatIDo() {
   return (
-    <section aria-label="What I Do" className="container mx-auto px-6 py-16 sm:py-24">
+    <section aria-label="What I enjoy working on" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
         <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Range
+          What I enjoy working on
         </h2>
       </AnimateOnScroll>
       <StaggerChildren className="grid gap-6 sm:grid-cols-3">
         {items.map((item) => (
           <StaggerItem key={item.title}>
-            <div className="glass-card gradient-border-glow rounded-2xl p-6">
+            <div className="glass-card gradient-border-glow rounded-lg p-6">
               <item.icon className="mb-4 h-8 w-8 text-muted-foreground" />
               <h3 className="mb-2 text-lg font-semibold tracking-tight">
                 {item.title}

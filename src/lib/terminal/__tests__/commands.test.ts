@@ -25,6 +25,7 @@ describe("executeCommand", () => {
       const text = result.output.map((o) => o.content).join("\n");
       expect(text).toContain("help");
       expect(text).not.toContain("vaporwave");
+      expect(text).not.toContain("skywatch");
     });
 
     it("about — includes site config info", () => {
@@ -85,6 +86,12 @@ describe("executeCommand", () => {
       ctx.onDiscover = vi.fn();
       executeCommand("vaporwave", [], ctx);
       expect(ctx.onDiscover).toHaveBeenCalledWith("vaporwave");
+    });
+
+    it("skywatch — returns an understated hidden response", () => {
+      const result = executeCommand("skywatch", [], makeCtx());
+      const text = result.output.map((o) => o.content).join("\n");
+      expect(text).toContain("One quiet light");
     });
   });
 

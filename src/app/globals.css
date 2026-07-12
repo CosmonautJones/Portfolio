@@ -310,6 +310,22 @@
   }
 }
 
+@keyframes skywatch-drift {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate3d(0, 0, 0);
+  }
+  45% {
+    opacity: 0.65;
+    transform: translate3d(-56px, 18px, 0);
+  }
+  55% {
+    opacity: 0.35;
+    transform: translate3d(-64px, 20px, 0);
+  }
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;

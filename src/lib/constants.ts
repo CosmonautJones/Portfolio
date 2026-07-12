@@ -3,7 +3,7 @@ import type { Project } from "@/lib/types";
 export const SITE_CONFIG = {
   name: "Travis Jones",
   title: "Software Developer",
-  tagline: "Software with a pulse. Systems with a spine.",
+  tagline: "I like learning how things work, building useful software, and collaborating with good people.",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -13,8 +13,8 @@ export const SITE_CONFIG = {
 
 export const PROOF_POINTS = [
   { label: "Run the engine", href: "/adventure", detail: "WebGL arcade system" },
-  { label: "Open the editor", href: "/work/pixel-art-editor", detail: "Canvas drawing surface" },
-  { label: "See the stack", href: "/pland", detail: "Supabase-backed planner" },
+  { label: "Check a release", href: "/work/release-signal", detail: "Local readiness tool" },
+  { label: "Start the clock", href: "/work/table-stakes", detail: "Poker blind timer" },
 ] as const;
 
 export const NAV_LINKS = [
@@ -37,6 +37,32 @@ export const PROJECTS: Project[] = [
     featured: true,
     proof: "Canvas state, flood fill, palette control, and export all running in-browser.",
     actionLabel: "Open editor",
+  },
+  {
+    title: "Release Signal",
+    description:
+      "A small local checklist for deciding whether a piece of work is ready to hand over, or just close.",
+    image: "",
+    tags: ["React", "TypeScript", "Product Quality"],
+    demoUrl: "/work/release-signal",
+    githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
+    role: "Interactive Tool",
+    featured: true,
+    proof: "Deterministic readiness logic, concrete gates, release notes, and a copyable handoff summary.",
+    actionLabel: "Check release",
+  },
+  {
+    title: "Table Stakes",
+    description:
+      "A practical blind clock for a home poker night: simple controls, editable levels, and a timer that keeps the table moving.",
+    image: "",
+    tags: ["React", "Timer Logic", "Poker"],
+    demoUrl: "/work/table-stakes",
+    githubUrl: "https://github.com/CosmonautJones/portfolio-tool-hub",
+    role: "Interactive Tool",
+    featured: true,
+    proof: "Local clock state, blind-level transitions, editable durations, and keyboard-friendly controls.",
+    actionLabel: "Start clock",
   },
   {
     title: "Cocktail Mixer",
@@ -75,6 +101,29 @@ export const PROJECTS: Project[] = [
     proof: "Supabase auth, RLS, shared trip state, expenses, ideas, and chat.",
     actionLabel: "Open Plan'd",
   },
+  {
+    title: "Members Only Poker Club",
+    description:
+      "A private poker club platform with a public site, member portal, cashier tools, and admin workflows.",
+    image: "",
+    tags: ["Next.js", "Supabase", "Stripe", "PostgreSQL"],
+    liveUrl: "https://members-only-poker-club.vercel.app",
+    githubUrl: "https://github.com/CosmonautJones/members-only-poker-club",
+    role: "Full-Stack App",
+    proof: "Public pages, authenticated member areas, operational tooling, Supabase data, and Stripe payments.",
+    actionLabel: "View site",
+  },
+  {
+    title: "Harness Core",
+    description:
+      "An open-source framework for checking, scoring, and improving AI-generated work through repeatable quality loops.",
+    image: "",
+    tags: ["TypeScript", "CLI", "MCP", "Quality Gates"],
+    githubUrl: "https://github.com/CosmonautJones/harness-core",
+    role: "Open Source",
+    proof: "Config-driven validation, scoring, iteration loops, plugins, CLI workflows, and MCP integration.",
+    actionLabel: "Read code",
+  },
 ];
 
 export const SKILLS = [
@@ -102,7 +151,7 @@ export const EXPERIENCE = [
     year: "2024",
     title: "Senior Software Developer",
     description:
-      "Leading architecture for full-stack products, developer tools, and AI integrations that make it to production. The game engine, progression layer, and admin panel here are the after-hours receipts.",
+      "Working across full-stack products, developer tools, and AI integrations. I like the mix of product thinking, clear systems, and small details that make software easier to trust.",
   },
   {
     year: "2022",

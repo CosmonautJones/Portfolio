@@ -16,20 +16,20 @@ export function FeaturedProjects() {
       <AnimateOnScroll>
         <div className="mb-12 max-w-2xl">
           <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Selected Work
+            A few projects
           </h2>
           <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            A few pieces with the machinery left visible.
+            Some practical, some playful, all built to be opened.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Built to be opened, tested, and judged on contact.
+            I learn best by making things you can poke at, break down, and improve.
           </p>
         </div>
       </AnimateOnScroll>
       <StaggerChildren className="grid gap-6 sm:grid-cols-2">
-        {featured.slice(0, 2).map((project) => (
+        {featured.slice(0, 4).map((project, index) => (
           <StaggerItem key={project.title}>
-            <ProjectCard project={project} featured />
+            <ProjectCard project={project} featured priority={index < 2} />
           </StaggerItem>
         ))}
       </StaggerChildren>
@@ -41,7 +41,7 @@ export function FeaturedProjects() {
           className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
         >
           <Link href="/work">
-            See More Work
+            See more work
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

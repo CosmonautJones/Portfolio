@@ -232,6 +232,18 @@ const vaporwaveCommand: Command = {
   },
 };
 
+const skywatchCommand: Command = {
+  name: "skywatch",
+  description: "Check the quiet part of the sky",
+  hidden: true,
+  execute: () => ({
+    output: [
+      { type: "system", content: "Skywatch log:" },
+      { type: "text", content: "One quiet light, no conclusions." },
+    ],
+  }),
+};
+
 // ─── Retro-only commands (hidden terminal) ────────────────────────────
 
 const whoisCommand: Command = {
@@ -317,6 +329,7 @@ const MAIN_COMMANDS: Command[] = [
   clearCommand,
   sudoCommand,
   vaporwaveCommand,
+  skywatchCommand,
 ];
 
 const RETRO_COMMANDS: Command[] = [
