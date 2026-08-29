@@ -26,6 +26,20 @@ export const NAV_LINKS = [
 
 export const PROJECTS: Project[] = [
   {
+    title: "Vellum",
+    description:
+      "A no-key reader that turns long public X Articles into clean Markdown while preserving headings, links, code, and media.",
+    image: "",
+    tags: ["Next.js", "TypeScript", "Markdown", "Public APIs"],
+    liveUrl: "https://vellum.tj-jones.chatgpt.site",
+    githubUrl: "https://github.com/CosmonautJones/vellum",
+    role: "Developer Tool",
+    featured: true,
+    proof:
+      "Public article retrieval, structured content conversion, resilient Markdown export, and a browser-local reading library.",
+    actionLabel: "Open Vellum",
+  },
+  {
     title: "Pixel Art Editor",
     description:
       "A small, fast drawing surface built straight on the Canvas API: flood fill, palette state, PNG export, and no extra ceremony.",

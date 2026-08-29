@@ -29,4 +29,15 @@ describe("PROJECTS", () => {
       ).toBeTruthy();
     }
   });
+
+  it("features Vellum with its live tool and source links", () => {
+    const vellum = PROJECTS.find((project) => project.title === "Vellum");
+    expect(vellum).toMatchObject({
+      featured: true,
+      liveUrl: "https://vellum.tj-jones.chatgpt.site",
+      githubUrl: "https://github.com/CosmonautJones/vellum",
+      role: "Developer Tool",
+    });
+    expect(PROJECTS.filter((project) => project.featured).slice(0, 4)).toContain(vellum);
+  });
 });
