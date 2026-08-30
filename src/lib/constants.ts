@@ -12,9 +12,9 @@ export const SITE_CONFIG = {
 };
 
 export const PROOF_POINTS = [
-  { label: "Run the engine", href: "/adventure", detail: "WebGL arcade system" },
-  { label: "Check a release", href: "/work/release-signal", detail: "Local readiness tool" },
-  { label: "Start the clock", href: "/work/table-stakes", detail: "Poker blind timer" },
+  { label: "Capture a fragment", href: "https://cosmonautjones.github.io/lumen-garden/", detail: "Offline idea greenhouse" },
+  { label: "Review an approval", href: "https://github.com/CosmonautJones/mission-control", detail: "Local agent control plane" },
+  { label: "Check the HUD", href: "https://github.com/CosmonautJones/ai-usage-overlays", detail: "Windows usage overlay" },
 ] as const;
 
 export const NAV_LINKS = [
