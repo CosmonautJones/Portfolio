@@ -71,6 +71,9 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
     py.set(0);
   }
 
+  const githubLabel =
+    project.demoUrl || project.liveUrl ? "Code" : (project.actionLabel ?? "Code");
+
   return (
     <m.div
       ref={cardRef}
@@ -167,7 +170,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
               className="h-8 rounded-full border-border/50 text-xs transition-all duration-300 hover:border-border hover:bg-secondary/80"
             >
               <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-1.5 h-3 w-3" /> Live
+                <ExternalLink className="mr-1.5 h-3 w-3" /> {project.actionLabel ?? "Live"}
               </a>
             </Button>
           )}
@@ -179,7 +182,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
               className="h-8 rounded-full border-border/50 text-xs transition-all duration-300 hover:border-border hover:bg-secondary/80"
             >
               <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                <Github className="mr-1.5 h-3 w-3" /> Code
+                <Github className="mr-1.5 h-3 w-3" /> {githubLabel}
               </a>
             </Button>
           )}

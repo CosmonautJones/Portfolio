@@ -68,9 +68,9 @@ describe("HeroSection", () => {
 
   it("surfaces concrete proof paths from the hero", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Run the engine")).toBeDefined();
-    expect(screen.getByText("Check a release")).toBeDefined();
-    expect(screen.getByText("Start the clock")).toBeDefined();
+    expect(screen.getByText("Capture a fragment")).toBeDefined();
+    expect(screen.getByText("Review an approval")).toBeDefined();
+    expect(screen.getByText("Check the HUD")).toBeDefined();
   });
 
   it("renders a scroll cue chevron", () => {

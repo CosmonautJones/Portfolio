@@ -106,4 +106,33 @@ describe("ProjectCard", () => {
     render(<ProjectCard project={baseProject} />);
     expect(screen.getByText("Test Project")).toBeDefined();
   });
+
+  it("uses actionLabel on liveUrl and keeps GitHub as Code", () => {
+    render(
+      <ProjectCard
+        project={{
+          ...baseProject,
+          liveUrl: "https://example.com",
+          githubUrl: "https://github.com/example/repo",
+          actionLabel: "Open demo",
+        }}
+      />
+    );
+    expect(screen.getByText("Open demo")).toBeDefined();
+    expect(screen.getByText("Code")).toBeDefined();
+  });
+
+  it("uses actionLabel on githubUrl when it is the only CTA", () => {
+    render(
+      <ProjectCard
+        project={{
+          ...baseProject,
+          githubUrl: "https://github.com/example/repo",
+          actionLabel: "Read code",
+        }}
+      />
+    );
+    expect(screen.getByText("Read code")).toBeDefined();
+    expect(screen.queryByText("Code")).toBeNull();
+  });
 });
