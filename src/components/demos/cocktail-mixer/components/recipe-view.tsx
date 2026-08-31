@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Cocktail } from "../types";
@@ -18,8 +18,10 @@ export function RecipeView({
   onReset: () => void;
   onPourComplete: () => void;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const { pouredCount, activePour, bubbleIndex, allDone } = usePourSequence(
-    cocktail.ingredients.length
+    cocktail.ingredients.length,
+    Boolean(prefersReducedMotion)
   );
 
   const firedRef = useRef(false);

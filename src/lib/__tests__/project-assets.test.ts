@@ -6,6 +6,28 @@ import manifest from "@/app/manifest";
 import { PROJECTS } from "@/lib/constants";
 
 describe("portfolio artwork", () => {
+  it("features LoopedIn instead of the dead Plan'd demo", () => {
+    const loopedIn = PROJECTS.find((project) => project.title === "LoopedIn");
+
+    expect(loopedIn).toMatchObject({
+      image: "/projects/loopedin.jpg",
+      liveUrl: "https://loopedin-family.netlify.app",
+      githubUrl: "https://github.com/CosmonautJones/family-loop",
+      role: "Full-Stack Product",
+    });
+    expect(PROJECTS.some((project) => project.title === "Plan'd")).toBe(false);
+  });
+
+  it("names the upgraded demos after their actual experiences", () => {
+    expect(PROJECTS.map((project) => project.title)).toEqual(
+      expect.arrayContaining([
+        "Pixel Workshop",
+        "Release Signal",
+        "The Cosmonaut’s Bar",
+      ])
+    );
+  });
+
   it("gives every project a unique local 16:9 image", async () => {
     const imagePaths = PROJECTS.map((project) => project.image);
 

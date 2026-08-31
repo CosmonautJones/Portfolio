@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const POUR_DELAY = 400;
-const POUR_INTERVAL = 1800;
-const STREAM_DURATION = 800;
-const BUBBLE_LINGER = 900;
+const POUR_DELAY = 250;
+const POUR_INTERVAL = 850;
+const STREAM_DURATION = 450;
+const BUBBLE_LINGER = 450;
 
 const STORAGE_KEY = "cocktails_made";
 
@@ -18,13 +18,20 @@ export interface PourState {
   allDone: boolean;
 }
 
-export function usePourSequence(ingredientCount: number): PourState {
-  const [pouredCount, setPouredCount] = useState(0);
+export function usePourSequence(
+  ingredientCount: number,
+  showImmediately = false
+): PourState {
+  const [pouredCount, setPouredCount] = useState(
+    showImmediately ? ingredientCount : 0
+  );
   const [activePour, setActivePour] = useState<number | null>(null);
   const [bubbleIndex, setBubbleIndex] = useState<number | null>(null);
-  const [allDone, setAllDone] = useState(false);
+  const [allDone, setAllDone] = useState(showImmediately);
 
   useEffect(() => {
+    if (showImmediately) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     for (let i = 0; i < ingredientCount; i++) {
@@ -56,11 +63,11 @@ export function usePourSequence(ingredientCount: number): PourState {
     timers.push(
       setTimeout(() => {
         setAllDone(true);
-      }, POUR_DELAY + ingredientCount * POUR_INTERVAL + 300)
+      }, POUR_DELAY + ingredientCount * POUR_INTERVAL + 200)
     );
 
     return () => timers.forEach(clearTimeout);
-  }, [ingredientCount]);
+  }, [ingredientCount, showImmediately]);
 
   return { pouredCount, activePour, bubbleIndex, allDone };
 }

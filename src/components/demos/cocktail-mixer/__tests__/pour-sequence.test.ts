@@ -24,7 +24,7 @@ describe("usePourSequence", () => {
     const { result } = renderHook(() => usePourSequence(3));
 
     act(() => {
-      vi.advanceTimersByTime(450); // past 400ms delay
+      vi.advanceTimersByTime(300); // past 250ms delay
     });
 
     expect(result.current.pouredCount).toBe(1);
@@ -36,7 +36,7 @@ describe("usePourSequence", () => {
 
     // Advance past pour start + stream duration
     act(() => {
-      vi.advanceTimersByTime(400 + 850); // 400 delay + 800 stream + buffer
+      vi.advanceTimersByTime(250 + 500); // 250 delay + 450 stream + buffer
     });
 
     expect(result.current.activePour).toBeNull();
@@ -46,9 +46,9 @@ describe("usePourSequence", () => {
   it("pours all ingredients sequentially", () => {
     const { result } = renderHook(() => usePourSequence(3));
 
-    // Advance past all 3 pours (400 + 3*1800 + extra)
+    // Advance past all 3 compact pours.
     act(() => {
-      vi.advanceTimersByTime(400 + 1800 * 3);
+      vi.advanceTimersByTime(250 + 850 * 3);
     });
 
     expect(result.current.pouredCount).toBe(3);
@@ -57,9 +57,9 @@ describe("usePourSequence", () => {
   it("sets allDone after all ingredients are poured", () => {
     const { result } = renderHook(() => usePourSequence(2));
 
-    // 400 initial + 2*1800 per ingredient + 300 finish delay + buffer
+    // Compact timing keeps the proof moving without skipping the sequence.
     act(() => {
-      vi.advanceTimersByTime(400 + 2 * 1800 + 400);
+      vi.advanceTimersByTime(250 + 2 * 850 + 300);
     });
 
     expect(result.current.allDone).toBe(true);
@@ -69,10 +69,30 @@ describe("usePourSequence", () => {
     const { result } = renderHook(() => usePourSequence(1));
 
     act(() => {
-      vi.advanceTimersByTime(400 + 1800 + 400);
+      vi.advanceTimersByTime(250 + 850 + 300);
     });
 
     expect(result.current.pouredCount).toBe(1);
+    expect(result.current.allDone).toBe(true);
+  });
+
+  it("finishes a three-ingredient recipe in under 3.5 seconds", () => {
+    const { result } = renderHook(() => usePourSequence(3));
+
+    act(() => {
+      vi.advanceTimersByTime(3400);
+    });
+
+    expect(result.current.pouredCount).toBe(3);
+    expect(result.current.allDone).toBe(true);
+  });
+
+  it("shows the completed recipe immediately for reduced motion", () => {
+    const { result } = renderHook(() => usePourSequence(3, true));
+
+    expect(result.current.pouredCount).toBe(3);
+    expect(result.current.activePour).toBeNull();
+    expect(result.current.bubbleIndex).toBeNull();
     expect(result.current.allDone).toBe(true);
   });
 

@@ -64,6 +64,7 @@ vi.mock("motion/react", () => {
 
   return {
     motion: motionProxy,
+    useReducedMotion: () => false,
     AnimatePresence: ({
       children,
     }: {
@@ -116,16 +117,32 @@ describe("CocktailMixer component", () => {
 
     fireEvent.click(screen.getByText("Back to drinks"));
 
-    expect(screen.getByText("Choose Your Drink")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "The Cosmonaut’s Bar" })
+    ).toBeInTheDocument();
   });
 
-  it("shows header text", () => {
+  it("frames the mixer as a personal bar and explains the unlock", () => {
     render(<CocktailMixer />);
 
-    expect(screen.getByText("Choose Your Drink")).toBeInTheDocument();
     expect(
-      screen.getByText("Pick a cocktail to see the recipe and animated pour")
+      screen.getByRole("heading", { name: "The Cosmonaut’s Bar" })
     ).toBeInTheDocument();
+    expect(screen.getByText("0 of 6 mixed")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Mix all six house drinks to unlock Travis's secret recipe/i)
+    ).toBeInTheDocument();
+  });
+
+  it("shows saved progress toward the secret recipe", () => {
+    localStorage.setItem(
+      "cocktails_made",
+      JSON.stringify(["Margarita", "Paloma", "Tequila Sunrise"])
+    );
+
+    render(<CocktailMixer />);
+
+    expect(screen.getByText("3 of 6 mixed")).toBeInTheDocument();
   });
 
   it("shows method badge in recipe view", () => {

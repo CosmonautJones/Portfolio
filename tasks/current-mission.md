@@ -2,62 +2,62 @@
 
 ## Mission
 
-Clean up release health debt so `main` is quieter, safer, and easier for the
-harness to babysit.
+Replace the broken Plan'd proof with LoopedIn and turn Pixel Art Editor,
+Cocktail Mixer, and Release Signal into clear 30-second product proofs.
 
 ## Why This Mission
 
-The last run shipped successfully, but the release surface still has three
-known signals: GitHub reports dependency vulnerabilities, GitHub Actions warns
-about Node 20 action runtime deprecation, and ESLint reports one existing React
-hook dependency warning. These are small enough to handle as one quality pass
-without expanding product scope.
+The live audit showed one genuinely dead public experience and three working
+artifacts whose best value is hidden or unclear. The portfolio wedge is
+interactive proof, so public projects must make their job, action, and result
+obvious without setup or explanation from Travis.
 
 ## Scope
 
-- Investigate GitHub dependency alerts and update safe dependency ranges.
-- Fix or intentionally document the `inputRef` hook dependency warning in
-  `src/hooks/use-game-engine.ts`.
-- Update CI workflow runtime/action configuration if needed.
-- Keep changes limited to release health, dependency metadata, and focused
-  tests.
+- Replace the Plan'd project card with the real hosted LoopedIn product and give
+  old `/pland` links a useful handoff.
+- Start Pixel Art Editor with a personalized lobster sprite, practical history,
+  and a calmer palette workflow.
+- Surface Cocktail Mixer's six-drink Cosmonaut unlock and shorten the wait for a
+  completed pour.
+- Give Release Signal a named change, concrete scenarios, and an honest
+  three-state verdict.
 
 ## Out Of Scope
 
-- New portfolio features.
-- Visual redesign.
-- Auth or Supabase schema behavior changes.
-- Broad package upgrades unrelated to the reported alerts.
-- Migrating deployment providers.
-
-## Likely Files
-
-- `package.json`
-- `package-lock.json`
-- `.github/workflows/*`
-- `src/hooks/use-game-engine.ts`
-- Tests near any dependency-sensitive code path.
+- Rebuilding LoopedIn in this repository.
+- Deleting Plan'd code or database migrations.
+- Auth, middleware, or database changes.
+- Global navigation, typography, or theme redesign.
+- New runtime dependencies.
+- The previously recorded dependency, Actions runtime, and hook-warning health
+  debt; that remains explicit follow-up work.
 
 ## Acceptance Criteria
 
-- `npm run lint` has no project warnings unless an exception is explicitly
-  documented.
-- `npm run test` passes, using worker limits only if needed.
-- `npm run build` passes.
-- GitHub CI passes after push.
-- Dependency alert count is reduced, or remaining alerts are categorized with a
-  reason they cannot be safely fixed in this slice.
+- Plan'd is absent from the public project catalog; LoopedIn has correct live,
+  source, proof copy, and artwork.
+- Pixel Art provides an immediate personalized result plus starter, edit,
+  undo/redo, palette, and export paths.
+- Cocktail Mixer visibly explains and tracks the secret unlock and completes a
+  standard pour promptly.
+- Release Signal distinguishes Hold, Ready with notes, and Ready through tested
+  deterministic logic.
+- Changed flows fit at 320px, remain keyboard usable, respect reduced motion,
+  and emit no console errors.
+- Focused tests, lint, full tests, build, GitHub CI, deployment, and exact live
+  verification pass.
 
 ## Test Plan
 
-- Run `npm audit` or GitHub/dependabot inspection for the vulnerable packages.
-- Run `npm run lint`.
-- Run `npm run test`.
-- Run `npm run build`.
-- Watch GitHub CI after push.
+- Run focused tests for catalog assets and all three demos.
+- Run `npm run lint`, `npm test`, and `npm run build` under Node 24.
+- Exercise desktop and mobile flows in a real browser.
+- Watch GitHub CI and deployment after push.
+- Verify exact production assets and interactions.
 
 ## Done Definition
 
-The release surface is quieter and better explained: local checks pass, CI
-passes, and remaining security or tooling warnings are either fixed or captured
-as explicit follow-up work.
+A first-time visitor can open every project in this slice, understand its job,
+reach a satisfying result quickly, and see concrete evidence that Travis ships
+real products.

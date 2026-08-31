@@ -1,37 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Eraser, Download, Pencil, PaintBucket, Trash2 } from "lucide-react";
+import {
+  Download,
+  Eraser,
+  PaintBucket,
+  Palette,
+  Pencil,
+  Redo2,
+  Sparkles,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PALETTE } from "@/lib/game/sprites/palette";
 import { cn } from "@/lib/utils";
 import { useVisitor } from "@/hooks/use-visitor";
 import { isCanvasFull } from "@/lib/easter-eggs/triggers";
+import {
+  cloneGrid,
+  CORE_PALETTE_INDICES,
+  createEmptyGrid,
+  createLobsterStarter,
+  floodFill,
+  identifyStarter,
+} from "./pixel-art-editor-logic";
 
-function createEmptyGrid(size: number): number[][] {
-  return Array.from({ length: size }, () => Array(size).fill(0));
-}
-
-function floodFill(
-  grid: number[][],
-  x: number,
-  y: number,
-  newColor: number
-): number[][] {
-  const targetColor = grid[y][x];
-  if (targetColor === newColor) return grid;
-  const newGrid = grid.map((row) => [...row]);
-  const queue: [number, number][] = [[x, y]];
-  const size = grid.length;
-  while (queue.length > 0) {
-    const [cx, cy] = queue.shift()!;
-    if (cx < 0 || cx >= size || cy < 0 || cy >= size) continue;
-    if (newGrid[cy][cx] !== targetColor) continue;
-    newGrid[cy][cx] = newColor;
-    queue.push([cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1]);
-  }
-  return newGrid;
-}
+const HISTORY_LIMIT = 50;
 
 function getCellSize(gridSize: number): number {
   if (gridSize === 8) return 40;
@@ -40,11 +35,17 @@ function getCellSize(gridSize: number): number {
 }
 
 export function PixelArtEditor() {
-  const [gridSize, setGridSize] = useState(16);
-  const [grid, setGrid] = useState<number[][]>(() => createEmptyGrid(16));
-  const [selectedColor, setSelectedColor] = useState(1);
+  const [gridSize, setGridSize] = useState(32);
+  const [grid, setGrid] = useState<number[][]>(() => createLobsterStarter());
+  const [selectedColor, setSelectedColor] = useState(17);
   const [tool, setTool] = useState<"pencil" | "eraser" | "fill">("pencil");
   const [isDrawing, setIsDrawing] = useState(false);
+  const [past, setPast] = useState<number[][][]>([]);
+  const [future, setFuture] = useState<number[][][]>([]);
+  const [activeStarter, setActiveStarter] = useState<"lobster" | "blank" | null>(
+    "lobster"
+  );
+  const [showAllColors, setShowAllColors] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { awardXP, trackEvent, unlockAchievement } = useVisitor();
   const pixelPerfectFired = useRef(false);
@@ -143,6 +144,7 @@ export function PixelArtEditor() {
 
   const applyTool = useCallback(
     (x: number, y: number) => {
+      setActiveStarter(null);
       setGrid((prev) => {
         if (tool === "pencil") {
           if (prev[y][x] === selectedColor) return prev;
@@ -163,14 +165,20 @@ export function PixelArtEditor() {
     [tool, selectedColor]
   );
 
+  const saveCheckpoint = useCallback(() => {
+    setPast((current) => [...current, cloneGrid(grid)].slice(-HISTORY_LIMIT));
+    setFuture([]);
+  }, [grid]);
+
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const cell = getCellFromEvent(e);
       if (!cell) return;
+      saveCheckpoint();
       setIsDrawing(true);
       applyTool(cell.x, cell.y);
     },
-    [getCellFromEvent, applyTool]
+    [getCellFromEvent, saveCheckpoint, applyTool]
   );
 
   const onMouseMove = useCallback(
@@ -193,10 +201,11 @@ export function PixelArtEditor() {
       if (!touch) return;
       const cell = getCellFromTouch(touch);
       if (!cell) return;
+      saveCheckpoint();
       setIsDrawing(true);
       applyTool(cell.x, cell.y);
     },
-    [getCellFromTouch, applyTool]
+    [getCellFromTouch, saveCheckpoint, applyTool]
   );
 
   const onTouchMove = useCallback(
@@ -221,8 +230,42 @@ export function PixelArtEditor() {
   );
 
   const handleClear = useCallback(() => {
+    saveCheckpoint();
     setGrid(createEmptyGrid(gridSize));
-  }, [gridSize]);
+    setActiveStarter("blank");
+  }, [gridSize, saveCheckpoint]);
+
+  const loadStarter = useCallback(
+    (starter: "lobster" | "blank") => {
+      saveCheckpoint();
+      const next =
+        starter === "lobster" ? createLobsterStarter() : createEmptyGrid(gridSize);
+      setGridSize(next.length);
+      setGrid(next);
+      setActiveStarter(starter);
+    },
+    [gridSize, saveCheckpoint]
+  );
+
+  const handleUndo = useCallback(() => {
+    const previous = past.at(-1);
+    if (!previous) return;
+    setPast((current) => current.slice(0, -1));
+    setFuture((current) => [cloneGrid(grid), ...current].slice(0, HISTORY_LIMIT));
+    setGrid(cloneGrid(previous));
+    setGridSize(previous.length);
+    setActiveStarter(identifyStarter(previous));
+  }, [past, grid]);
+
+  const handleRedo = useCallback(() => {
+    const next = future[0];
+    if (!next) return;
+    setFuture((current) => current.slice(1));
+    setPast((current) => [...current, cloneGrid(grid)].slice(-HISTORY_LIMIT));
+    setGrid(cloneGrid(next));
+    setGridSize(next.length);
+    setActiveStarter(identifyStarter(next));
+  }, [future, grid]);
 
   const handleExport = useCallback(() => {
     const scale = 16;
@@ -258,9 +301,11 @@ export function PixelArtEditor() {
   }, [grid, gridSize, awardXP]);
 
   const handleGridSizeChange = useCallback((size: number) => {
+    saveCheckpoint();
     setGridSize(size);
     setGrid(createEmptyGrid(size));
-  }, []);
+    setActiveStarter("blank");
+  }, [saveCheckpoint]);
 
   const gridSizes = [8, 16, 32] as const;
   const tools = [
@@ -268,10 +313,73 @@ export function PixelArtEditor() {
     { id: "eraser" as const, icon: Eraser, label: "Eraser" },
     { id: "fill" as const, icon: PaintBucket, label: "Fill" },
   ];
+  const visiblePaletteIndices = showAllColors
+    ? PALETTE.slice(1).map((_, index) => index + 1)
+    : [...CORE_PALETTE_INDICES];
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-6 max-w-2xl">
+        <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Sprite bench
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Pixel Workshop
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+          Remix ClaudeBot&apos;s lobster, sketch your own sprite, and export a crisp
+          transparent PNG. Every edit stays in your browser.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm backdrop-blur-sm sm:p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Start from
+            </span>
+            <Button
+              variant={activeStarter === "lobster" ? "default" : "outline"}
+              size="sm"
+              aria-pressed={activeStarter === "lobster"}
+              onClick={() => loadStarter("lobster")}
+            >
+              ClaudeBot lobster
+            </Button>
+            <Button
+              variant={activeStarter === "blank" ? "default" : "outline"}
+              size="sm"
+              aria-pressed={activeStarter === "blank"}
+              onClick={() => loadStarter("blank")}
+            >
+              Blank canvas
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Undo"
+              title="Undo"
+              disabled={past.length === 0}
+              onClick={handleUndo}
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Redo"
+              title="Redo"
+              disabled={future.length === 0}
+              onClick={handleRedo}
+            >
+              <Redo2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
         {/* Toolbar */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {/* Grid size selector */}
@@ -302,6 +410,8 @@ export function PixelArtEditor() {
                   tool === id && "bg-foreground text-background hover:bg-foreground/90"
                 )}
                 onClick={() => setTool(id)}
+                aria-label={label}
+                aria-pressed={tool === id}
                 title={label}
               >
                 <Icon className="h-4 w-4" />
@@ -318,6 +428,8 @@ export function PixelArtEditor() {
             height={canvasDim}
             className="cursor-crosshair rounded-lg"
             style={{ maxWidth: "100%", height: "auto" }}
+            role="img"
+            aria-label={`Pixel canvas, ${gridSize} by ${gridSize}`}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
@@ -329,21 +441,40 @@ export function PixelArtEditor() {
         </div>
 
         {/* Color palette */}
-        <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-          {PALETTE.slice(1).map((color, i) => (
+        <div className="mt-5 rounded-xl border border-border/50 bg-background/35 p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <Palette className="h-3.5 w-3.5" aria-hidden="true" /> Color bench
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAllColors((current) => !current)}
+            >
+              {showAllColors ? "Fewer colors" : "More colors"}
+            </Button>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+          {visiblePaletteIndices.map((paletteIndex) => {
+            const color = PALETTE[paletteIndex];
+            return (
             <button
-              key={i + 1}
-              onClick={() => setSelectedColor(i + 1)}
+              key={paletteIndex}
+              onClick={() => setSelectedColor(paletteIndex)}
               className={cn(
-                "h-7 w-7 rounded-md border-2 transition-all",
-                selectedColor === i + 1
+                "h-8 w-8 rounded-md border-2 transition-transform",
+                selectedColor === paletteIndex
                   ? "border-white scale-110 ring-2 ring-white/30"
                   : "border-transparent hover:scale-105"
               )}
               style={{ backgroundColor: color }}
+              aria-label={`Select color ${color}`}
+              aria-pressed={selectedColor === paletteIndex}
               title={color}
             />
-          ))}
+            );
+          })}
+          </div>
         </div>
 
         {/* Actions */}
@@ -355,6 +486,10 @@ export function PixelArtEditor() {
             <Download className="mr-2 h-4 w-4" /> Download PNG
           </Button>
         </div>
+        <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
+          32×32 starter art, touch drawing, flood fill, 50-step history, and
+          browser-only PNG export.
+        </p>
       </div>
     </div>
   );

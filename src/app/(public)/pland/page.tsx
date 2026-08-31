@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { PlandApp } from "@/components/pland/pland-app";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Plan'd — Trip Planner" };
+export const metadata: Metadata = { title: "LoopedIn — Family Plans" };
 
 export default function PlandPage() {
-  return (
-    <div className="container mx-auto px-6 py-24 sm:py-32">
-      <PlandApp />
-    </div>
-  );
+  redirect("https://loopedin-family.netlify.app");
 }
