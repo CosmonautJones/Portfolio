@@ -29,7 +29,7 @@ export const PROJECTS: Project[] = [
     title: "Lumen Garden",
     description:
       "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
-    image: "",
+    image: "/projects/lumen-garden.jpg",
     tags: ["React", "TypeScript", "Vite", "Vitest"],
     liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
     githubUrl: "https://github.com/CosmonautJones/lumen-garden",
@@ -42,7 +42,7 @@ export const PROJECTS: Project[] = [
     title: "Mission Control",
     description:
       "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
-    image: "",
+    image: "/projects/mission-control.jpg",
     tags: ["TypeScript", "Node.js", "React", "Python"],
     githubUrl: "https://github.com/CosmonautJones/mission-control",
     role: "Open Source",
@@ -54,7 +54,7 @@ export const PROJECTS: Project[] = [
     title: "AI Usage Overlays",
     description:
       "A Windows HUD that normalizes local Claude, Codex, and Cursor usage signals into one compact view. Provider integrations are optional and degrade independently when data is unavailable.",
-    image: "",
+    image: "/projects/ai-usage-overlays.jpg",
     tags: ["PowerShell", "Windows", "WPF"],
     githubUrl: "https://github.com/CosmonautJones/ai-usage-overlays",
     role: "Open Source",
@@ -66,7 +66,7 @@ export const PROJECTS: Project[] = [
     title: "The Conductor",
     description:
       "A pure-orchestrator skill for ADR-driven implementation: it dispatches specialized subagents, persists run state, and escalates only on a small set of human-gated triggers.",
-    image: "",
+    image: "/projects/the-conductor.jpg",
     tags: ["TypeScript", "Vitest", "Claude Code"],
     githubUrl: "https://github.com/CosmonautJones/the-conductor",
     role: "Open Source",
@@ -91,7 +91,7 @@ export const PROJECTS: Project[] = [
     title: "Release Signal",
     description:
       "A small local checklist for deciding whether a piece of work is ready to hand over, or just close.",
-    image: "",
+    image: "/projects/release-signal.jpg",
     tags: ["React", "TypeScript", "Product Quality"],
     demoUrl: "/work/release-signal",
     githubUrl: "https://github.com/CosmonautJones/Portfolio",
@@ -104,7 +104,7 @@ export const PROJECTS: Project[] = [
     title: "Table Stakes",
     description:
       "A practical blind clock for a home poker night: simple controls, editable levels, and a timer that keeps the table moving.",
-    image: "",
+    image: "/projects/table-stakes.jpg",
     tags: ["React", "Timer Logic", "Poker"],
     demoUrl: "/work/table-stakes",
     githubUrl: "https://github.com/CosmonautJones/Portfolio",
@@ -154,7 +154,7 @@ export const PROJECTS: Project[] = [
     title: "Members Only Poker Club",
     description:
       "A private poker club platform with a public site, member portal, cashier tools, and admin workflows.",
-    image: "",
+    image: "/projects/members-only-poker-club.jpg",
     tags: ["Next.js", "Supabase", "Stripe", "PostgreSQL"],
     liveUrl: "https://members-only-poker-club.vercel.app",
     githubUrl: "https://github.com/CosmonautJones/members-only-poker-club",
@@ -166,7 +166,7 @@ export const PROJECTS: Project[] = [
     title: "Harness Core",
     description:
       "An open-source framework for checking, scoring, and improving AI-generated work through repeatable quality loops.",
-    image: "",
+    image: "/projects/harness-core.jpg",
     tags: ["TypeScript", "CLI", "MCP", "Quality Gates"],
     githubUrl: "https://github.com/CosmonautJones/harness-core",
     role: "Open Source",
