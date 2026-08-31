@@ -195,29 +195,40 @@ export const SKILL_CATEGORIES = [
   },
 ];
 
-export const EXPERIENCE = [
+type ExperienceItem = {
+  year: string;
+  title: string;
+  organization: string;
+  description: string;
+  highlights?: readonly string[];
+};
+
+export const EXPERIENCE: readonly ExperienceItem[] = [
   {
-    year: "2024",
-    title: "Senior Software Developer",
+    year: "Sep 2018 - Aug 2026",
+    title: "Software Engineer",
+    organization: "Global Shop Solutions",
     description:
-      "Working across full-stack products, developer tools, and AI integrations. I like the mix of product thinking, clear systems, and small details that make software easier to trust.",
-  },
-  {
-    year: "2022",
-    title: "Software Developer",
-    description:
-      "Shipped production features across React and Node.js apps, from schema changes to deployed UI. Got fast at turning rough product intent into working software.",
-  },
-  {
-    year: "2019",
-    title: "Junior Developer",
-    description:
-      "First production apps in the wild. Built MERN projects, caught the open-source bug, and learned that readable code is its own survival tool.",
+      "Built, modernized, tested, and supported enterprise software for manufacturing and ERP workflows.",
+    highlights: [
+      "Developed manufacturing ERP workflows spanning shipping, invoicing, returns, and related business rules.",
+      "Modernized COBOL and VB.NET behavior into reusable C#/.NET components without losing production behavior.",
+      "Handled production troubleshooting and side-by-side regression work across tightly coupled systems.",
+      "Built Model Context Protocol and knowledge-search tooling for approved AI coding workflows.",
+    ],
   },
   {
     year: "2018",
-    title: "Wrote My First Line of Code",
+    title: "Full-Time Software Engineering Program",
+    organization: "Lambda Academy of Computer Science",
     description:
-      "Self-taught through online courses, side projects, and enough late-night debugging to make curiosity permanent.",
+      "Completed a full-time software engineering program before moving into enterprise product development.",
+  },
+  {
+    year: "2015 - 2017",
+    title: "Technical Supervisor",
+    organization: "Buzzles Concessions",
+    description:
+      "Kept point-of-sale, computer, security, and production systems running across four locations while training staff and handling daily troubleshooting.",
   },
 ];
