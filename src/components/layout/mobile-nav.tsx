@@ -4,7 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { NAV_LINKS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 
 export function MobileNav() {
@@ -18,6 +25,12 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="right">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Site navigation</SheetTitle>
+          <SheetDescription>
+            Choose a page to continue exploring the portfolio.
+          </SheetDescription>
+        </SheetHeader>
         <nav className="mt-8 flex flex-col gap-4">
           {NAV_LINKS.map((link) => (
             <Link

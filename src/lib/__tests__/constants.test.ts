@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PROJECTS } from "@/lib/constants";
+import { NAV_LINKS, PROJECTS } from "@/lib/constants";
+
+describe("NAV_LINKS", () => {
+  it("labels the project catalog clearly without changing its route", () => {
+    expect(NAV_LINKS).toContainEqual({ href: "/work", label: "Projects" });
+  });
+});
 
 describe("PROJECTS", () => {
   it("every provided project image uses the local jpg path format", () => {
