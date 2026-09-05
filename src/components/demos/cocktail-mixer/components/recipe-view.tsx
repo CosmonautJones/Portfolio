@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Cocktail } from "../types";
-import { usePourSequence } from "../hooks";
-import { GlassVisualization } from "./glass-visualization";
+import { GlassScene } from "../glass-scene";
 import { RecipeDetails } from "./recipe-details";
+import type { PourSnapshot } from "../pour-timeline";
+
+const INITIAL_SNAPSHOT: PourSnapshot = {
+  pouredCount: 0,
+  activePour: null,
+  allDone: false,
+};
 
 export function RecipeView({
   cocktail,
@@ -19,18 +25,28 @@ export function RecipeView({
   onPourComplete: () => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
-  const { pouredCount, activePour, bubbleIndex, allDone } = usePourSequence(
-    cocktail.ingredients.length,
-    Boolean(prefersReducedMotion)
-  );
+  const [snapshot, setSnapshot] = useState<PourSnapshot>(INITIAL_SNAPSHOT);
+  const onSnapshot = useCallback((next: PourSnapshot) => {
+    setSnapshot((prev) => {
+      if (
+        prev.pouredCount === next.pouredCount &&
+        prev.activePour === next.activePour &&
+        prev.allDone === next.allDone
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
 
   const firedRef = useRef(false);
+
   useEffect(() => {
-    if (allDone && !firedRef.current) {
+    if (snapshot.allDone && !firedRef.current) {
       firedRef.current = true;
       onPourComplete();
     }
-  }, [allDone, onPourComplete]);
+  }, [snapshot.allDone, onPourComplete]);
 
   return (
     <motion.div
@@ -52,18 +68,16 @@ export function RecipeView({
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="flex items-center justify-center">
-          <GlassVisualization
+          <GlassScene
             cocktail={cocktail}
-            pouredCount={pouredCount}
-            activePour={activePour}
-            bubbleIndex={bubbleIndex}
-            allDone={allDone}
+            reducedMotion={Boolean(prefersReducedMotion)}
+            onSnapshot={onSnapshot}
           />
         </div>
         <RecipeDetails
           cocktail={cocktail}
-          pouredCount={pouredCount}
-          allDone={allDone}
+          pouredCount={snapshot.pouredCount}
+          allDone={snapshot.allDone}
           onReset={onReset}
         />
       </div>

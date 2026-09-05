@@ -189,6 +189,13 @@ A first-time visitor on `/work/cocktail-mixer`:
 Taste bar: motion clarifies state and rewards the pour. It does not hide copy,
 block the 30-second proof, or turn the mixer into a shader demo.
 
+## Spike (prove GSAP first)
+
+Before Flip and the file split, ship a mixer-scoped GSAP pour on the existing
+recipe view: `gsap-setup.ts`, `pour-timeline.ts`, `glass-scene.tsx`. Grid still
+uses Motion. Success: plugins load in Next/Vitest, a 3-ingredient pour finishes
+under 3.5s, shaken wiggle runs, reduced motion skips to the finished glass.
+
 ## Implementation notes for later
 
 Use official GSAP skills (`gsap-core`, `gsap-timeline`, `gsap-plugins`,
