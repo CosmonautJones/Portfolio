@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import "pixi.js/unsafe-eval";
 import type { Application } from "pixi.js";
 import type { PourSnapshot } from "../pour-script";
 import type { Cocktail } from "../types";
