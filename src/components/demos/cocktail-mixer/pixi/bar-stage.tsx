@@ -102,7 +102,8 @@ export function BarStage({
         canvasHost.replaceChildren(app.canvas);
         setActiveRig({ cocktail, reducedMotion, rig: mountedRig });
         setShowCssStill(false);
-      } catch {
+      } catch (error) {
+        console.error("Cocktail mixer Pixi mount failed", error);
         destroyApp();
         if (cancelled) return;
 

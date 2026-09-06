@@ -104,6 +104,10 @@ export const MIXER_ASSET_URLS: Record<string, string> = {
 export async function loadMixerAssets(
   Assets: typeof import("pixi.js").Assets,
 ): Promise<void> {
+  // Site CSP has no worker-src / blob: — Pixi's default ImageBitmap workers
+  // would fail the mount and leave the CSS still on screen.
+  Assets.setPreferences({ preferWorkers: false });
+
   const assets = Object.entries(MIXER_ASSET_URLS).map(([alias, src]) => ({
     alias,
     src,
