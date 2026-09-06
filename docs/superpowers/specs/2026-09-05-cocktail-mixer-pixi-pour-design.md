@@ -104,26 +104,32 @@ painted in front of it looks like stickers on glass. Do not do that.
 
 Layer order, back to front:
 
-1. Bar surface (contact shadow + a short caustic strip under the bowl)
+1. Bar surface. Caustic strip is **baked into** `bar-top.png`. No extra plate.
 2. Back glass (stem, base, back wall — interior of the bowl is transparent)
-3. Liquid volume + meniscus, masked to the interior hole
-4. Ice, masked to the interior after settle
-5. Condensation (static dots on the front wall)
-6. Front glass (near wall, rim). Salt overlay on top when `garnishType`
-   starts with `salt_`
-7. Stream: unclipped from neck to rim, masked only while inside the bowl
-8. Splash around the rim (unclipped, short life)
-9. Foam on the surface (Paloma only; **remains** on the finished still)
-10. Garnish (wheels, wedges, cherry, rocket)
-11. Bottle — pour only, in reserved headroom above the glass,
+3. Interior group (one mask): liquid MeshPlane, ice, inner stream
+   (rim → surface), Paloma foam (pinned to surface Y)
+4. Condensation (static dots on the front wall)
+5. Front glass (near wall, rim)
+6. `rim-highlight.png` on the front glass, camera-left, under salt
+7. Salt overlay when `garnishType` starts with `salt_`
+8. Air stream (neck → rim), unmasked, in front of the glass
+9. Splash around the rim (unclipped, short life)
+10. Frost overlay (Cosmonaut extra only, then gone)
+11. Garnish (wheels, wedges, cherry, rocket)
+12. Bottle — pour only, in the 48px headroom above `GLASS_RECT`,
     camera-right of the rim
 
 The canvas is a pour stage, not a scene graph of the whole bar. No
 bartender, no bottles on shelves, no neon sign.
 
-Composed frame (CSS pixels): **280×420**. Glass content sits in a 200×300
-rect, centered horizontally, sitting on the bar. Headroom above the rim
-is for the bottle. Pixi clips to the canvas; do not rely on overflow.
+Composed frame (CSS pixels). Pixi clips to the canvas; do not rely on
+overflow.
+
+```ts
+export const STAGE = { width: 280, height: 420 };
+export const GLASS_RECT = { x: 40, y: 48, width: 200, height: 300 };
+// 48px headroom for the bottle; remaining 72px is the bar.
+```
 
 ### Glassware
 
@@ -144,10 +150,16 @@ to the painted bowl. Do not reconstruct the bowl from the old SVG
 
 ### Liquid
 
-- Finished fill: `cocktail.color`, one mesh, one `MeshPlane` surface.
-- During pour `i`: stream tint and a ~200ms surface flash use
+- Finished fill: `cocktail.color`.
+- The liquid **is** one `MeshPlane` covering the bowl bbox from
+  `liquidBottom` to the current surface (`verticesX: 12`, `verticesY: 8`).
+  Only the **top vertex row** takes the sine / method offsets. That is
+  the volume and the meniscus. Do not draw a separate surface strip over
+  a hole (sticker look).
+- During pour `i`: stream tint and a 200ms surface flash use
   `ingredients[i].color`, then ease back to `cocktail.color`.
 - Fill height is equal slots (`(i + 1) / n` of the bowl), not oz-weighted.
+  `fillHeight` eases over **0.45s** (`power2.out`) starting at slot 0.20.
 - Extents live in `glass-bounds.ts` (pure module, CSS pixels on the
   200×300 glass rect). Seed from the current SVG numbers, then remeasure
   from mask alpha bbox once plates exist and **commit the numbers**.
@@ -157,36 +169,88 @@ to the painted bowl. Do not reconstruct the bowl from the old SVG
 export type GlassBounds = {
   liquidTop: number;
   liquidBottom: number;
-  hasIce: boolean;
+  rimY: number;       // air stream ends here; inner stream starts
   bowlCenterX: number;
+  bowlWidth: number;  // interior width at mid-bowl
+  hasIce: boolean;
+  garnishX: number;
+  garnishY: number;
+  bottle: { x: number; y: number; neckX: number; neckY: number };
 };
 
-// seed (CSS px inside the 200×300 glass rect); replace after plates
+// seed (CSS px inside GLASS_RECT); replace after plates
 export const GLASS_BOUNDS: Record<GlassType, GlassBounds> = {
-  rocks:     { liquidTop: 100, liquidBottom: 254, hasIce: true,  bowlCenterX: 100 },
-  highball:  { liquidTop: 50,  liquidBottom: 255, hasIce: true,  bowlCenterX: 100 },
-  coupe:     { liquidTop: 70,  liquidBottom: 180, hasIce: false, bowlCenterX: 100 },
-  margarita: { liquidTop: 60,  liquidBottom: 175, hasIce: false, bowlCenterX: 100 },
+  rocks: {
+    liquidTop: 100, liquidBottom: 254, rimY: 95,
+    bowlCenterX: 100, bowlWidth: 130, hasIce: true,
+    garnishX: 140, garnishY: 90,
+    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+  },
+  highball: {
+    liquidTop: 50, liquidBottom: 255, rimY: 45,
+    bowlCenterX: 100, bowlWidth: 82, hasIce: true,
+    garnishX: 132, garnishY: 42,
+    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+  },
+  coupe: {
+    liquidTop: 70, liquidBottom: 180, rimY: 65,
+    bowlCenterX: 100, bowlWidth: 150, hasIce: false,
+    garnishX: 148, garnishY: 62,
+    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+  },
+  margarita: {
+    liquidTop: 60, liquidBottom: 175, rimY: 55,
+    bowlCenterX: 100, bowlWidth: 170, hasIce: false,
+    garnishX: 150, garnishY: 52,
+    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+  },
 };
 ```
 
-- Surface is a `MeshPlane`. Texture: codegen a 64×32 vertical gradient
-  from the current fill color (no extra PNG). Vertex Y follows a shallow
-  sine; amplitude is a GSAP-tweened uniform; the ticker writes vertices.
-- `DisplacementFilter` on the liquid (tiny, wet). Map: `displace-noise.png`,
-  a sprite on the stage (required by v8). Always off under reduced motion.
-  Skip at `devicePixelRatio < 1.5`. Drop it if the ticker stays under
-  50fps for 30 frames.
+`bottle.neckX/Y` are local to the bottle sprite (pivot = neck). The
+ticker converts them to stage space as the bottle tips.
+
+One Pixi mask sprite, one target: a single interior `Container` holding
+liquid, ice, and the inner stream. Do not reuse one mask on two
+containers.
+
+- MeshPlane texture: codegen a 64×32 vertical gradient from the current
+  fill color (no extra PNG). Rest pose: top-row sine amplitude **2px**.
+  `meniscusAmp` is a GSAP uniform; the ticker writes vertices.
+- Method offsets (also ticker, from GSAP uniforms). Rest / `allDone` =
+  0. Displacement is **not** the method.
+
+  | method  | uniform         | draw (top vertex row only)                         | duration | ease       |
+  |---------|-----------------|----------------------------------------------------|----------|------------|
+  | shaken  | `swirl` 0.4 → 0 | chaotic X jitter, max **3px** at 0.4               | 0.28s    | power2.out |
+  | stirred | `vortex` 1 → 0  | angular spin around `bowlCenterX`, max **8px** at 1 | 0.40s    | sine.inOut |
+  | built   | none            | rest pose only                                     | 0        | —          |
+
+- `DisplacementFilter` on the liquid (tiny, wet). Map: `displace-noise.png`
+  with `addressMode: 'repeat'`. `addChild` the sprite so
+  `worldTransform` updates; do **not** set `visible = false` (scroll
+  dies). Leave `renderable` to the filter (v8 sets it false). Filter
+  `scale` = `{ x: 4, y: 4 }` — not the default 20. Always off under
+  reduced motion and after `allDone`. Skip at `devicePixelRatio < 1.5`.
+  Drop it if the ticker stays under 50fps for 30 frames.
 
 ### Stream
 
-- `MeshRope` from bottle neck to current surface Y.
-- Texture: `stream.png`, a 8×64 px (2×) vertical highlight. Rope
-  thickness is `texture.height`, not a CSS stroke. Keep it ~3–5px CSS.
-- Slight gravity sag (quadratic points), not a straight line.
-- Points are a Pixi array the ticker updates from uniforms
-  (`neckX`, `neckY`, `surfaceY`, `streamOn`).
-- Appears as the bottle tips, disappears as the bottle rights.
+Two `MeshRope`s. One rope cannot be half-masked.
+
+- **Air rope:** neck → `rimY`. Unmasked. In front of the glass.
+- **Inner rope:** `rimY` → current `surfaceY`. Child of the interior
+  mask group, behind the front glass.
+- Texture: `stream.png` is a **horizontal** strip, along × across:
+  **128×8** pixels at `resolution: 2` so CSS thickness is **4px**.
+  Pixi v8 maps texture X along the path and texture Y as thickness
+  (`texture.height`). Do **not** ship an 8×64 vertical strip (that is a
+  64px-thick ribbon). Do not depend on a `MeshRope` `width` override
+  (not in 8.8). Keep ~3–5px CSS by sizing the texture.
+- Point count **20**. Sag: midpoint control **6px** toward gravity
+  (stage +Y). Rebuild points each ticker frame from
+  `neckX/Y`, `rimY`, `surfaceY`, `streamOn`.
+- Tinted to the active ingredient. On at slot 0.18, off at 0.58.
 
 ### Ice
 
@@ -195,43 +259,62 @@ export const GLASS_BOUNDS: Record<GlassType, GlassBounds> = {
 - Spawn **already inside** the bowl (opacity 0 → 1, short settle).
   Do not drop from world-space above the mask — that was the SVG bug
   (cubes vanish until they enter, or they escape).
-- After settle, parent/mask is the interior. Idle bob `±2px` via ticker
-  after the pour. Reduced motion: static, no bob.
-- Local layout (CSS px, relative to bowl center; seed, remeasure with plates):
+- After settle, parent/mask is the interior. No idle bob after
+  `allDone` (the paused frame is a painting). Reduced motion: static.
+- Local layout (CSS px, relative to `bowlCenterX` and mid-bowl
+  ` (liquidTop + liquidBottom) / 2 `; seed, remeasure with plates).
+  Highball cubes stack down the column, not in a mid-bowl cluster:
 
 ```ts
 export const ICE_LAYOUT: Record<"rocks" | "highball", IceCube[]> = {
   rocks: [
-    { dx: -8, dy: 6, angle: 12, scale: 1.35 },
-    { dx: 18, dy: 14, angle: -8, scale: 0.85 },
+    { dx: -8, dy: 10, angle: 12, scale: 1.35 },
+    { dx: 18, dy: 22, angle: -8, scale: 0.85 },
   ],
   highball: [
-    { dx: -16, dy: 8, angle: 10, scale: 1 },
-    { dx: 14, dy: 18, angle: -12, scale: 0.9 },
-    { dx: 0, dy: 28, angle: 18, scale: 0.8 },
+    { dx: -10, dy: -36, angle: 10, scale: 1 },
+    { dx: 12, dy: -8, angle: -12, scale: 0.9 },
+    { dx: -4, dy: 28, angle: 18, scale: 0.8 },
   ],
 };
 ```
 
+They do not bounce out.
+
 ### Particles
 
-- Splash: ≤40, emit at contact, gravity down, life < 400ms, then gone
-  from the finished still. `boundsArea` = the stage rect (v8 default
-  particle bounds are empty). Tint from the active ingredient
-  (`dynamicProperties.color: true`).
-- Foam: Paloma only, during the grapefruit-soda pour; ≤20 sprites that
-  **stay on the finished still**.
+- Splash: `splash-dot.png`, ≤40, emit at contact, gravity down, life
+  < 400ms, then gone from the finished still. `boundsArea` = the stage
+  rect. Tint from the active ingredient (`dynamicProperties.color: true`).
+- Foam: Paloma only. Emit in the slot where
+  `ingredient.name === "Grapefruit Soda"`. Texture: `foam-dot.png`.
+  ≤20 sprites **pinned to surface Y** (no gravity). They rise with the
+  meniscus through the lime pour and **stay on the finished still**.
+  Salty Dog is salt-highball with juice, not soda: salt, no foam.
 - Cosmonaut extra: ≤12 star motes + `frost.png` on the coupe, 400ms,
   then gone from the still. No soda foam on the Cosmonaut.
 - Use Pixi v8 `Particle` / `ParticleContainer` from `pixi.js`.
   No `@pixi/particle-emitter`. No DOM particles. No GSAP Physics2D.
 
+Condensation: static `condensation-dot.png`. Positions in
+`glass-bounds.ts` (CSS px, relative to `bowlCenterX` / `liquidTop`):
+
+```ts
+export const CONDENSATION_LAYOUT: Record<GlassType, { dx: number; dy: number }[]> = {
+  rocks:     [{ dx: -28, dy: 36 }, { dx: 26, dy: 54 }, { dx: -12, dy: 72 }, { dx: 18, dy: 90 }],
+  highball:  [{ dx: -22, dy: 40 }, { dx: 20, dy: 70 }, { dx: -16, dy: 100 }, { dx: 14, dy: 130 }, { dx: -8, dy: 160 }, { dx: 10, dy: 190 }],
+  coupe:     [{ dx: -40, dy: 18 }, { dx: 36, dy: 28 }, { dx: -12, dy: 40 }],
+  margarita: [{ dx: -48, dy: 16 }, { dx: 44, dy: 26 }, { dx: -10, dy: 36 }],
+};
+```
+
 ### Bottle
 
 - `bottle.png` is near-white (so `tint` from `ingredient.color` works).
-- Tips from upright to ~−50° around the neck, holds, rights, hides.
+  Sprite size **48×96** CSS. Pivot = neck (`bottle.neckX/Y`).
+- Tips from upright to **−50°** over **0.28s** (`power3.inOut`), holds
+  while the stream is on, rights over **0.16s**, hides.
 - It is a prop, not a product shot. No label typography.
-- Neck world position is a rig getter the ticker uses for the stream.
 
 ### Garnish
 
@@ -243,31 +326,50 @@ Keep `GarnishType`. Map to plates (no current SVG garnishes):
 | cherry            | garnish-cherry.png                          |
 | orange_slice      | garnish-orange-slice.png                    |
 | grapefruit_wedge  | garnish-grapefruit-wedge.png                |
-| salt_rim          | rim-salt.png                                |
+| salt_rim          | rim-salt-{glass}.png                        |
 | cherry_orange     | garnish-cherry-orange.png                   |
-| salt_grapefruit   | rim-salt.png + garnish-grapefruit-wedge.png |
-| salt_lime         | rim-salt.png + garnish-lime-wheel.png       |
+| salt_grapefruit   | rim-salt-{glass}.png + garnish-grapefruit-wedge.png |
+| salt_lime         | rim-salt-{glass}.png + garnish-lime-wheel.png |
 | rocket            | garnish-rocket.png                          |
 
-Salt (`rim-salt.png`) sits on the front-glass layer from the first
-frame. Wheels / wedges / cherry / rocket drop in last.
+Salt (`rim-salt-margarita.png` or `rim-salt-highball.png`) sits on the
+front-glass layer from the first frame. Wheels / wedges / cherry /
+rocket drop in last at `garnishX/Y`.
 
 Unused types (`orange_slice`, `grapefruit_wedge`, `salt_rim` as
 standalone) still get plates so the switch stays exhaustive.
 
 ## Motion clock
 
-GSAP is the only **story** clock. One timeline per cocktail mount,
-started only after `app.init` and `Assets.load` succeed.
+GSAP is the only **story** clock. Pixi ticker only applies uniforms.
 
-`useGSAP` from `@gsap/react` with `revertOnUpdate: true`. On unmount:
-abort in-flight `init`/`load`, `timeline.kill()`, `app.destroy(true)`.
+`BarStage` owns async init/load/abort in `useEffect`. It mounts a child
+`PourDirector` **only when `ready`**. That child is the only `useGSAP`
+caller. Its callback is synchronous and builds the timeline against a
+live rig. Reduced motion never mounts `PourDirector`.
+
+Do not create the timeline inside `BarStage` after `await` and expect
+`useGSAP` / `revertOnUpdate` to see it. Tweens recorded outside the
+`useGSAP` callback are not in that context.
+
+On unmount of `BarStage`: abort in-flight `init`/`load`. If the first
+`init` resolves after abort, do not append or start a ticker.
+`PourDirector` unmount kills the timeline via `useGSAP`. Then:
+
+```ts
+app.destroy(
+  { removeView: true },
+  { children: true, texture: false, textureSource: false }
+);
+```
+
 Keep the `Assets` cache across drink remounts (`RecipeView` keys on
-cocktail name). Destroy the display list, not the texture cache.
+cocktail name). Do not pass `releaseGlobalResources: true`.
 
 Pixi ticker (not a second story clock): write mesh vertices, rope
-points, particle physics, ice bob, and displacement-map scroll from
-rig uniforms GSAP is already tweening.
+points, and particle physics from rig uniforms GSAP is already tweening.
+Displacement map may scroll **during** the pour only. After `allDone`,
+the ticker does not bob ice or scroll the map.
 
 ### Timing
 
@@ -291,15 +393,15 @@ Per ingredient, inside the slot (relative):
 
 | t    | beat                                                         |
 |------|--------------------------------------------------------------|
-| 0.00 | bottle appears, starts tip; snapshot `{ pouredCount: i + 1, activePour: i, allDone: false }` |
+| 0.00 | bottle appears; tip −50° over 0.28s; snapshot `{ pouredCount: i + 1, activePour: i, allDone: false }` |
 | 0.18 | stream on                                                    |
-| 0.20 | fillHeight eases to `(i + 1) / n`                            |
-| 0.25 | meniscusAmp up; surface flash of `ingredient.color`          |
+| 0.20 | `fillHeight` eases over 0.45s to `(i + 1) / n`               |
+| 0.25 | meniscusAmp up; 200ms surface flash of `ingredient.color`    |
 | 0.38 | splash at current surface                                    |
 | 0.58 | stream off                                                   |
-| 0.62 | bottle hidden; snapshot `{ pouredCount: i + 1, activePour: null, allDone: false }` |
+| 0.62 | bottle rights (0.16s) and hides; snapshot `{ pouredCount: i + 1, activePour: null, allDone: false }` |
 
-`onSnapshot` is fired from `pour-director.ts` via GSAP `call`, not from
+`onSnapshot` is fired from `pour-director.tsx` via GSAP `call`, not from
 the React wrapper. Opening snapshot before slot 0:
 `{ pouredCount: 0, activePour: null, allDone: false }`.
 
@@ -309,31 +411,48 @@ Finish (from last slot end):
 |---------------------------|-------------------------------------------|
 | 0.00                      | ice settle (if `hasIce`)                  |
 | +0.12                     | garnish                                   |
-| +0.20                     | method uniforms (see below)               |
+| +0.20                     | method uniforms (liquid table)            |
 | + POUR_FINISH             | snapshot `allDone` if not secret          |
 | + POUR_FINISH (secret)    | frost + star motes                        |
 | + POUR_FINISH + SECRET_EXTRA | snapshot `allDone` for Cosmonaut       |
 
-Method uniforms (liquid, not glass rotation):
+Method uniforms: see the liquid table. `pour-director.tsx` tweens
+`swirl` / `vortex` at finish `+0.20` with those durations. Built is a
+no-op.
 
-| method  | uniform              | duration | ease        |
-|---------|----------------------|----------|-------------|
-| shaken  | swirl 0.4 → 0        | 0.28s    | power2.out  |
-| stirred | vortex 1.0 → 0       | 0.40s    | sine.inOut  |
-| built   | none                 | 0        | —           |
+`PourSnapshot` lives in `pour-script.ts` (not `pour-timeline.ts`).
+Shape stays `{ pouredCount, activePour, allDone }`. `RecipeView`
+imports the type from `pour-script.ts`.
 
-`PourSnapshot` stays `{ pouredCount, activePour, allDone }`.
-`RecipeView` keeps highlighting ingredients from `pouredCount`.
-`onPourComplete` still fires once when `allDone` becomes true.
+### `applyFinished` checklist
 
-Reduced motion: after assets load, `rig.applyFinished(cocktail)`, emit
-`{ pouredCount: n, activePour: null, allDone: true }`, empty timeline,
-then append the canvas. Same contract as today, but never on an empty
-WebGL view.
+Same still for reduced motion, WebGL fallback, and paused `allDone`.
+`rig.applyFinished(cocktail)` sets:
 
-If `app.init` or `Assets.load` fails, or WebGL is unavailable: show a
-CSS still (glass PNG + `cocktail.color` fill) and emit `allDone`. Do
-not leave a blank canvas.
+- `fillHeight = 1`, tint `cocktail.color`
+- stream off, bottle hidden
+- splash / motes / frost dead (alpha 0, not ticking)
+- `swirl = 0`, `vortex = 0`, `meniscusAmp` at rest (2px sine)
+- displacement filter off (not scrolling)
+- ice visible if `hasIce`, **no bob**
+- Paloma foam on; every other drink foam off
+- salt on if `garnishType` starts with `salt_`
+- garnish on
+
+After `allDone` with motion allowed: freeze/remove displacement, kill
+splash/motes/frost. Paloma foam stays. The paused frame is a painting.
+
+Reduced motion: after load, `applyFinished`, emit
+`{ pouredCount: n, activePour: null, allDone: true }`, append canvas.
+Never on an empty WebGL view.
+
+If `app.init` or `Assets.load` fails, or WebGL is unavailable: CSS
+still, then emit `allDone`. Stack: `cocktail.color` fill with
+`glass-{type}-mask.png` as a CSS `mask-image`, then
+`glass-{type}-front.png`, salt/garnish/foam as needed. Same
+finished-state rules (Paloma foam on, Cosmonaut frost off). Do not
+leave a blank canvas. Do not put a color rect behind an opaque back
+plate (sticker sandwich).
 
 Do **not** use DrawSVG, MorphSVG, or Physics2D against SVG pour targets.
 When `glass-scene.tsx` dies, slim `gsap-setup.ts` to `gsap` + `useGSAP`
@@ -356,13 +475,14 @@ src/components/demos/cocktail-mixer/
   types.ts                  Cocktail, MixMethod, GarnishType (keep)
   hooks.ts                  keep useCocktailProgress only.
                             Delete usePourSequence.
-  glass-bounds.ts           NEW: GLASS_BOUNDS + ICE_LAYOUT (pure)
-  pour-script.ts            NEW: pure timing + snapshot schedule
+  glass-bounds.ts           NEW: GLASS_BOUNDS + ICE_LAYOUT +
+                            CONDENSATION_LAYOUT (pure)
+  pour-script.ts            NEW: PourSnapshot type + timing + snapshots
   pixi/
-    bar-stage.tsx           NEW: React wrapper
-    application.ts          NEW: init / load / destroy + abort
-    rig.ts                  NEW: display list + uniform setters
-    pour-director.ts        NEW: GSAP timeline → rig uniforms
+    bar-stage.tsx           NEW: async init/load; mounts PourDirector when ready
+    application.ts          NEW: init / destroy helpers + abort
+    rig.ts                  NEW: display list + uniform setters + applyFinished
+    pour-director.tsx       NEW: useGSAP child; timeline → rig uniforms
     liquid.ts               NEW: MeshPlane + fill
     stream.ts               NEW: MeshRope
     particles.ts            NEW: splash / foam / motes
@@ -429,19 +549,21 @@ glass-margarita-front.png
 glass-margarita-mask.png
 ice-cube.png
 bottle.png              (near-white, tinted in code)
-stream.png              (8×64 highlight strip)
-displace-noise.png      (DisplacementFilter map)
+stream.png              (128×8 horizontal strip, resolution 2)
+displace-noise.png      (DisplacementFilter map, repeat)
 frost.png               (Cosmonaut coupe overlay)
 condensation-dot.png
-rim-highlight.png       (blurred highlight sprite; not a bloom filter)
+rim-highlight.png       (on front glass, camera-left)
 garnish-lime-wheel.png
 garnish-cherry.png
 garnish-orange-slice.png
 garnish-grapefruit-wedge.png
 garnish-cherry-orange.png
 garnish-rocket.png
-rim-salt.png
+rim-salt-margarita.png
+rim-salt-highball.png
 splash-dot.png
+foam-dot.png            (Paloma surface foam)
 star-mote.png
 ```
 
@@ -462,10 +584,11 @@ Constructor options are deprecated. Required sequence in `BarStage`:
    — do **not** `resizeTo` the window
 3. `await Assets.load(...)` (cache hits on remount)
 4. Build rig. If `reducedMotion`, `rig.applyFinished(cocktail)` and emit
-   `allDone` **before** appending the canvas
-5. Append `app.canvas`. Start GSAP only if motion is allowed
-6. Unmount: abort if still on step 2–3; else kill timeline and
-   `app.destroy(true)`
+   `allDone` **before** appending the canvas. Do not mount `PourDirector`.
+5. Append `app.canvas`. If motion is allowed, mount `PourDirector` (the
+   only `useGSAP` caller).
+6. Unmount: abort if still on step 2–3. `PourDirector` unmount kills the
+   timeline. Then `app.destroy({ removeView: true }, { children: true, texture: false, textureSource: false })`.
 
 React Strict Mode will mount/unmount/mount. The abort token must ignore
 the first `init` resolving after unmount so it cannot leak a ticker.
@@ -521,6 +644,7 @@ pass on `/work/cocktail-mixer` for:
 - Margarita (shaken, salt rim from frame one, no ice)
 - Old Fashioned (stirred vortex on liquid, rocks, ice stays in the bowl)
 - Paloma (built, highball, soda foam **still there** when paused)
+- Salty Dog (salt-highball, **no** foam)
 - Whiskey Sour (shaken, coupe, no ice)
 - Cosmonaut after unlock (frost + star motes, then still; XP after)
 - 320px width
@@ -551,7 +675,7 @@ Three wrappers for this demo.
    (v8 `init` / load / destroy, static still).
 3. Liquid mesh + stream + ice spawn-inside on rocks.
 4. Remaining three glasses + garnishes + bottle + salt overlay.
-5. `pour-director.ts` GSAP wired to rig uniforms. Delete SVG
+5. `pour-director.tsx` GSAP wired to rig uniforms. Delete SVG
    `glass-scene` / `pour-timeline` / `usePourSequence`.
 6. Method uniforms + Cosmonaut extra + fps fallback + WebGL failure
    still.
