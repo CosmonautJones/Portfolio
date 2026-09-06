@@ -5,7 +5,7 @@ import {
   Sprite,
 } from "pixi.js";
 import type { PointData, Texture } from "pixi.js";
-import { garnishPlates, isFoamIngredient } from "../garnish-map";
+import { garnishPlates } from "../garnish-map";
 import {
   CONDENSATION_LAYOUT,
   GLASS_BOUNDS,
@@ -16,6 +16,11 @@ import {
 import type { IceCube } from "../glass-bounds";
 import type { Cocktail, GlassType } from "../types";
 import { createLiquidPlane } from "./liquid";
+import {
+  createMixerParticles,
+  shouldEmitFoam,
+  shouldShowSalt,
+} from "./particles";
 import { createPourStream } from "./stream";
 
 const GARNISH_SIZES: Record<string, { width: number; height: number }> = {
@@ -26,8 +31,6 @@ const GARNISH_SIZES: Record<string, { width: number; height: number }> = {
   "garnish-cherry-orange.png": { width: 88, height: 72 },
   "garnish-rocket.png": { width: 48, height: 88 },
 };
-const FOAM_OFFSETS = [-30, -18, -6, 7, 20, 31] as const;
-
 export type MixerUniforms = {
   fillHeight: number;
   fillColor: string;
@@ -51,6 +54,10 @@ export type MixerRig = {
   applyFinished: (cocktail: Cocktail) => void;
   setFillHeight: (height: number) => void;
   setStream: (on: boolean, color: string) => void;
+  emitSplash: (x: number, y: number, color: string) => void;
+  pinFoamTo: (surfaceY: number) => void;
+  emitMotes: () => void;
+  killEphemeral: () => void;
   neckWorld: () => PointData;
   tick: (deltaMs: number) => void;
   destroy: () => void;
@@ -155,20 +162,6 @@ function makeGarnish(
   return garnish;
 }
 
-function makeFoam(contactX: number): Container {
-  const foam = new Container();
-
-  for (const offset of FOAM_OFFSETS) {
-    const sprite = new Sprite({ texture: texture("foam-dot.png") });
-    sprite.anchor.set(0.5);
-    sprite.setSize(12, 12);
-    sprite.x = contactX + offset;
-    foam.addChild(sprite);
-  }
-
-  return foam;
-}
-
 export function createRig(
   stage: Container,
   cocktail: Cocktail,
@@ -184,8 +177,8 @@ export function createRig(
   const bowlMidY = (liquidTop + liquidBottom) / 2;
   const aliases = garnishPlates(cocktail.garnishType, cocktail.glass);
   const saltAlias = aliases.find((alias) => alias.startsWith("rim-salt-"));
-  const hasFoam = cocktail.ingredients.some((ingredient) =>
-    isFoamIngredient(ingredient.name),
+  const hasFoam = cocktail.ingredients.some((_, ingredientIndex) =>
+    shouldEmitFoam(cocktail, ingredientIndex),
   );
   const allowDisplacement =
     !options.reducedMotion && (window.devicePixelRatio || 1) >= 1.5;
@@ -231,14 +224,31 @@ export function createRig(
   ice.alpha = 0;
 
   const stream = createPourStream(texture("stream.png"), bowlCenterX);
-  const foam = makeFoam(bowlCenterX);
-  foam.alpha = 0;
+  const frost = plate(
+    "frost.png",
+    GLASS_RECT.width,
+    GLASS_RECT.height,
+    glassX,
+    glassY,
+  );
+  frost.alpha = 0;
+  const particles = createMixerParticles({
+    cocktail,
+    contactX: bowlCenterX,
+    moteY: rimY + 36,
+    frost,
+    textures: {
+      splash: texture("splash-dot.png"),
+      foam: texture("foam-dot.png"),
+      mote: texture("star-mote.png"),
+    },
+  });
   interior.addChild(
     liquid.mesh,
     liquid.displacementMap,
     ice,
     stream.inner,
-    foam,
+    particles.foam,
   );
 
   const condensation = makeCondensation(
@@ -269,15 +279,9 @@ export function createRig(
         glassY,
       )
     : null;
-
-  const frost = plate(
-    "frost.png",
-    GLASS_RECT.width,
-    GLASS_RECT.height,
-    glassX,
-    glassY,
-  );
-  frost.alpha = 0;
+  if (salt) {
+    salt.visible = shouldShowSalt(cocktail.garnishType);
+  }
 
   const garnish = makeGarnish(
     cocktail,
@@ -296,9 +300,9 @@ export function createRig(
   bottle.alpha = 0;
 
   root.addChild(barSurface, backGlass, mask, interior, condensation, frontGlass);
-  root.addChild(rimHighlight);
+  root.addChild(particles.splash, rimHighlight);
   if (salt) root.addChild(salt);
-  root.addChild(stream.air, frost, garnish, bottle);
+  root.addChild(stream.air, frost, particles.motes, garnish, bottle);
   stage.addChild(root);
 
   const uniforms: MixerUniforms = {
@@ -339,7 +343,8 @@ export function createRig(
       uniforms.garnishAlpha = 1;
       uniforms.frostAlpha = 0;
       uniforms.displacementOn = false;
-      foam.alpha = hasFoam ? 1 : 0;
+      particles.killEphemeral();
+      particles.setFoamVisible(hasFoam);
       rig.tick(0);
     },
     setFillHeight(height) {
@@ -348,6 +353,19 @@ export function createRig(
     setStream(on, color) {
       uniforms.streamOn = on ? 1 : 0;
       uniforms.streamColor = color;
+    },
+    emitSplash(x, y, color) {
+      particles.emitSplash(x, y, color);
+    },
+    pinFoamTo(surfaceY) {
+      particles.pinFoamTo(surfaceY);
+    },
+    emitMotes() {
+      particles.emitMotes();
+    },
+    killEphemeral() {
+      uniforms.frostAlpha = 0;
+      particles.killEphemeral();
     },
     neckWorld() {
       return bottle.getGlobalPosition(neckPoint);
@@ -378,16 +396,14 @@ export function createRig(
 
       stream.setColor(uniforms.streamColor);
       stream.rebuild(rig.neckWorld(), rimY, surfaceY, uniforms.streamOn);
-      bottle.angle = uniforms.bottleAngle;
+      bottle.rotation = uniforms.bottleAngle * (Math.PI / 180);
       bottle.alpha = uniforms.bottleAlpha;
       bottle.tint = uniforms.streamColor;
       ice.alpha = bounds.hasIce ? uniforms.iceAlpha : 0;
       garnish.alpha = uniforms.garnishAlpha;
       frost.alpha = uniforms.frostAlpha;
-
-      for (let index = 0; index < foam.children.length; index += 1) {
-        foam.children[index].y = surfaceY - 3 + Math.abs(index % 3);
-      }
+      particles.pinFoamTo(surfaceY);
+      particles.tick(deltaMs);
 
       if (uniforms.displacementOn && deltaMs > 20) {
         slowFrames += 1;
