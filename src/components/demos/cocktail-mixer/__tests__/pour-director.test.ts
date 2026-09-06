@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { COCKTAILS } from "../data";
-import { GLASS_BOUNDS } from "../glass-bounds";
+import { GLASS_BOUNDS, GLASS_RECT } from "../glass-bounds";
 import { gsap } from "../gsap-setup";
 import { buildPourCues } from "../pour-script";
 import type { Cocktail } from "../types";
@@ -59,6 +59,34 @@ function methodCueAt(cocktail: Cocktail): number {
   return cue.at;
 }
 
+function splashCueAt(cocktail: Cocktail, ingredientIndex: number): number {
+  const cue = buildPourCues({
+    ingredientCount: cocktail.ingredients.length,
+    hasIce: GLASS_BOUNDS[cocktail.glass].hasIce,
+    isSecret: Boolean(cocktail.isSecret),
+    reducedMotion: false,
+  }).find(
+    ({ kind, ingredientIndex: index }) =>
+      kind === "splash" && index === ingredientIndex,
+  );
+
+  if (!cue) {
+    throw new Error(
+      `Missing splash cue ${ingredientIndex} for ${cocktail.name}`,
+    );
+  }
+
+  return cue.at;
+}
+
+function surfaceYFromFill(cocktail: Cocktail, fillHeight: number): number {
+  const bounds = GLASS_BOUNDS[cocktail.glass];
+  const clamped = Math.max(0, Math.min(1, fillHeight));
+  const liquidTop = GLASS_RECT.y + bounds.liquidTop;
+  const liquidBottom = GLASS_RECT.y + bounds.liquidBottom;
+  return liquidBottom - (liquidBottom - liquidTop) * clamped;
+}
+
 function buildTimeline(cocktail: Cocktail, rig: MixerRig) {
   const timeline = gsap.timeline({ paused: true });
   timelines.push(timeline);
@@ -106,5 +134,27 @@ describe("buildDirectorTimeline", () => {
 
     expect(rig.uniforms.swirl).toBe(0);
     expect(rig.uniforms.vortex).toBe(0);
+  });
+
+  it("emits splash at the live meniscus, not the slot target fill", () => {
+    const cocktail = COCKTAILS.find(
+      ({ ingredients }) => ingredients.length === 3,
+    )!;
+    const rig = createFakeRig(cocktail);
+    const timeline = buildTimeline(cocktail, rig);
+    const splashAt = splashCueAt(cocktail, 0);
+    const slotTarget = 1 / cocktail.ingredients.length;
+
+    timeline.seek(splashAt, false);
+
+    expect(rig.emitSplash).toHaveBeenCalledTimes(1);
+    const [, splashY, splashColor] = vi.mocked(rig.emitSplash).mock.calls[0];
+    const liveFill = rig.uniforms.fillHeight;
+
+    expect(liveFill).toBeGreaterThan(0);
+    expect(liveFill).toBeLessThan(slotTarget);
+    expect(splashY).toBeCloseTo(surfaceYFromFill(cocktail, liveFill));
+    expect(splashY).not.toBeCloseTo(surfaceYFromFill(cocktail, slotTarget));
+    expect(splashColor).toBe(cocktail.ingredients[0].color);
   });
 });

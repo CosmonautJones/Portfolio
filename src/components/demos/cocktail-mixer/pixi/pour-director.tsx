@@ -97,18 +97,23 @@ export function buildDirectorTimeline(
         break;
       case "splash":
         if (ingredient && ingredientIndex !== undefined) {
-          const fillHeight = (ingredientIndex + 1) / ingredientCount;
-          const surfaceY =
-            GLASS_RECT.y +
-            bounds.liquidBottom -
-            (bounds.liquidBottom - bounds.liquidTop) * fillHeight;
+          const splashColor = ingredient.color;
           tl.call(
-            () =>
+            () => {
+              const fillHeight = Math.max(
+                0,
+                Math.min(1, rig.uniforms.fillHeight),
+              );
+              const liquidTop = GLASS_RECT.y + bounds.liquidTop;
+              const liquidBottom = GLASS_RECT.y + bounds.liquidBottom;
+              const surfaceY =
+                liquidBottom - (liquidBottom - liquidTop) * fillHeight;
               rig.emitSplash(
                 GLASS_RECT.x + bounds.bowlCenterX,
                 surfaceY,
-                ingredient.color,
-              ),
+                splashColor,
+              );
+            },
             undefined,
             cue.at,
           );

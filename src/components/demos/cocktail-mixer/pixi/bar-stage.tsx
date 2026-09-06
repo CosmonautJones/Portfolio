@@ -40,6 +40,9 @@ export function BarStage({
   const ready = !showCssStill && rig !== null;
 
   useEffect(() => {
+    setShowCssStill(true);
+    setActiveRig(null);
+
     let cancelled = false;
     let app: Application | null = null;
     let mountedRig: MixerRig | null = null;
