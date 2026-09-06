@@ -340,9 +340,6 @@ export function createRig(
       uniforms.frostAlpha = 0;
       uniforms.displacementOn = false;
       foam.alpha = hasFoam ? 1 : 0;
-      if (salt) {
-        salt.alpha = finishedCocktail.garnishType.startsWith("salt_") ? 1 : 0;
-      }
       rig.tick(0);
     },
     setFillHeight(height) {
