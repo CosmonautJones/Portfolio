@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Application, Ticker } from "pixi.js";
+import type { Application } from "pixi.js";
 import type { PourSnapshot } from "../pour-script";
 import type { Cocktail } from "../types";
 import { createMixerApp, destroyMixerApp } from "./application";
 import { loadMixerAssets } from "./assets";
 import { CssStill } from "./css-still";
+import { PourDirector } from "./pour-director";
 import { createRig } from "./rig";
 import type { MixerRig } from "./rig";
 
@@ -24,12 +25,23 @@ export function BarStage({
   const canvasHostRef = useRef<HTMLDivElement>(null);
   const onSnapshotRef = useRef(onSnapshot);
   const [showCssStill, setShowCssStill] = useState(true);
+  const [activeRig, setActiveRig] = useState<{
+    cocktail: Cocktail;
+    reducedMotion: boolean;
+    rig: MixerRig;
+  } | null>(null);
   onSnapshotRef.current = onSnapshot;
+  const rig =
+    activeRig?.cocktail === cocktail &&
+    activeRig.reducedMotion === reducedMotion
+      ? activeRig.rig
+      : null;
+  const ready = !showCssStill && rig !== null;
 
   useEffect(() => {
     let cancelled = false;
     let app: Application | null = null;
-    let rig: MixerRig | null = null;
+    let mountedRig: MixerRig | null = null;
 
     const doneSnapshot: PourSnapshot = {
       pouredCount: cocktail.ingredients.length,
@@ -40,14 +52,16 @@ export function BarStage({
     function destroyApp(): void {
       if (!app) return;
       app.ticker.remove(tickRig);
-      rig?.destroy();
-      rig = null;
+      mountedRig?.destroy();
+      mountedRig = null;
       destroyMixerApp(app);
       app = null;
     }
 
-    function tickRig(ticker: Ticker): void {
-      rig?.tick(ticker.deltaMS);
+    function tickRig(): void {
+      if (app && mountedRig) {
+        mountedRig.tick(app.ticker.deltaMS);
+      }
     }
 
     async function mountStage(): Promise<void> {
@@ -73,9 +87,9 @@ export function BarStage({
           return;
         }
 
-        rig = createRig(app.stage, cocktail, { reducedMotion });
+        mountedRig = createRig(app.stage, cocktail, { reducedMotion });
         if (reducedMotion) {
-          rig.applyFinished(cocktail);
+          mountedRig.applyFinished(cocktail);
           onSnapshotRef.current(doneSnapshot);
         } else {
           app.ticker.add(tickRig);
@@ -85,11 +99,13 @@ export function BarStage({
         app.canvas.style.maxWidth = "280px";
         app.canvas.style.height = "auto";
         canvasHost.replaceChildren(app.canvas);
+        setActiveRig({ cocktail, reducedMotion, rig: mountedRig });
         setShowCssStill(false);
       } catch {
         destroyApp();
         if (cancelled) return;
 
+        setActiveRig(null);
         setShowCssStill(true);
         onSnapshotRef.current(doneSnapshot);
       }
@@ -112,6 +128,13 @@ export function BarStage({
     >
       {showCssStill ? <CssStill cocktail={cocktail} /> : null}
       <div ref={canvasHostRef} style={{ lineHeight: 0 }} />
+      {ready && !reducedMotion && rig ? (
+        <PourDirector
+          cocktail={cocktail}
+          rig={rig}
+          onSnapshot={onSnapshot}
+        />
+      ) : null}
     </div>
   );
 }

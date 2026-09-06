@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BarStage } from "../pixi/bar-stage";
+import type { PourSnapshot } from "../pour-script";
 import type { Cocktail } from "../types";
-import { GlassScene } from "../glass-scene";
 import { RecipeDetails } from "./recipe-details";
-import type { PourSnapshot } from "../pour-timeline";
 
 const INITIAL_SNAPSHOT: PourSnapshot = {
   pouredCount: 0,
@@ -68,7 +68,7 @@ export function RecipeView({
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="flex items-center justify-center">
-          <GlassScene
+          <BarStage
             cocktail={cocktail}
             reducedMotion={Boolean(prefersReducedMotion)}
             onSnapshot={onSnapshot}
