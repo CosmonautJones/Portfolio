@@ -16,6 +16,7 @@ import {
 import type { IceCube } from "../glass-bounds";
 import type { Cocktail, GlassType } from "../types";
 import { bottlePivot } from "./bottle-pivot";
+import { FpsBudget } from "./fps-budget";
 import { createLiquidPlane } from "./liquid";
 import {
   createMixerParticles,
@@ -334,7 +335,7 @@ export function createRig(
     displacementOn: allowDisplacement,
   };
   const neckPoint = new Point();
-  let slowFrames = 0;
+  const displacementBudget = new FpsBudget(50, 30);
 
   const rig: MixerRig = {
     uniforms,
@@ -416,14 +417,13 @@ export function createRig(
       particles.pinFoamTo(surfaceY);
       particles.tick(deltaMs);
 
-      if (uniforms.displacementOn && deltaMs > 20) {
-        slowFrames += 1;
-        if (slowFrames >= 30) {
-          uniforms.displacementOn = false;
-          rimHighlight.alpha = 0;
-        }
-      } else {
-        slowFrames = 0;
+      const fps = deltaMs > 0 ? 1000 / deltaMs : Number.POSITIVE_INFINITY;
+      if (
+        uniforms.displacementOn &&
+        displacementBudget.sample(fps)
+      ) {
+        uniforms.displacementOn = false;
+        rimHighlight.alpha = 0;
       }
     },
     destroy() {
