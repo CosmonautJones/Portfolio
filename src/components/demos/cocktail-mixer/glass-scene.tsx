@@ -1,20 +1,14 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useId } from "react";
 import type { Cocktail } from "./types";
 import { GLASS_CONFIGS, ICE_POSITIONS } from "./data";
 import { GlassSvg } from "./svg/glasses";
 import { GarnishOverlay } from "./svg/garnishes";
-import { useGSAP } from "./gsap-setup";
-import {
-  buildPourTimeline,
-  type PourSnapshot,
-} from "./pour-timeline";
+import type { PourSnapshot } from "./pour-timeline";
 
 export function GlassScene({
   cocktail,
-  reducedMotion,
-  onSnapshot,
 }: {
   cocktail: Cocktail;
   reducedMotion: boolean;
@@ -22,38 +16,14 @@ export function GlassScene({
 }) {
   const rawId = useId();
   const clipId = `glass${rawId.replace(/:/g, "")}`;
-  const rootRef = useRef<SVGSVGElement>(null);
   const config = GLASS_CONFIGS[cocktail.glass];
   const totalHeight = config.liquidBottom - config.liquidTop;
   const layerHeight = totalHeight / cocktail.ingredients.length;
   const iceCenterY = (config.liquidTop + config.liquidBottom) / 2;
-  const onSnapshotRef = useRef(onSnapshot);
-  onSnapshotRef.current = onSnapshot;
-
-  useGSAP(
-    () => {
-      const root = rootRef.current;
-      if (!root) return;
-      const timeline = buildPourTimeline({
-        root,
-        cocktail,
-        reducedMotion: Boolean(reducedMotion),
-        onSnapshot: (snapshot) => onSnapshotRef.current(snapshot),
-      });
-      return () => {
-        timeline.kill();
-      };
-    },
-    {
-      dependencies: [cocktail.name, reducedMotion],
-      revertOnUpdate: true,
-    }
-  );
 
   return (
     <div className="flex flex-col items-center gap-4">
       <svg
-        ref={rootRef}
         viewBox="0 0 200 300"
         width={200}
         height={300}
