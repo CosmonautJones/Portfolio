@@ -15,6 +15,7 @@ import {
 } from "../glass-bounds";
 import type { IceCube } from "../glass-bounds";
 import type { Cocktail, GlassType } from "../types";
+import { bottlePivot } from "./bottle-pivot";
 import { createLiquidPlane } from "./liquid";
 import {
   createMixerParticles,
@@ -31,6 +32,8 @@ const GARNISH_SIZES: Record<string, { width: number; height: number }> = {
   "garnish-cherry-orange.png": { width: 88, height: 72 },
   "garnish-rocket.png": { width: 48, height: 88 },
 };
+const BOTTLE_SIZE = { width: 48, height: 96 } as const;
+
 export type MixerUniforms = {
   fillHeight: number;
   fillColor: string;
@@ -291,8 +294,16 @@ export function createRig(
   );
   garnish.alpha = 0;
 
-  const bottle = plate("bottle.png", 48, 96);
-  bottle.pivot.set(bounds.bottle.neckX, bounds.bottle.neckY);
+  const bottle = plate("bottle.png", BOTTLE_SIZE.width, BOTTLE_SIZE.height);
+  const neckPivot = bottlePivot(
+    bottle.texture.width,
+    bottle.texture.height,
+    BOTTLE_SIZE.width,
+    BOTTLE_SIZE.height,
+    bounds.bottle.neckX,
+    bounds.bottle.neckY,
+  );
+  bottle.pivot.set(neckPivot.x, neckPivot.y);
   bottle.position.set(
     glassX + bounds.bottle.x + bounds.bottle.neckX,
     glassY + bounds.bottle.y + bounds.bottle.neckY,
@@ -368,7 +379,7 @@ export function createRig(
       particles.killEphemeral();
     },
     neckWorld() {
-      return bottle.getGlobalPosition(neckPoint);
+      return bottle.toGlobal(neckPivot, neckPoint);
     },
     tick(deltaMs) {
       const fillHeight = Math.max(0, Math.min(1, uniforms.fillHeight));
