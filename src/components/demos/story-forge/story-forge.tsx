@@ -143,7 +143,7 @@ function DiceBoard({
           <button
             key={category}
             type="button"
-            className={`sf-die${rolling ? " is-rolling" : ""}${prompt ? " is-reveal" : ""}${prompt?.legendary ? " is-legendary" : ""}`}
+            className={`sf-die${rolling ? " is-rolling" : ""}${prompt ? " is-reveal" : ""}${prompt?.legendary ? " is-legendary" : ""}${clickable ? " is-pickable" : ""}${state.rerolledCategory === category ? " is-rerolled" : ""}`}
             data-shape={category}
             style={{ animationDelay: rolling ? `${index * 70}ms` : "0ms" }}
             disabled={!clickable}
@@ -294,12 +294,14 @@ export function StoryForge() {
           <p className="sf-kicker">Cosmonaut Story Forge</p>
           <button
             type="button"
-            className="sf-btn sf-btn-ghost"
-            style={{ minHeight: 44, padding: "8px 12px" }}
+            className="sf-btn sf-btn-ghost sf-mute"
             onClick={() => dispatch({ type: "toggle-mute" })}
             aria-label={state.muted ? "Unmute optional sounds" : "Mute sounds"}
           >
-            {state.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            <span className="sf-mute-swap" aria-hidden="true">
+              <VolumeX size={18} className={state.muted ? "is-on" : "is-off"} />
+              <Volume2 size={18} className={state.muted ? "is-off" : "is-on"} />
+            </span>
           </button>
         </header>
 
@@ -452,7 +454,17 @@ function Landing({
   onVault: () => void;
 }) {
   return (
-    <main className="flex flex-1 flex-col gap-6 pt-8">
+    <main className="sf-enter flex flex-1 flex-col gap-6 pt-8">
+      <div className="sf-hero-dice" aria-hidden="true">
+        {CATEGORIES.map((category) => {
+          const Icon = CATEGORY_ICONS[category];
+          return (
+            <span key={category} className="sf-hero-die" data-shape={category}>
+              <Icon size={16} strokeWidth={2.4} />
+            </span>
+          );
+        })}
+      </div>
       <div>
         <h1 className="sf-title">Cosmonaut Story Forge</h1>
         <p className="sf-lede">
@@ -537,19 +549,21 @@ function Landing({
 
 function HowTo({ onBack }: { onBack: () => void }) {
   return (
-    <main className="flex flex-1 flex-col gap-5 pt-6">
+    <main className="sf-enter flex flex-1 flex-col gap-5 pt-6">
       <button type="button" className="sf-btn sf-btn-ghost self-start" onClick={onBack}>
         <ArrowLeft size={16} /> Back
       </button>
-      <h1 className="sf-title" style={{ fontSize: "2rem" }}>How to play</h1>
-      <ol className="m-0 flex list-decimal flex-col gap-3 pl-5 text-[1.02rem] leading-relaxed text-[var(--sf-muted)]">
+      <div>
+        <h1 className="sf-title sf-title-sm">How to play</h1>
+        <p className="sf-lede">No typing required. The story lives in the room.</p>
+      </div>
+      <ol className="sf-howto">
         <li>Pick a mode. Family is the default; Cozy Spooky stays playful.</li>
         <li>Add 2 to 5 players. Names are optional.</li>
         <li>Roll five story dice: character, place, object, problem, and a wild twist.</li>
         <li>Pass the phone. Each person continues the story out loud.</li>
         <li>You may reroll one die per story. After everyone has a turn, finish and celebrate.</li>
       </ol>
-      <p className="sf-lede">No typing required. The story lives in the room.</p>
     </main>
   );
 }
@@ -570,12 +584,12 @@ function Setup({
   onBegin: () => void;
 }) {
   return (
-    <main className="flex flex-1 flex-col gap-5 pt-6">
+    <main className="sf-enter flex flex-1 flex-col gap-5 pt-6">
       <button type="button" className="sf-btn sf-btn-ghost self-start" onClick={onBack}>
         <ArrowLeft size={16} /> Back
       </button>
       <div>
-        <h1 className="sf-title" style={{ fontSize: "2.2rem" }}>Who is telling?</h1>
+        <h1 className="sf-title sf-title-sm">Who is telling?</h1>
         <p className="sf-lede">Names are optional. Player 1, Player 2, and friends work just fine.</p>
       </div>
       <div className="sf-meter" role="group" aria-label="Number of players">
@@ -656,8 +670,14 @@ function TableScreen({
   onCopy: () => void;
 }) {
   const names = activePlayerNames(state.playerNames, state.playerCount);
+  const beatLabel =
+    state.tableStatus === "turn"
+      ? "Speaking now"
+      : state.totalTurns === 0
+        ? "Begin the story"
+        : "Continue the story";
   return (
-    <main className="flex flex-1 flex-col gap-4 pt-4">
+    <main className="sf-enter flex flex-1 flex-col gap-4 pt-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="sf-kicker">{state.roll?.seed ?? "Shuffling"}</p>
@@ -673,18 +693,20 @@ function TableScreen({
           </p>
         )}
       </div>
-      <div className="sf-constellation" aria-label="Player turns">
+      <div className="sf-players" aria-label="Player turns">
         {names.map((name, index) => (
           <span
             key={name + index}
-            className={`sf-star-slot${state.turnsTaken[index] > 0 ? " is-lit" : ""}`}
-            title={name}
-          />
+            className={`sf-player${index === state.currentPlayerIndex ? " is-current" : ""}${state.turnsTaken[index] > 0 ? " is-gone" : ""}`}
+          >
+            <span className="sf-star-slot" aria-hidden="true" />
+            {name}
+          </span>
         ))}
       </div>
       <DiceBoard state={state} rolling={rolling} pickReroll={pickReroll} onPick={onPick} />
       <section className="sf-panel">
-        <p className="m-0 text-sm uppercase tracking-[0.16em] text-[var(--sf-subtle)]">Begin the story</p>
+        <p className="m-0 text-sm uppercase tracking-[0.16em] text-[var(--sf-subtle)]">{beatLabel}</p>
         <p className="mt-2 mb-0 text-xl font-semibold">{currentName}</p>
         <p className="mt-1 mb-0 text-[var(--sf-muted)]">{turnPromptFor(state.totalTurns)}</p>
         {state.challenge && state.tableStatus === "turn" && (
@@ -699,42 +721,46 @@ function TableScreen({
           <p className="mt-3 mb-0 text-sm text-[var(--sf-accent)]">Time is up — finish the thought whenever you like.</p>
         )}
       </section>
-      <div className="sf-sticky sf-actions">
-        {state.tableStatus !== "turn" ? (
-          <button type="button" className="sf-btn sf-btn-primary" onClick={onStartTurn} disabled={!state.roll || rolling}>
-            Start Turn
+      <div className="sf-sticky">
+        <div className="sf-actions-primary">
+          {state.tableStatus !== "turn" ? (
+            <button type="button" className="sf-btn sf-btn-primary" onClick={onStartTurn} disabled={!state.roll || rolling}>
+              Start Turn
+            </button>
+          ) : (
+            <button type="button" className="sf-btn sf-btn-primary" onClick={onNext}>
+              Next Player
+            </button>
+          )}
+          {canFinish && (
+            <button type="button" className="sf-btn sf-btn-accent" onClick={onFinish}>
+              <Sparkles size={16} />
+              Finish the Story
+            </button>
+          )}
+        </div>
+        <div className="sf-actions sf-actions-quiet">
+          <button
+            type="button"
+            className="sf-btn sf-btn-ghost"
+            onClick={onRerollMode}
+            disabled={!state.roll || state.rerollsRemaining <= 0 || rolling}
+          >
+            <RotateCcw size={16} />
+            {state.rerollsRemaining > 0 ? "Reroll one die" : "Reroll used"}
           </button>
-        ) : (
-          <button type="button" className="sf-btn sf-btn-primary" onClick={onNext}>
-            Next Player
+          <button type="button" className="sf-btn sf-btn-ghost" onClick={onNewStory}>
+            New Story
           </button>
-        )}
-        <button
-          type="button"
-          className="sf-btn sf-btn-ghost"
-          onClick={onRerollMode}
-          disabled={!state.roll || state.rerollsRemaining <= 0 || rolling}
-        >
-          <RotateCcw size={16} />
-          {state.rerollsRemaining > 0 ? "Reroll one die" : "Reroll used"}
-        </button>
-        <button type="button" className="sf-btn sf-btn-ghost" onClick={onNewStory}>
-          New Story
-        </button>
-        <button type="button" className="sf-btn sf-btn-ghost" onClick={onFavorite} disabled={!state.roll || favorited}>
-          <Heart size={16} />
-          {favorited ? "Saved" : "Favorite"}
-        </button>
-        <button type="button" className="sf-btn sf-btn-ghost" onClick={onCopy} disabled={!state.roll}>
-          <Copy size={16} />
-          {copied ? "Copied" : "Copy seed"}
-        </button>
-        {canFinish && (
-          <button type="button" className="sf-btn sf-btn-accent" onClick={onFinish}>
-            <Sparkles size={16} />
-            Finish the Story
+          <button type="button" className="sf-btn sf-btn-ghost" onClick={onFavorite} disabled={!state.roll || favorited}>
+            <Heart size={16} />
+            {favorited ? "Saved" : "Favorite"}
           </button>
-        )}
+          <button type="button" className="sf-btn sf-btn-ghost" onClick={onCopy} disabled={!state.roll}>
+            <Copy size={16} />
+            {copied ? "Copied" : "Copy seed"}
+          </button>
+        </div>
       </div>
     </main>
   );
@@ -761,13 +787,23 @@ function Celebration({
 }) {
   const story = state.lastFinished!;
   return (
-    <main className="flex flex-1 flex-col gap-5 pt-6">
+    <main className="sf-enter flex flex-1 flex-col gap-5 pt-6">
+      <div className="sf-burst" aria-hidden="true">
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+        <span className="sf-mote" />
+      </div>
       <p className="sf-kicker">Story complete</p>
-      <h1 className="sf-title">{story.title}</h1>
+      <h1 className="sf-title sf-title-sm">{story.title}</h1>
       <p className="sf-lede">
         {story.playerOrder.join(" → ")} · {story.totalTurns} turn{story.totalTurns === 1 ? "" : "s"} · {story.seed}
       </p>
-      <ul className="m-0 grid list-none gap-2 p-0">
+      <ul className="sf-story-list">
         {CATEGORIES.map((category) => (
           <li key={category} className="sf-panel">
             <p className="m-0 text-xs uppercase tracking-[0.16em] text-[var(--sf-subtle)]">
@@ -814,11 +850,11 @@ function Vault({
   onReset: () => void;
 }) {
   return (
-    <main className="flex flex-1 flex-col gap-5 pt-6">
+    <main className="sf-enter flex flex-1 flex-col gap-5 pt-6">
       <button type="button" className="sf-btn sf-btn-ghost self-start" onClick={onBack}>
         <ArrowLeft size={16} /> Back
       </button>
-      <h1 className="sf-title" style={{ fontSize: "2.1rem" }}>Story Vault</h1>
+      <h1 className="sf-title sf-title-sm">Story Vault</h1>
       <p className="sf-lede">Favorite rolls live on this device only.</p>
       {prefs.favorites.length === 0 ? (
         <p className="sf-panel m-0 text-[var(--sf-muted)]">Nothing saved yet. Favorite a roll after the dice land.</p>
