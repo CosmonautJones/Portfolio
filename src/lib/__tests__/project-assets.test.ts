@@ -24,6 +24,7 @@ describe("portfolio artwork", () => {
         "Pixel Workshop",
         "Release Signal",
         "The Cosmonaut’s Bar",
+        "Cosmonaut Story Forge",
       ])
     );
   });
@@ -31,7 +32,7 @@ describe("portfolio artwork", () => {
   it("gives every project a unique local 16:9 image", async () => {
     const imagePaths = PROJECTS.map((project) => project.image);
 
-    expect(imagePaths).toHaveLength(12);
+    expect(imagePaths).toHaveLength(13);
     expect(new Set(imagePaths).size).toBe(imagePaths.length);
 
     for (const imagePath of imagePaths) {
