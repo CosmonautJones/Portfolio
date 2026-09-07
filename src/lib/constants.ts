@@ -127,6 +127,19 @@ export const PROJECTS: Project[] = [
     actionLabel: "Visit the bar",
   },
   {
+    title: "Cosmonaut Story Forge",
+    description:
+      "A pass-the-phone family storytelling game. Five seeded story dice, spoken rounds, and a local Story Vault — no accounts, no AI narrator.",
+    image: "/projects/story-forge.jpg",
+    tags: ["React", "TypeScript", "Game", "localStorage"],
+    demoUrl: "/work/story-forge",
+    githubUrl: "https://github.com/CosmonautJones/Portfolio",
+    role: "Interactive Demo",
+    featured: false,
+    proof: "Deterministic COSMO-XXXX seeds, kid-friendly decks, optional timer, and a device-local vault.",
+    actionLabel: "Roll the dice",
+  },
+  {
     title: "ClaudeBot's Adventure",
     description:
       "A TypeScript arcade engine with a fixed-timestep loop, procedural lanes, WebGL rendering, bloom, scoring, and procedural audio.",
