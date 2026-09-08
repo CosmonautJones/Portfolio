@@ -27,32 +27,6 @@ export const NAV_LINKS = [
 
 export const PROJECTS: Project[] = [
   {
-    title: "Lumen Garden",
-    description:
-      "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
-    image: "/projects/lumen-inbox.jpg",
-    tags: ["React", "TypeScript", "Vite", "Vitest"],
-    liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
-    githubUrl: "https://github.com/CosmonautJones/lumen-garden",
-    role: "Interactive Demo",
-    featured: true,
-    proof: "Local-only React workspace (Inbox, Constellation, Focus, Review), keyboard access, no accounts or telemetry.",
-    actionLabel: "Open demo",
-  },
-  {
-    title: "Mission Control",
-    description:
-      "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
-    image: "",
-    tags: ["TypeScript", "Node.js", "React", "Python"],
-    githubUrl: "https://github.com/CosmonautJones/mission-control",
-    caseStudyUrl: "/work/mission-control",
-    role: "Open Source",
-    featured: true,
-    proof: "Bounded worktree teams, verifier loops, approval gates, and auditable run evidence. Local-first, no cloud account.",
-    actionLabel: "Read code",
-  },
-  {
     title: "AI Usage Overlays",
     description:
       "A Windows tray HUD that normalizes local Claude Code, Codex, Cursor, and Grok usage into one always-on-top view. Each provider is an independent adapter; a missing login only blanks that tile.",
@@ -80,6 +54,32 @@ export const PROJECTS: Project[] = [
     role: "Open Source",
     featured: true,
     proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData.",
+    actionLabel: "Read code",
+  },
+  {
+    title: "Lumen Garden",
+    description:
+      "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
+    image: "/projects/lumen-inbox.jpg",
+    tags: ["React", "TypeScript", "Vite", "Vitest"],
+    liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
+    githubUrl: "https://github.com/CosmonautJones/lumen-garden",
+    role: "Interactive Demo",
+    featured: true,
+    proof: "Local-only React workspace (Inbox, Constellation, Focus, Review), keyboard access, no accounts or telemetry.",
+    actionLabel: "Open demo",
+  },
+  {
+    title: "Mission Control",
+    description:
+      "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
+    image: "",
+    tags: ["TypeScript", "Node.js", "React", "Python"],
+    githubUrl: "https://github.com/CosmonautJones/mission-control",
+    caseStudyUrl: "/work/mission-control",
+    role: "Open Source",
+    featured: true,
+    proof: "Bounded worktree teams, verifier loops, approval gates, and auditable run evidence. Local-first, no cloud account.",
     actionLabel: "Read code",
   },
   {
