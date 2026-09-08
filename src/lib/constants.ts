@@ -45,6 +45,7 @@ export const PROJECTS: Project[] = [
     image: "/projects/mission-control.jpg",
     tags: ["TypeScript", "Node.js", "React", "Python"],
     githubUrl: "https://github.com/CosmonautJones/mission-control",
+    caseStudyUrl: "/work/mission-control",
     role: "Open Source",
     featured: true,
     proof: "Bounded worktree teams, verifier loops, approval gates, and auditable run evidence. Local-first, no cloud account.",
@@ -57,6 +58,24 @@ export const PROJECTS: Project[] = [
     image: "/projects/ai-usage-overlays.jpg",
     tags: ["PowerShell", "Windows", "WPF"],
     githubUrl: "https://github.com/CosmonautJones/ai-usage-overlays",
+    caseStudyUrl: "/work/ai-usage-overlays",
+    gallery: [
+      {
+        src: "/projects/overlays-full-hud.jpg",
+        caption: "Always-on-top tray view",
+        alt: "AI Usage Overlays HUD on black",
+      },
+      {
+        src: "/projects/overlays-provider-tiles.jpg",
+        caption: "Claude, Codex, Cursor, Grok",
+        alt: "AI Usage Overlays provider tiles",
+      },
+      {
+        src: "/projects/overlays-travos-footer.jpg",
+        caption: "Brand + install path",
+        alt: "AI Usage Overlays TravOS footer",
+      },
+    ],
     role: "Open Source",
     featured: true,
     proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData. TravOS portfolio piece.",

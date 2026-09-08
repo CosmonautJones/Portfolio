@@ -30,6 +30,8 @@ export interface Project {
   liveUrl?: string;
   demoUrl?: string;
   githubUrl?: string;
+  caseStudyUrl?: string;
+  gallery?: { src: string; caption: string; alt: string }[];
   role: string;
   featured?: boolean;
   proof?: string;
