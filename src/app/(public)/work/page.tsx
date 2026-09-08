@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default function WorkPage() {
   const featured = PROJECTS.filter((p) => p.featured);
-  const others = PROJECTS.filter((p) => !p.featured);
+  const play = PROJECTS.filter((p) => !p.featured && p.demoUrl);
+  const more = PROJECTS.filter((p) => !p.featured && !p.demoUrl);
 
   return (
     <div className="container mx-auto px-6 py-24 sm:py-32">
@@ -28,26 +29,52 @@ export default function WorkPage() {
         </AnimateOnScroll>
       </div>
 
-      {/* Featured projects */}
+      {/* Featured */}
       {featured.length > 0 && (
-        <StaggerChildren className="mb-12 grid gap-6 sm:grid-cols-2">
-          {featured.map((project, index) => (
-            <StaggerItem key={project.title}>
-              <ProjectCard project={project} featured priority={index < 2} />
-            </StaggerItem>
-          ))}
-        </StaggerChildren>
+        <section className="mb-14">
+          <p className="mb-6 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Featured
+          </p>
+          <StaggerChildren className="grid gap-6 sm:grid-cols-2">
+            {featured.map((project, index) => (
+              <StaggerItem key={project.title}>
+                <ProjectCard project={project} featured priority={index < 2} />
+              </StaggerItem>
+            ))}
+          </StaggerChildren>
+        </section>
       )}
 
-      {/* Other projects */}
-      {others.length > 0 && (
-        <StaggerChildren className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {others.map((project) => (
-            <StaggerItem key={project.title}>
-              <ProjectCard project={project} />
-            </StaggerItem>
-          ))}
-        </StaggerChildren>
+      {/* Playground */}
+      {play.length > 0 && (
+        <section className="mb-14">
+          <p className="mb-6 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Playground
+          </p>
+          <StaggerChildren className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {play.map((project) => (
+              <StaggerItem key={project.title}>
+                <ProjectCard project={project} />
+              </StaggerItem>
+            ))}
+          </StaggerChildren>
+        </section>
+      )}
+
+      {/* More work */}
+      {more.length > 0 && (
+        <section>
+          <p className="mb-6 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            More work
+          </p>
+          <StaggerChildren className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {more.map((project) => (
+              <StaggerItem key={project.title}>
+                <ProjectCard project={project} />
+              </StaggerItem>
+            ))}
+          </StaggerChildren>
+        </section>
       )}
     </div>
   );
