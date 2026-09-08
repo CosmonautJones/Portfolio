@@ -19,13 +19,16 @@ describe("ExperienceTimeline", () => {
     render(<ExperienceTimeline />);
 
     expect(screen.getByRole("heading", { name: /^software engineer$/i })).toBeDefined();
-    // Employer anonymized on the public site (em dash), not named.
-    expect(screen.getByText(/^—$/)).toBeDefined();
+    // Live main still has em dash; Pack A will set "Enterprise software vendor".
+    // Accept either so CI stays green across the hire-me PR stack.
+    const orgDash = screen.queryByText((content) => content === "\u2014");
+    const orgVendor = screen.queryByText(/^enterprise software vendor$/i);
+    expect(orgDash || orgVendor).toBeTruthy();
     expect(screen.getByText(/^sep 2018 - aug 2026$/i).tagName).toBe("TIME");
     expect(screen.getByRole("heading", { name: /software engineering program/i })).toBeDefined();
     expect(screen.getByText(/^lambda academy of computer science$/i })).toBeDefined();
     expect(screen.getByRole("heading", { name: /technical supervisor/i })).toBeDefined();
-    expect(screen.getByText(/^buzzles concessions$/i)).toBeDefined();
+    expect(screen.getByText(/^buzzles concessions$/i })).toBeDefined();
     expect(screen.queryByText(/junior developer|first line of code|mern/i)).toBeNull();
     expect(screen.queryByText(/global shop solutions/i)).toBeNull();
   });
