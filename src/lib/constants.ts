@@ -214,7 +214,7 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
       "Shipped production workflows across tightly coupled systems without losing existing behavior.",
       "Modernized legacy components into reusable, typed libraries.",
       "Owned production troubleshooting and side-by-side regression work.",
-      "Built internal developer tooling for approved AI-assisted workflows.",
+      "Built constrained AI coding workflows with verification and human review.",
     ],
   },
   {
