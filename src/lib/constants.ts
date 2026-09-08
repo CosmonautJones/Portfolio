@@ -53,13 +53,13 @@ export const PROJECTS: Project[] = [
   {
     title: "AI Usage Overlays",
     description:
-      "A Windows HUD that normalizes local Claude, Codex, and Cursor usage signals into one compact view. Provider integrations are optional and degrade independently when data is unavailable.",
+      "A Windows tray HUD that normalizes local Claude Code, Codex, Cursor, and Grok usage into one always-on-top view. Each provider is an independent adapter; a missing login only blanks that tile.",
     image: "/projects/ai-usage-overlays.jpg",
     tags: ["PowerShell", "Windows", "WPF"],
     githubUrl: "https://github.com/CosmonautJones/ai-usage-overlays",
     role: "Open Source",
     featured: true,
-    proof: "Always-on-top Windows tray HUD; providers optional and independent; no separate credentials stored.",
+    proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData. TravOS portfolio piece.",
     actionLabel: "Read code",
   },
   {
