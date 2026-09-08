@@ -17,7 +17,7 @@ export function ExperienceTimeline() {
           </p>
         </div>
         <div className="border-l-2 border-accent-glow/60 pl-4">
-          <p className="text-sm font-semibold text-foreground">Manufacturing ERP</p>
+          <p className="text-sm font-semibold text-foreground">Full-stack product</p>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">Systems people depend on daily</p>
         </div>
         <p className="font-mono text-xs leading-6 text-muted-foreground">

@@ -182,7 +182,8 @@ export default function GameCanvas({
       rect.width / VIEWPORT_WIDTH,
       rect.height / VIEWPORT_HEIGHT,
     );
-    const scale = Math.max(1, Math.min(rawScale, 6));
+    // Allow scale < 1 on narrow viewports so 416px native canvas fits phones.
+    const scale = Math.max(0.75, Math.min(rawScale, 6));
     setCanvasWidth(Math.round(VIEWPORT_WIDTH * scale));
     setCanvasHeight(Math.round(VIEWPORT_HEIGHT * scale));
   }, []);

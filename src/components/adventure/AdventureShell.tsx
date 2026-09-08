@@ -113,7 +113,7 @@ export function AdventureShell() {
       </div>
 
       {/* Game area — flex-1 centered */}
-      <div className="flex-1 flex items-center justify-center min-w-0">
+      <div className="flex-1 flex items-center justify-center min-w-0 overflow-x-hidden">
         <GameCanvas
           onScoreUpdate={handleScoreUpdate}
           onPhaseChange={handlePhaseChange}
