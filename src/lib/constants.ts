@@ -43,7 +43,7 @@ export const PROJECTS: Project[] = [
     title: "Mission Control",
     description:
       "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
-    image: "/projects/mission-control.jpg",
+    image: "",
     tags: ["TypeScript", "Node.js", "React", "Python"],
     githubUrl: "https://github.com/CosmonautJones/mission-control",
     caseStudyUrl: "/work/mission-control",
@@ -165,9 +165,9 @@ export const PROJECTS: Project[] = [
     image: "/projects/loopedin.jpg",
     tags: ["React Native", "Supabase", "TypeScript", "Netlify"],
     liveUrl: "https://loopedin-family.netlify.app",
-    githubUrl: "https://github.com/CosmonautJones/family-loop",
     role: "Full-Stack Product",
-    proof: "Hosted auth and invitations, family membership, shared events, RSVPs, discussions, private attributed photos, and verified release drills.",
+    proof:
+      "Private source. Hosted product with auth, invitations, shared events, RSVPs, discussions, and private attributed photos.",
     actionLabel: "Open LoopedIn",
   },
   {

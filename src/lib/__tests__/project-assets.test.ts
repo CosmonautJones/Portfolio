@@ -12,9 +12,10 @@ describe("portfolio artwork", () => {
     expect(loopedIn).toMatchObject({
       image: "/projects/loopedin.jpg",
       liveUrl: "https://loopedin-family.netlify.app",
-      githubUrl: "https://github.com/CosmonautJones/family-loop",
       role: "Full-Stack Product",
     });
+    // Private-source honesty: no public githubUrl for LoopedIn.
+    expect(loopedIn?.githubUrl).toBeUndefined();
     expect(PROJECTS.some((project) => project.title === "Plan'd")).toBe(false);
   });
 
@@ -29,12 +30,16 @@ describe("portfolio artwork", () => {
   });
 
   it("gives every project a unique local 16:9 image", async () => {
+    const missionControl = PROJECTS.find((project) => project.title === "Mission Control");
+    expect(missionControl?.image).toBe("");
+
     const imagePaths = PROJECTS.map((project) => project.image);
-
     expect(imagePaths).toHaveLength(12);
-    expect(new Set(imagePaths).size).toBe(imagePaths.length);
 
-    for (const imagePath of imagePaths) {
+    const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
+    expect(new Set(presentPaths).size).toBe(presentPaths.length);
+
+    for (const imagePath of presentPaths) {
       expect(imagePath).toMatch(/^\/projects\/.+\.jpg$/);
 
       const assetPath = path.join(process.cwd(), "public", imagePath);
