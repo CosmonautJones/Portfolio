@@ -57,7 +57,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       aria-label="Hero"
-      className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center"
+      className="relative flex min-h-[min(100dvh,52rem)] flex-col items-center justify-center px-6 text-center"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
@@ -100,7 +100,7 @@ export function HeroSection() {
       <div className="relative z-10 max-w-4xl">
         {/* Pill badge */}
         <m.div {...entry(0)}>
-          <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
+          <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
             <span className="inline-block h-1.5 w-1.5 rounded-full accent-dot" aria-hidden="true" />
             Software Developer
           </div>
@@ -116,7 +116,7 @@ export function HeroSection() {
         {/* Tagline */}
         <m.p
           {...entry(0.2)}
-          className="mx-auto mt-8 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
+          className="mx-auto mt-5 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
         >
           {SITE_CONFIG.tagline}
         </m.p>
@@ -124,7 +124,7 @@ export function HeroSection() {
         {/* CTA buttons */}
         <m.div
           {...entry(0.3)}
-          className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+          className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
         >
           <Button
             asChild
@@ -148,7 +148,7 @@ export function HeroSection() {
 
         <m.div
           {...entry(0.4)}
-          className="mx-auto mt-10 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
+          className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
         >
           {PROOF_POINTS.map((proof) => (
             <Link
