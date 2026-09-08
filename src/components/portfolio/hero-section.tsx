@@ -57,7 +57,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       aria-label="Hero"
-      className="relative flex min-h-[min(100dvh,52rem)] flex-col items-center justify-center px-6 text-center"
+      className="relative flex min-h-[min(100dvh,52rem)] flex-col items-center justify-center px-6 pb-24 pt-28 text-center"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
@@ -116,9 +116,13 @@ export function HeroSection() {
         {/* Tagline */}
         <m.p
           {...entry(0.2)}
-          className="mx-auto mt-5 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
+          className="mx-auto mt-5 max-w-xl text-xl font-normal leading-relaxed text-muted-foreground sm:text-2xl"
         >
           {SITE_CONFIG.tagline}
+        </m.p>
+
+        <m.p {...entry(0.25)} className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+          {SITE_CONFIG.location}<br />{SITE_CONFIG.availability}
         </m.p>
 
         {/* CTA buttons */}

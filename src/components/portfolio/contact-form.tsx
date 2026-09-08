@@ -104,7 +104,7 @@ export function ContactForm() {
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-        Hiring for mid–senior full-stack or governed-agent work? Say what the team needs, the stack, and how to reach you. I reply to concrete notes.
+        I’m based in the Ann Arbor / Ypsilanti area and open to local or remote software engineering roles. If your team works on .NET, full-stack products, developer tools, or practical AI, I’d love to hear what you’re building.
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">

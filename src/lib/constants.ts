@@ -2,9 +2,11 @@ import type { Project } from "@/lib/types";
 
 export const SITE_CONFIG = {
   name: "Travis Jones",
-  title: "Product-minded Full-Stack Engineer",
+  title: "Software Engineer",
   tagline:
-    "I build web products and governed agent tools — TypeScript, React, Next.js — and I'm open to mid–senior roles (Spring, TX / remote).",
+    "Eight years building and modernizing enterprise software. I connect established systems, modern .NET, and practical AI tools.",
+  location: "Ann Arbor / Ypsilanti, Michigan",
+  availability: "Open to software engineering roles locally and remotely",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -13,9 +15,9 @@ export const SITE_CONFIG = {
 };
 
 export const PROOF_POINTS = [
-  { label: "Check the HUD", href: "https://github.com/CosmonautJones/ai-usage-overlays", detail: "Windows usage overlay" },
-  { label: "Capture a fragment", href: "https://cosmonautjones.github.io/lumen-garden/", detail: "Offline idea greenhouse" },
-  { label: "Review an approval", href: "https://github.com/CosmonautJones/mission-control", detail: "Local agent control plane" },
+  { label: "Enterprise experience", href: "/about#experience", detail: "8 years at Global Shop Solutions" },
+  { label: "Practical AI tooling", href: "/about#knowledge-tooling", detail: "Read-only tools for QA and support" },
+  { label: "Explore the projects", href: "/work", detail: "Source, demos, and engineering notes" },
 ] as const;
 
 export const NAV_LINKS = [
@@ -196,22 +198,22 @@ export const PROJECTS: Project[] = [
 ];
 
 export const SKILLS = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python",
-  "PostgreSQL", "MongoDB", "Tailwind CSS", "Supabase", "AWS",
+  "C#", ".NET", "COBOL", "VB.NET", "Python", "TypeScript",
+  "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Git",
 ];
 
 export const SKILL_CATEGORIES = [
   {
-    label: "Frontend",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML Canvas"],
+    label: "Enterprise experience",
+    skills: ["C# / .NET", "ACU & Fujitsu COBOL", "VB.NET", "PSQL", "SVN", "Visual Studio"],
   },
   {
-    label: "Backend",
-    skills: ["Node.js", "Python", "PostgreSQL", "MongoDB", "Supabase"],
+    label: "Web & personal projects",
+    skills: ["TypeScript", "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Tailwind CSS"],
   },
   {
-    label: "Infrastructure",
-    skills: ["AWS", "Netlify", "Docker", "CI/CD", "Git"],
+    label: "Developer tools & verification",
+    skills: ["Python", "Model Context Protocol", "Git", "Vitest", "GitHub Actions"],
   },
 ];
 
@@ -227,14 +229,14 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
   {
     year: "Sep 2018 - Aug 2026",
     title: "Software Engineer",
-    organization: "Enterprise software vendor",
+    organization: "Global Shop Solutions",
     description:
-      "Built, modernized, tested, and supported enterprise software across full-stack product and systems work.",
+      "Spent eight years in R&D on manufacturing ERP software, working with teams across shop floor, engineering, sales, shipping, payroll, and accounting. Helped evolve established systems while preserving the business behavior people relied on.",
     highlights: [
-      "Shipped production workflows across tightly coupled systems without losing existing behavior.",
-      "Modernized legacy components into reusable, typed libraries.",
-      "Owned production troubleshooting and side-by-side regression work.",
-      "Built constrained AI coding workflows with verification and human review.",
+      "Contributed to DataLayer modernization: ACU-to-Fujitsu COBOL migration and .NET interoperability.",
+      "Built a read-only COBOL knowledge tool used by the QA department, support, and colleagues outside the core team, with filters for sensitive data.",
+      "Worked on production troubleshooting, regression comparisons, and program naming changes that aligned legacy code with C# counterparts.",
+      "Helped colleagues adopt AI through an internal help desk, training sessions, documentation, and demos.",
     ],
   },
   {

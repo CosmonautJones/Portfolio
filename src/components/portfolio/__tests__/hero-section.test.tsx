@@ -68,9 +68,17 @@ describe("HeroSection", () => {
 
   it("surfaces concrete proof paths from the hero", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Capture a fragment")).toBeDefined();
-    expect(screen.getByText("Review an approval")).toBeDefined();
-    expect(screen.getByText("Check the HUD")).toBeDefined();
+    expect(screen.getByText("Enterprise experience")).toBeDefined();
+    expect(screen.getByText("Practical AI tooling")).toBeDefined();
+    expect(screen.getByText("Explore the projects")).toBeDefined();
+  });
+
+  it("establishes current location and engineering experience", () => {
+    render(<HeroSection />);
+    expect(screen.getByText(/eight years building and modernizing enterprise software/i)).toBeDefined();
+    expect(screen.getByText(/Ann Arbor \/ Ypsilanti, Michigan/i)).toBeDefined();
+    expect(screen.getByRole("link", { name: /enterprise experience/i }).getAttribute("href")).toBe("/about#experience");
+    expect(screen.queryByText(/Spring, TX/i)).toBeNull();
   });
 
   it("renders a scroll cue chevron", () => {

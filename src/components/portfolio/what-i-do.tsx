@@ -7,30 +7,30 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 const items = [
   {
     icon: Code2,
-    title: "Building useful software",
+    title: "Modernizing established systems",
     description:
-      "Product UI, server logic, auth, data, and the glue in between. I like when a tool earns its place by helping someone do a real thing.",
+      "At Global Shop Solutions, I worked across COBOL, VB.NET, and C#/.NET, contributing to DataLayer modernization while preserving existing business behavior.",
   },
   {
     icon: Layers,
-    title: "Learning the system",
+    title: "Making knowledge accessible",
     description:
-      "Clear boundaries, strict types, and enough patience to understand the shape of a problem before trying to make it behave.",
+      "I built a read-only COBOL knowledge tool so QA and support could understand core business logic, with filters to strip sensitive data.",
   },
   {
     icon: Handshake,
-    title: "Collaborating well",
+    title: "Helping people use AI",
     description:
-      "Good software is usually a team sport. I care about readable handoffs, honest tradeoffs, and leaving the next person a little more room.",
+      "Through an internal AI help desk, training, and demos, I helped colleagues explore practical uses for AI. My own projects investigate how to make agent work verifiable.",
   },
 ];
 
 export function WhatIDo() {
   return (
-    <section aria-label="What I enjoy working on" className="container mx-auto px-6 py-16 sm:py-24">
+    <section aria-label="What I bring to a team" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
         <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          What I enjoy working on
+          What I bring to a team
         </h2>
       </AnimateOnScroll>
       <StaggerChildren className="grid gap-6 sm:grid-cols-3">
