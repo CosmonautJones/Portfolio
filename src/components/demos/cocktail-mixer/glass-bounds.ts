@@ -128,9 +128,9 @@ export const ICE_LAYOUT: Record<"rocks" | "highball", IceCube[]> = {
     { dx: 15, dy: -22, angle: -10, scale: 0.76 },
   ],
   highball: [
-    { dx: -6, dy: -24, angle: 10, scale: 0.68 },
-    { dx: 8, dy: -50, angle: -12, scale: 0.72 },
-    { dx: -3, dy: -76, angle: 16, scale: 0.64 },
+    { dx: -6, dy: -36, angle: 10, scale: 0.66 },
+    { dx: 8, dy: -96, angle: -12, scale: 0.7 },
+    { dx: -4, dy: -156, angle: 16, scale: 0.62 },
   ],
 };
 

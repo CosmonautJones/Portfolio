@@ -43,6 +43,7 @@ describe("glass-bounds", () => {
     for (const cube of [...ICE_LAYOUT.rocks, ...ICE_LAYOUT.highball]) {
       expect(cube.dy).toBeLessThan(0);
     }
+    expect(ICE_LAYOUT.highball[2].dy).toBeLessThan(-120);
   });
 
   it("docks the bottle neck above the rim in glass space", () => {

@@ -268,11 +268,12 @@ export function createRig(
   );
   const rimHighlight = plate(
     "rim-highlight.png",
-    48,
-    120,
-    glassX + 12,
-    rimY + 4,
+    28,
+    72,
+    glassX + 22,
+    rimY + 18,
   );
+  rimHighlight.alpha = 0.28;
   const salt = saltAlias
     ? plate(
         saltAlias,

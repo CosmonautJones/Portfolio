@@ -153,6 +153,7 @@ export function createLiquidPlane(
 
   displacementTexture.source.addressMode = "repeat";
   const displacementMap = new Sprite({ texture: displacementTexture });
+  displacementMap.renderable = false;
   const displacementFilter = new DisplacementFilter({
     sprite: displacementMap,
     scale: { x: 4, y: 4 },
