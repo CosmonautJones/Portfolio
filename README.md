@@ -1,6 +1,40 @@
 # Travis Jones Portfolio
 
-Interactive portfolio and tool hub for [travisjohnjones.com](https://travisjohnjones.com). The site is built around a simple proof path: visitors can inspect working demos, play with interactive tools, and contact Travis directly from the site.
+Interactive Next.js portfolio for travisjohnjones.com — demos and case studies you can open; check Actions for current CI.
+
+Live site: [https://www.travisjohnjones.com](https://www.travisjohnjones.com)
+
+## Status
+
+[![CI](https://github.com/CosmonautJones/Portfolio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CosmonautJones/Portfolio/actions?query=branch%3Amain)
+
+Check the badge and [Actions on `main`](https://github.com/CosmonautJones/Portfolio/actions?query=branch%3Amain) for current CI; do not assume green from this README.
+
+| Check | Where |
+| --- | --- |
+| Production | https://www.travisjohnjones.com |
+| CI | [Actions on `main`](https://github.com/CosmonautJones/Portfolio/actions?query=branch%3Amain) |
+| Deploy | Netlify PR checks |
+
+### Quick proof
+
+| Proof | Link |
+| --- | --- |
+| Live site | https://www.travisjohnjones.com |
+| Lumen Garden demo | https://cosmonautjones.github.io/lumen-garden/ |
+| AI Usage Overlays | https://github.com/CosmonautJones/ai-usage-overlays |
+| Mission Control | https://github.com/CosmonautJones/mission-control |
+| The Conductor | https://github.com/CosmonautJones/the-conductor |
+| CI (Actions) | https://github.com/CosmonautJones/Portfolio/actions?query=branch%3Amain |
+
+## What you can try without signing in
+
+- Lumen Garden live demo from home chips / featured card
+- In-site `/work` demos (Pixel Workshop, Release Signal, Table Stakes, Cosmonaut's Bar, Adventure)
+- Case studies under `/work/...` when shipped (Overlays, Mission Control)
+- Contact form + `mailto:travisjohn.jones@gmail.com`
+
+Sign-in is not required to evaluate the public portfolio.
 
 ## Technology Map
 
@@ -38,7 +72,7 @@ Interactive portfolio and tool hub for [travisjohnjones.com](https://travisjohnj
 - Interactive proof points: project cards, demos, Plan'd, Pixel Art Editor, and ClaudeBot's Adventure.
 - Authenticated tools hub: `/tools` for signed-in users.
 - Admin area: `/admin` and `/admin/tools`, gated by `ADMIN_EMAIL`.
-- Contact flow: browser form posts to `/api/contact`; the server sends through Resend. There is no `mailto:` fallback.
+- Contact flow: browser form posts to `/api/contact`; the server sends through Resend. Public contact also supports `mailto:travisjohn.jones@gmail.com`.
 
 ## Environment Variables
 
@@ -124,7 +158,9 @@ Harness workflow files live in:
 
 ## Current Known Warnings
 
-CI currently passes, but two known follow-ups are tracked in the harness mission:
+Recent `main` CI runs have concluded **failure** on the Test step (e.g. runs `b2b6a39`, `1da9c87`, `168c49b`). Treat the Actions badge / workflow runs as the source of truth — do not assume CI is green from this README.
+
+Other follow-ups tracked in the harness mission:
 
 - GitHub reports dependency vulnerabilities on the default branch.
 - ESLint reports an existing React hook dependency warning in `src/hooks/use-game-engine.ts`.
