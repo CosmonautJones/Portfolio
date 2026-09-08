@@ -13,7 +13,7 @@ export function ExperienceTimeline() {
         <div>
           <p className="font-display text-3xl font-bold tracking-tight text-foreground">8 years</p>
           <p className="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Software engineering
+            Enterprise software
           </p>
         </div>
         <div className="border-l-2 border-accent-glow/60 pl-4">
