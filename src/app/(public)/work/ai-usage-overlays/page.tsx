@@ -57,10 +57,13 @@ export default function AiUsageOverlaysCasePage() {
       sections={SECTIONS}
       gallery={GALLERY}
       githubUrl="https://github.com/CosmonautJones/ai-usage-overlays"
-      installHint={`irm https://raw.githubusercontent.com/CosmonautJones/ai-usage-overlays/master/install.ps1 | iex
+      downloadUrl="https://github.com/CosmonautJones/ai-usage-overlays/releases/download/v0.4.0/AIUsageOverlaySetup.exe"
+      downloadLabel="Download Windows EXE"
+      installHint={`# Preferred: GitHub Release v0.4.0 EXE
+https://github.com/CosmonautJones/ai-usage-overlays/releases/download/v0.4.0/AIUsageOverlaySetup.exe
 
-# Or GitHub Release v0.4.0 EXE:
-# https://github.com/CosmonautJones/ai-usage-overlays/releases/download/v0.4.0/AIUsageOverlaySetup.exe`}
+# Alternate one-liner:
+# irm https://raw.githubusercontent.com/CosmonautJones/ai-usage-overlays/master/install.ps1 | iex`}
       tags={["PowerShell", "Windows", "WPF"]}
     />
   );
