@@ -207,14 +207,14 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
   {
     year: "Sep 2018 - Aug 2026",
     title: "Software Engineer",
-    organization: "Global Shop Solutions",
+    organization: "—",
     description:
-      "Built, modernized, tested, and supported enterprise software for manufacturing and ERP workflows.",
+      "Built, modernized, tested, and supported enterprise software across full-stack product and systems work.",
     highlights: [
-      "Developed manufacturing ERP workflows spanning shipping, invoicing, returns, and related business rules.",
-      "Modernized COBOL and VB.NET behavior into reusable C#/.NET components without losing production behavior.",
-      "Handled production troubleshooting and side-by-side regression work across tightly coupled systems.",
-      "Built Model Context Protocol and knowledge-search tooling for approved AI coding workflows.",
+      "Shipped production workflows across tightly coupled systems without losing existing behavior.",
+      "Modernized legacy components into reusable, typed libraries.",
+      "Owned production troubleshooting and side-by-side regression work.",
+      "Built internal developer tooling for approved AI-assisted workflows.",
     ],
   },
   {
