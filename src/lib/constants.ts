@@ -62,7 +62,7 @@ export const PROJECTS: Project[] = [
     title: "Lumen Garden",
     description:
       "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",
-    image: "/projects/lumen-inbox.jpg",
+    image: "/projects/lumen-garden.jpg",
     tags: ["React", "TypeScript", "Vite", "Vitest"],
     liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
     githubUrl: "https://github.com/CosmonautJones/lumen-garden",
@@ -75,7 +75,7 @@ export const PROJECTS: Project[] = [
     title: "Mission Control",
     description:
       "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
-    image: "",
+    image: "/projects/mission-control.jpg",
     tags: ["TypeScript", "Node.js", "React", "Python"],
     githubUrl: "https://github.com/CosmonautJones/mission-control",
     caseStudyUrl: "/work/mission-control",

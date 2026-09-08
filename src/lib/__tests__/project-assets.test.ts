@@ -31,7 +31,7 @@ describe("portfolio artwork", () => {
 
   it("gives every project a unique local 16:9 image", async () => {
     const missionControl = PROJECTS.find((project) => project.title === "Mission Control");
-    expect(missionControl?.image).toBe("");
+    expect(missionControl?.image).toBe("/projects/mission-control.jpg");
 
     const imagePaths = PROJECTS.map((project) => project.image);
     expect(imagePaths).toHaveLength(12);
