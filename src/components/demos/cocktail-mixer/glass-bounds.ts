@@ -22,62 +22,115 @@ export type GlassBounds = {
   bottle: { x: number; y: number; neckX: number; neckY: number };
 };
 
+type WidthSample = readonly [number, number];
+
+/**
+ * Mask-alpha width samples (CSS px inside GLASS_RECT). Measured from
+ * glass-{type}-mask.png at 2×, then halved. Last sample is the usable
+ * bowl floor — not the stem nub.
+ */
+const BOWL_WIDTH_SAMPLES: Record<GlassType, readonly WidthSample[]> = {
+  rocks: [
+    [92, 130],
+    [100, 129.5],
+    [120, 127],
+    [140, 124],
+    [160, 121.5],
+    [180, 119],
+    [200, 116],
+    [220, 113.5],
+    [240, 111],
+    [252, 104],
+  ],
+  highball: [
+    [42, 82],
+    [50, 82],
+    [80, 80],
+    [110, 78],
+    [140, 76],
+    [170, 73],
+    [200, 71],
+    [230, 69],
+    [250, 68],
+    [252, 66],
+  ],
+  coupe: [
+    [64, 155],
+    [70, 153],
+    [90, 146],
+    [110, 135],
+    [130, 121],
+    [150, 102],
+    [168, 74],
+  ],
+  margarita: [
+    [54, 172],
+    [60, 164],
+    [80, 136],
+    [100, 109],
+    [120, 80],
+    [140, 40],
+    [148, 24],
+  ],
+};
+
 export const GLASS_BOUNDS: Record<GlassType, GlassBounds> = {
   rocks: {
-    liquidTop: 100,
-    liquidBottom: 254,
-    rimY: 95,
+    liquidTop: 98,
+    liquidBottom: 252,
+    rimY: 92,
     bowlCenterX: 100,
-    bowlWidth: 130,
+    bowlWidth: 119,
     hasIce: true,
-    garnishX: 140,
-    garnishY: 90,
-    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+    garnishX: 154,
+    garnishY: 96,
+    bottle: { x: 154, y: 80, neckX: 24, neckY: 8 },
   },
   highball: {
-    liquidTop: 50,
-    liquidBottom: 255,
-    rimY: 45,
+    liquidTop: 48,
+    liquidBottom: 252,
+    rimY: 42,
     bowlCenterX: 100,
-    bowlWidth: 82,
+    bowlWidth: 74,
     hasIce: true,
-    garnishX: 132,
-    garnishY: 42,
-    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+    garnishX: 138,
+    garnishY: 46,
+    bottle: { x: 136, y: 30, neckX: 24, neckY: 8 },
   },
   coupe: {
     liquidTop: 70,
-    liquidBottom: 180,
-    rimY: 65,
+    liquidBottom: 168,
+    rimY: 64,
     bowlCenterX: 100,
-    bowlWidth: 150,
+    bowlWidth: 128,
     hasIce: false,
-    garnishX: 148,
-    garnishY: 62,
-    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+    garnishX: 168,
+    garnishY: 66,
+    bottle: { x: 164, y: 52, neckX: 24, neckY: 8 },
   },
   margarita: {
     liquidTop: 60,
-    liquidBottom: 175,
-    rimY: 55,
+    liquidBottom: 148,
+    rimY: 54,
     bowlCenterX: 100,
-    bowlWidth: 170,
+    bowlWidth: 95,
     hasIce: false,
-    garnishX: 150,
-    garnishY: 52,
-    bottle: { x: 168, y: -8, neckX: 24, neckY: 8 },
+    garnishX: 172,
+    garnishY: 58,
+    bottle: { x: 170, y: 42, neckX: 24, neckY: 8 },
   },
 };
 
+/** Ice positions relative to bowlCenterX and liquidBottom (floor of the bowl). */
 export const ICE_LAYOUT: Record<"rocks" | "highball", IceCube[]> = {
   rocks: [
-    { dx: -8, dy: 10, angle: 12, scale: 1.35 },
-    { dx: 18, dy: 22, angle: -8, scale: 0.85 },
+    { dx: -16, dy: -30, angle: 14, scale: 1.12 },
+    { dx: 15, dy: -22, angle: -10, scale: 0.76 },
   ],
   highball: [
-    { dx: -10, dy: -36, angle: 10, scale: 1 },
-    { dx: 12, dy: -8, angle: -12, scale: 0.9 },
-    { dx: -4, dy: 28, angle: 18, scale: 0.8 },
+    { dx: -6, dy: -24, angle: 10, scale: 0.68 },
+    { dx: 8, dy: -50, angle: -12, scale: 0.72 },
+    { dx: -3, dy: -76, angle: 16, scale: 0.64 },
   ],
 };
 
@@ -107,3 +160,55 @@ export const CONDENSATION_LAYOUT: Record<GlassType, { dx: number; dy: number }[]
     { dx: -10, dy: 36 },
   ],
 };
+
+const WALL_INSET = 6;
+
+export function bowlWidthAt(glass: GlassType, yInGlass: number): number {
+  const samples = BOWL_WIDTH_SAMPLES[glass];
+  const first = samples[0];
+  const last = samples[samples.length - 1];
+  if (yInGlass <= first[0]) return Math.max(10, first[1] - WALL_INSET);
+  if (yInGlass >= last[0]) return Math.max(10, last[1] - WALL_INSET);
+
+  for (let index = 1; index < samples.length; index += 1) {
+    const previous = samples[index - 1];
+    const next = samples[index];
+    if (yInGlass <= next[0]) {
+      const t = (yInGlass - previous[0]) / (next[0] - previous[0]);
+      return Math.max(10, previous[1] + (next[1] - previous[1]) * t - WALL_INSET);
+    }
+  }
+
+  return Math.max(10, last[1] - WALL_INSET);
+}
+
+export function pourContactX(glass: GlassType, yInGlass: number): number {
+  const bounds = GLASS_BOUNDS[glass];
+  return bounds.bowlCenterX + bowlWidthAt(glass, yInGlass) * 0.18;
+}
+
+export function rimGarnishPoint(glass: GlassType): { x: number; y: number } {
+  const bounds = GLASS_BOUNDS[glass];
+  const width = bowlWidthAt(glass, bounds.rimY + 6);
+  return {
+    x: bounds.bowlCenterX + width / 2 - 2,
+    y: bounds.rimY + 4,
+  };
+}
+
+export function surfaceYForFill(glass: GlassType, fillHeight: number): number {
+  const bounds = GLASS_BOUNDS[glass];
+  const clamped = Math.max(0, Math.min(1, fillHeight));
+  const liquidTop = GLASS_RECT.y + bounds.liquidTop;
+  const liquidBottom = GLASS_RECT.y + bounds.liquidBottom;
+  return liquidBottom - (liquidBottom - liquidTop) * clamped;
+}
+
+export function foamOffsetsForWidth(bowlWidth: number): number[] {
+  const span = Math.max(10, (bowlWidth / 2) * 0.7);
+  const count = 11;
+  return Array.from(
+    { length: count },
+    (_, index) => -span + ((2 * span) * index) / (count - 1),
+  );
+}

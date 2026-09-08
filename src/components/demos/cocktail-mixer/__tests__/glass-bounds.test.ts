@@ -6,6 +6,10 @@ import {
   CONDENSATION_LAYOUT,
   STAGE,
   GLASS_RECT,
+  bowlWidthAt,
+  foamOffsetsForWidth,
+  pourContactX,
+  rimGarnishPoint,
 } from "../glass-bounds";
 import type { GlassType } from "../types";
 
@@ -24,19 +28,61 @@ describe("glass-bounds", () => {
     expect(b.bowlWidth).toBeGreaterThan(0);
   });
 
-  it("gives ice only to rocks and highball", () => {
+  it("keeps liquid out of the margarita and coupe stems", () => {
+    expect(GLASS_BOUNDS.margarita.liquidBottom).toBeLessThanOrEqual(152);
+    expect(GLASS_BOUNDS.coupe.liquidBottom).toBeLessThanOrEqual(172);
+  });
+
+  it("gives ice only to rocks and highball, stacked from the bowl floor", () => {
     expect(GLASS_BOUNDS.rocks.hasIce).toBe(true);
     expect(GLASS_BOUNDS.highball.hasIce).toBe(true);
     expect(GLASS_BOUNDS.coupe.hasIce).toBe(false);
     expect(GLASS_BOUNDS.margarita.hasIce).toBe(false);
     expect(ICE_LAYOUT.rocks).toHaveLength(2);
     expect(ICE_LAYOUT.highball).toHaveLength(3);
+    for (const cube of [...ICE_LAYOUT.rocks, ...ICE_LAYOUT.highball]) {
+      expect(cube.dy).toBeLessThan(0);
+    }
   });
 
-  it("places bottle neck in local sprite space, not stage 100,40", () => {
+  it("docks the bottle neck above the rim in glass space", () => {
     for (const type of TYPES) {
-      expect(GLASS_BOUNDS[type].bottle.neckX).toBeLessThan(48);
-      expect(GLASS_BOUNDS[type].bottle.neckY).toBeLessThan(48);
+      const bounds = GLASS_BOUNDS[type];
+      expect(bounds.bottle.neckX).toBeLessThan(48);
+      expect(bounds.bottle.neckY).toBeLessThan(48);
+      expect(bounds.bottle.y).toBeLessThan(bounds.rimY);
+      expect(bounds.bottle.x).toBeGreaterThan(bounds.bowlCenterX);
+    }
+  });
+
+  it("perches garnish on the right rim", () => {
+    for (const type of TYPES) {
+      const point = rimGarnishPoint(type);
+      const bounds = GLASS_BOUNDS[type];
+      expect(point.x).toBeGreaterThan(bounds.bowlCenterX + 20);
+      expect(point.y).toBeGreaterThanOrEqual(bounds.rimY);
+      expect(point.y).toBeLessThan(bounds.liquidTop + 12);
+    }
+  });
+
+  it("narrows margarita width toward the bowl floor", () => {
+    expect(bowlWidthAt("margarita", 60)).toBeGreaterThan(
+      bowlWidthAt("margarita", 140),
+    );
+    expect(bowlWidthAt("margarita", 140)).toBeLessThan(50);
+  });
+
+  it("keeps the pour contact inside the live bowl", () => {
+    const contact = pourContactX("highball", 120);
+    const half = bowlWidthAt("highball", 120) / 2;
+    expect(contact).toBeGreaterThan(100);
+    expect(contact).toBeLessThan(100 + half);
+  });
+
+  it("keeps foam dots inside the highball bowl", () => {
+    const width = bowlWidthAt("highball", GLASS_BOUNDS.highball.liquidTop);
+    for (const offset of foamOffsetsForWidth(width)) {
+      expect(Math.abs(offset)).toBeLessThan(width / 2);
     }
   });
 

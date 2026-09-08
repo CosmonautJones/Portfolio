@@ -215,8 +215,8 @@ function stream(): string {
   return svg(
     128,
     8,
-    '<rect width="128" height="8" rx="4" fill="url(#stream)"/><path d="M2 2.1 H112" stroke="#ffffff" stroke-opacity=".74" stroke-width="1.5" stroke-linecap="round"/>',
-    '<linearGradient id="stream" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffffff" stop-opacity=".96"/><stop offset=".62" stop-color="#f9fdff" stop-opacity=".76"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
+    '<rect width="128" height="8" rx="4" fill="url(#stream)"/>',
+    '<linearGradient id="stream" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
   );
 }
 

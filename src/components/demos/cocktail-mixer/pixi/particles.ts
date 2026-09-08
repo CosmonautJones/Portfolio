@@ -5,14 +5,13 @@ import {
 } from "pixi.js";
 import type { Sprite, Texture } from "pixi.js";
 import { isFoamIngredient } from "../garnish-map";
-import { STAGE } from "../glass-bounds";
+import { STAGE, foamOffsetsForWidth } from "../glass-bounds";
 import type { Cocktail } from "../types";
 
 const MAX_SPLASHES = 40;
 const MAX_FOAM = 20;
 const MAX_MOTES = 12;
 const SPLASH_BURST = 8;
-const FOAM_OFFSETS = [-30, -24, -18, -12, -6, 0, 7, 14, 20, 26, 31] as const;
 const SPLASH_GRAVITY = 0.0008;
 
 type MovingParticle = {
@@ -32,6 +31,7 @@ export type ParticleTextures = {
 export type ParticleSystemOptions = {
   cocktail: Cocktail;
   contactX: number;
+  bowlWidth: number;
   moteY: number;
   frost: Sprite;
   textures: ParticleTextures;
@@ -119,7 +119,10 @@ export function createMixerParticles(
   function ensureFoam(): void {
     if (foamParticles.length > 0) return;
 
-    for (const offset of FOAM_OFFSETS.slice(0, MAX_FOAM)) {
+    for (const offset of foamOffsetsForWidth(options.bowlWidth).slice(
+      0,
+      MAX_FOAM,
+    )) {
       const particle = new Particle({
         texture: options.textures.foam,
         x: options.contactX + offset,

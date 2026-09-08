@@ -24,7 +24,9 @@ function createFakeRig(cocktail: Cocktail): MixerRig {
     bottleAngle: 0,
     bottleAlpha: 0,
     iceAlpha: 0,
+    iceDrop: 0,
     garnishAlpha: 0,
+    garnishDrop: 0,
     frostAlpha: 0,
     displacementOn: false,
   };
@@ -148,13 +150,16 @@ describe("buildDirectorTimeline", () => {
     timeline.seek(splashAt, false);
 
     expect(rig.emitSplash).toHaveBeenCalledTimes(1);
-    const [, splashY, splashColor] = vi.mocked(rig.emitSplash).mock.calls[0];
+    const [splashX, splashY, splashColor] = vi.mocked(rig.emitSplash).mock
+      .calls[0];
     const liveFill = rig.uniforms.fillHeight;
+    const bounds = GLASS_BOUNDS[cocktail.glass];
 
     expect(liveFill).toBeGreaterThan(0);
     expect(liveFill).toBeLessThan(slotTarget);
     expect(splashY).toBeCloseTo(surfaceYFromFill(cocktail, liveFill));
     expect(splashY).not.toBeCloseTo(surfaceYFromFill(cocktail, slotTarget));
+    expect(splashX).toBeGreaterThan(GLASS_RECT.x + bounds.bowlCenterX);
     expect(splashColor).toBe(cocktail.ingredients[0].color);
   });
 });

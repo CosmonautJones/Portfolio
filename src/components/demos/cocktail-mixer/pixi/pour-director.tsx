@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { gsap, useGSAP } from "../gsap-setup";
-import { GLASS_BOUNDS, GLASS_RECT } from "../glass-bounds";
+import { GLASS_BOUNDS, GLASS_RECT, pourContactX, surfaceYForFill } from "../glass-bounds";
 import { buildPourCues } from "../pour-script";
 import type { PourSnapshot } from "../pour-script";
 import type { Cocktail } from "../types";
@@ -64,7 +64,11 @@ export function buildDirectorTimeline(
         }
         break;
       case "streamOn":
-        tl.set(rig.uniforms, { streamOn: 1 }, cue.at);
+        tl.to(
+          rig.uniforms,
+          { streamOn: 1, duration: 0.12, ease: "power1.out" },
+          cue.at,
+        );
         break;
       case "fill":
         if (ingredientIndex !== undefined && ingredientCount > 0) {
@@ -73,7 +77,7 @@ export function buildDirectorTimeline(
             {
               fillHeight: (ingredientIndex + 1) / ingredientCount,
               duration: 0.45,
-              ease: "power2.out",
+              ease: "sine.out",
             },
             cue.at,
           );
@@ -104,12 +108,10 @@ export function buildDirectorTimeline(
                 0,
                 Math.min(1, rig.uniforms.fillHeight),
               );
-              const liquidTop = GLASS_RECT.y + bounds.liquidTop;
-              const liquidBottom = GLASS_RECT.y + bounds.liquidBottom;
-              const surfaceY =
-                liquidBottom - (liquidBottom - liquidTop) * fillHeight;
+              const surfaceY = surfaceYForFill(cocktail.glass, fillHeight);
+              const yInGlass = surfaceY - GLASS_RECT.y;
               rig.emitSplash(
-                GLASS_RECT.x + bounds.bowlCenterX,
+                GLASS_RECT.x + pourContactX(cocktail.glass, yInGlass),
                 surfaceY,
                 splashColor,
               );
@@ -120,7 +122,11 @@ export function buildDirectorTimeline(
         }
         break;
       case "streamOff":
-        tl.set(rig.uniforms, { streamOn: 0 }, cue.at);
+        tl.to(
+          rig.uniforms,
+          { streamOn: 0, duration: 0.12, ease: "power1.in" },
+          cue.at,
+        );
         break;
       case "bottleHide":
         tl.to(rig.uniforms, { bottleAngle: 0, duration: 0.16 }, cue.at);
@@ -133,16 +139,21 @@ export function buildDirectorTimeline(
       case "ice":
         tl.fromTo(
           rig.uniforms,
-          { iceAlpha: 0 },
-          { iceAlpha: 1, duration: 0.28 },
+          { iceAlpha: 0, iceDrop: -6 },
+          { iceAlpha: 1, iceDrop: 0, duration: 0.28, ease: "power2.out" },
           cue.at,
         );
         break;
       case "garnish":
         tl.fromTo(
           rig.uniforms,
-          { garnishAlpha: 0 },
-          { garnishAlpha: 1, duration: 0.28 },
+          { garnishAlpha: 0, garnishDrop: -10 },
+          {
+            garnishAlpha: 1,
+            garnishDrop: 0,
+            duration: 0.32,
+            ease: "power2.out",
+          },
           cue.at,
         );
         break;

@@ -24,6 +24,8 @@ export type LiquidUpdate = {
   flashAmount: number;
   displacementOn: boolean;
   deltaMs: number;
+  streamOn?: number;
+  contactX?: number;
 };
 
 export type LiquidPlane = {
@@ -32,6 +34,9 @@ export type LiquidPlane = {
   update: (state: LiquidUpdate) => void;
   destroy: () => void;
 };
+
+const CONTACT_DIP = 5;
+const CONTACT_RADIUS = 18;
 
 export function writeMeniscusVertices(
   positions: Float32Array,
@@ -43,6 +48,8 @@ export function writeMeniscusVertices(
   swirl: number,
   vortex: number,
   bowlCenterX: number,
+  streamOn = 0,
+  contactX = bowlCenterX,
 ): void {
   const columnDivisor = Math.max(1, cols - 1);
   const rowDivisor = Math.max(1, rows - 1);
@@ -50,6 +57,7 @@ export function writeMeniscusVertices(
     MAX_SWIRL_OFFSET,
     Math.abs(swirl) * (MAX_SWIRL_OFFSET / 0.4),
   );
+  const pour = Math.max(0, Math.min(1, streamOn));
 
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
@@ -72,9 +80,14 @@ export function writeMeniscusVertices(
         Math.sin((col + 1) * 12.9898) *
         swirlMagnitude *
         Math.sign(swirl || 1);
+      const away = gridX - contactX;
+      const dip =
+        pour *
+        CONTACT_DIP *
+        Math.exp(-(away * away) / (2 * CONTACT_RADIUS * CONTACT_RADIUS));
 
       positions[index] = gridX + vortexOffset + swirlOffset;
-      positions[index + 1] = Math.sin(phase) * amp;
+      positions[index + 1] = Math.sin(phase) * amp + dip;
     }
   }
 }
@@ -161,6 +174,8 @@ export function createLiquidPlane(
         state.swirl,
         state.vortex,
         state.width / 2,
+        state.streamOn ?? 0,
+        state.contactX ?? state.width / 2,
       );
       geometry.getBuffer("aPosition").update();
 

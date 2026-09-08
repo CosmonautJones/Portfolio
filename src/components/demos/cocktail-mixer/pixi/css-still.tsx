@@ -1,19 +1,15 @@
 import type { CSSProperties } from "react";
-import { garnishPlates } from "../garnish-map";
-import { GLASS_BOUNDS, GLASS_RECT, STAGE } from "../glass-bounds";
+import { GARNISH_POSE, garnishPlates } from "../garnish-map";
+import {
+  GLASS_BOUNDS,
+  GLASS_RECT,
+  STAGE,
+  bowlWidthAt,
+  foamOffsetsForWidth,
+  rimGarnishPoint,
+} from "../glass-bounds";
 import type { Cocktail } from "../types";
 import { MIXER_ASSET_URLS } from "./assets";
-
-const GARNISH_SIZES: Record<string, { width: number; height: number }> = {
-  "garnish-lime-wheel.png": { width: 64, height: 64 },
-  "garnish-cherry.png": { width: 56, height: 64 },
-  "garnish-orange-slice.png": { width: 64, height: 64 },
-  "garnish-grapefruit-wedge.png": { width: 72, height: 64 },
-  "garnish-cherry-orange.png": { width: 88, height: 72 },
-  "garnish-rocket.png": { width: 48, height: 88 },
-};
-
-const FOAM_OFFSETS = [-30, -18, -6, 7, 20, 31] as const;
 
 function percent(value: number, total: number): string {
   return `${(value / total) * 100}%`;
@@ -46,6 +42,10 @@ export function CssStill({ cocktail }: { cocktail: Cocktail }) {
   const garnishes = plates.filter((plate) => !plate.startsWith("rim-salt-"));
   const maskUrl = MIXER_ASSET_URLS[`glass-${cocktail.glass}-mask.png`];
   const frontUrl = MIXER_ASSET_URLS[`glass-${cocktail.glass}-front.png`];
+  const garnishPoint = rimGarnishPoint(cocktail.glass);
+  const foamOffsets = foamOffsetsForWidth(
+    bowlWidthAt(cocktail.glass, bounds.liquidTop),
+  );
 
   return (
     <div
@@ -96,7 +96,7 @@ export function CssStill({ cocktail }: { cocktail: Cocktail }) {
         />
       ) : null}
       {cocktail.name === "Paloma"
-        ? FOAM_OFFSETS.map((offset) => (
+        ? foamOffsets.map((offset) => (
             <div
               key={offset}
               style={{
@@ -119,21 +119,22 @@ export function CssStill({ cocktail }: { cocktail: Cocktail }) {
           ))
         : null}
       {garnishes.map((plate) => {
-        const size = GARNISH_SIZES[plate];
+        const pose = GARNISH_POSE[plate];
+        if (!pose) return null;
         return (
           <div
             key={plate}
             style={{
               position: "absolute",
-              left: percent(GLASS_RECT.x + bounds.garnishX, STAGE.width),
-              top: percent(GLASS_RECT.y + bounds.garnishY, STAGE.height),
-              width: percent(size.width, STAGE.width),
-              height: percent(size.height, STAGE.height),
+              left: percent(GLASS_RECT.x + garnishPoint.x, STAGE.width),
+              top: percent(GLASS_RECT.y + garnishPoint.y, STAGE.height),
+              width: percent(pose.width, STAGE.width),
+              height: percent(pose.height, STAGE.height),
               backgroundImage: `url("${MIXER_ASSET_URLS[plate]}")`,
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
               backgroundSize: "contain",
-              transform: "translate(-50%, -50%)",
+              transform: `translate(-${pose.anchorX * 100}%, -${pose.anchorY * 100}%) rotate(${pose.angle}deg)`,
             }}
           />
         );

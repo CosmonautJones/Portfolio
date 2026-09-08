@@ -80,4 +80,41 @@ describe("writeMeniscusVertices", () => {
     expect(Math.max(...shifts)).toBeGreaterThan(0);
     expect(Math.max(...shifts)).toBeLessThanOrEqual(3);
   });
+
+  it("dips the meniscus at the stream contact", () => {
+    const rest = new Float32Array(COLS * ROWS * 2);
+    const pouring = new Float32Array(COLS * ROWS * 2);
+    writeMeniscusVertices(
+      rest,
+      COLS,
+      ROWS,
+      WIDTH,
+      HEIGHT,
+      2,
+      0,
+      0,
+      BOWL_CENTER_X,
+    );
+    writeMeniscusVertices(
+      pouring,
+      COLS,
+      ROWS,
+      WIDTH,
+      HEIGHT,
+      2,
+      0,
+      0,
+      BOWL_CENTER_X,
+      1,
+      WIDTH * 0.7,
+    );
+
+    const restYs = Array.from({ length: COLS }, (_, col) => rest[col * 2 + 1]);
+    const pourYs = Array.from(
+      { length: COLS },
+      (_, col) => pouring[col * 2 + 1],
+    );
+    const dips = pourYs.map((y, col) => y - restYs[col]);
+    expect(Math.max(...dips)).toBeGreaterThan(3);
+  });
 });

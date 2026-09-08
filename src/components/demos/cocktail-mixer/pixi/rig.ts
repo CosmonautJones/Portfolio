@@ -1,17 +1,19 @@
 import {
   Assets,
   Container,
-  Point,
   Sprite,
 } from "pixi.js";
 import type { PointData, Texture } from "pixi.js";
-import { garnishPlates } from "../garnish-map";
+import { GARNISH_POSE, garnishPlates } from "../garnish-map";
 import {
   CONDENSATION_LAYOUT,
   GLASS_BOUNDS,
   GLASS_RECT,
   ICE_LAYOUT,
   STAGE,
+  bowlWidthAt,
+  pourContactX,
+  rimGarnishPoint,
 } from "../glass-bounds";
 import type { IceCube } from "../glass-bounds";
 import type { Cocktail, GlassType } from "../types";
@@ -25,14 +27,6 @@ import {
 } from "./particles";
 import { createPourStream } from "./stream";
 
-const GARNISH_SIZES: Record<string, { width: number; height: number }> = {
-  "garnish-lime-wheel.png": { width: 64, height: 64 },
-  "garnish-cherry.png": { width: 56, height: 64 },
-  "garnish-orange-slice.png": { width: 64, height: 64 },
-  "garnish-grapefruit-wedge.png": { width: 72, height: 64 },
-  "garnish-cherry-orange.png": { width: 88, height: 72 },
-  "garnish-rocket.png": { width: 48, height: 88 },
-};
 const BOTTLE_SIZE = { width: 48, height: 96 } as const;
 
 export type MixerUniforms = {
@@ -48,7 +42,9 @@ export type MixerUniforms = {
   bottleAngle: number;
   bottleAlpha: number;
   iceAlpha: number;
+  iceDrop: number;
   garnishAlpha: number;
+  garnishDrop: number;
   frostAlpha: number;
   displacementOn: boolean;
 };
@@ -107,7 +103,7 @@ function layoutForIce(glass: GlassType): readonly IceCube[] {
 function makeIce(
   glass: GlassType,
   bowlCenterX: number,
-  bowlMidY: number,
+  liquidBottom: number,
 ): Container {
   const ice = new Container();
 
@@ -116,7 +112,7 @@ function makeIce(
     const size = 48 * cube.scale;
     sprite.anchor.set(0.5);
     sprite.setSize(size, size);
-    sprite.position.set(bowlCenterX + cube.dx, bowlMidY + cube.dy);
+    sprite.position.set(bowlCenterX + cube.dx, liquidBottom + cube.dy);
     sprite.angle = cube.angle;
     ice.addChild(sprite);
   }
@@ -152,13 +148,14 @@ function makeGarnish(
 
   for (const alias of aliases) {
     if (alias.startsWith("rim-salt-")) continue;
-    const size = GARNISH_SIZES[alias];
-    if (!size) continue;
+    const pose = GARNISH_POSE[alias];
+    if (!pose) continue;
 
     const sprite = new Sprite({ texture: texture(alias) });
-    sprite.anchor.set(0.5);
-    sprite.setSize(size.width, size.height);
+    sprite.anchor.set(pose.anchorX, pose.anchorY);
+    sprite.setSize(pose.width, pose.height);
     sprite.position.set(x, y);
+    sprite.angle = pose.angle;
     garnish.addChild(sprite);
   }
 
@@ -178,9 +175,10 @@ export function createRig(
   const liquidTop = glassY + bounds.liquidTop;
   const liquidBottom = glassY + bounds.liquidBottom;
   const rimY = glassY + bounds.rimY;
-  const bowlMidY = (liquidTop + liquidBottom) / 2;
   const aliases = garnishPlates(cocktail.garnishType, cocktail.glass);
   const saltAlias = aliases.find((alias) => alias.startsWith("rim-salt-"));
+  const garnishPoint = rimGarnishPoint(cocktail.glass);
+  const foamWidth = bowlWidthAt(cocktail.glass, bounds.liquidTop);
   const hasFoam = cocktail.ingredients.some((_, ingredientIndex) =>
     shouldEmitFoam(cocktail, ingredientIndex),
   );
@@ -224,10 +222,10 @@ export function createRig(
     liquidTop,
   );
 
-  const ice = makeIce(cocktail.glass, bowlCenterX, bowlMidY);
+  const ice = makeIce(cocktail.glass, bowlCenterX, liquidBottom);
   ice.alpha = 0;
 
-  const stream = createPourStream(texture("stream.png"), bowlCenterX);
+  const stream = createPourStream(texture("stream.png"));
   const frost = plate(
     "frost.png",
     GLASS_RECT.width,
@@ -239,6 +237,7 @@ export function createRig(
   const particles = createMixerParticles({
     cocktail,
     contactX: bowlCenterX,
+    bowlWidth: foamWidth,
     moteY: rimY + 36,
     frost,
     textures: {
@@ -290,8 +289,8 @@ export function createRig(
   const garnish = makeGarnish(
     cocktail,
     aliases,
-    glassX + bounds.garnishX,
-    glassY + bounds.garnishY,
+    glassX + garnishPoint.x,
+    glassY + garnishPoint.y,
   );
   garnish.alpha = 0;
 
@@ -306,8 +305,8 @@ export function createRig(
   );
   bottle.pivot.set(neckPivot.x, neckPivot.y);
   bottle.position.set(
-    glassX + bounds.bottle.x + bounds.bottle.neckX,
-    glassY + bounds.bottle.y + bounds.bottle.neckY,
+    glassX + bounds.bottle.x,
+    glassY + bounds.bottle.y,
   );
   bottle.alpha = 0;
 
@@ -330,11 +329,12 @@ export function createRig(
     bottleAngle: 0,
     bottleAlpha: 0,
     iceAlpha: 0,
+    iceDrop: 0,
     garnishAlpha: 0,
+    garnishDrop: 0,
     frostAlpha: 0,
     displacementOn: allowDisplacement,
   };
-  const neckPoint = new Point();
   const displacementBudget = new FpsBudget(50, 30);
 
   const rig: MixerRig = {
@@ -352,7 +352,9 @@ export function createRig(
       uniforms.bottleAngle = 0;
       uniforms.bottleAlpha = 0;
       uniforms.iceAlpha = bounds.hasIce ? 1 : 0;
+      uniforms.iceDrop = 0;
       uniforms.garnishAlpha = 1;
+      uniforms.garnishDrop = 0;
       uniforms.frostAlpha = 0;
       uniforms.displacementOn = false;
       particles.killEphemeral();
@@ -380,21 +382,23 @@ export function createRig(
       particles.killEphemeral();
     },
     neckWorld() {
-      return bottle.toGlobal(neckPivot, neckPoint);
+      return { x: bottle.x, y: bottle.y };
     },
     tick(deltaMs) {
       const fillHeight = Math.max(0, Math.min(1, uniforms.fillHeight));
       const surfaceY =
         liquidBottom - (liquidBottom - liquidTop) * fillHeight;
       const liquidHeight = Math.max(0, liquidBottom - surfaceY);
+      const yInGlass = surfaceY - glassY;
+      const width = bowlWidthAt(cocktail.glass, yInGlass);
+      const meshLeft = bowlCenterX - width / 2;
+      const contactStageX = glassX + pourContactX(cocktail.glass, yInGlass);
 
       liquid.mesh.visible = fillHeight > 0;
-      liquid.mesh.position.set(
-        bowlCenterX - bounds.bowlWidth / 2,
-        surfaceY,
-      );
+      liquid.mesh.position.set(meshLeft, surfaceY);
+      liquid.displacementMap.position.set(meshLeft, surfaceY);
       liquid.update({
-        width: bounds.bowlWidth,
+        width,
         height: liquidHeight,
         amp: uniforms.meniscusAmp,
         swirl: uniforms.swirl,
@@ -404,15 +408,25 @@ export function createRig(
         flashAmount: uniforms.flashAmount,
         displacementOn: uniforms.displacementOn,
         deltaMs,
+        streamOn: uniforms.streamOn,
+        contactX: contactStageX - meshLeft,
       });
 
       stream.setColor(uniforms.streamColor);
-      stream.rebuild(rig.neckWorld(), rimY, surfaceY, uniforms.streamOn);
+      stream.rebuild(
+        { x: bottle.x, y: bottle.y },
+        rimY,
+        surfaceY,
+        contactStageX,
+        uniforms.streamOn,
+      );
       bottle.rotation = uniforms.bottleAngle * (Math.PI / 180);
       bottle.alpha = uniforms.bottleAlpha;
       bottle.tint = uniforms.streamColor;
       ice.alpha = bounds.hasIce ? uniforms.iceAlpha : 0;
+      ice.y = uniforms.iceDrop;
       garnish.alpha = uniforms.garnishAlpha;
+      garnish.y = uniforms.garnishDrop;
       frost.alpha = uniforms.frostAlpha;
       particles.pinFoamTo(surfaceY);
       particles.tick(deltaMs);
