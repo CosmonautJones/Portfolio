@@ -43,7 +43,9 @@ export function ExperienceTimeline() {
               <h3 className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {item.title}
               </h3>
-              <p className="mt-1 text-sm font-medium text-foreground/75">{item.organization}</p>
+              {item.organization && item.organization !== "—" ? (
+                <p className="mt-1 text-sm font-medium text-foreground/75">{item.organization}</p>
+              ) : null}
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-[0.95rem]">
                 {item.description}
               </p>

@@ -207,7 +207,7 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
   {
     year: "Sep 2018 - Aug 2026",
     title: "Software Engineer",
-    organization: "—",
+    organization: "Enterprise software vendor",
     description:
       "Built, modernized, tested, and supported enterprise software across full-stack product and systems work.",
     highlights: [
