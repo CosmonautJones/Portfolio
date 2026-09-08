@@ -19,30 +19,35 @@ describe("ExperienceTimeline", () => {
     render(<ExperienceTimeline />);
 
     expect(screen.getByRole("heading", { name: /^software engineer$/i })).toBeDefined();
-    expect(screen.getByText(/^global shop solutions$/i)).toBeDefined();
+    // Employer anonymized on the public site (em dash), not named.
+    expect(screen.getByText(/^—$/)).toBeDefined();
     expect(screen.getByText(/^sep 2018 - aug 2026$/i).tagName).toBe("TIME");
     expect(screen.getByRole("heading", { name: /software engineering program/i })).toBeDefined();
-    expect(screen.getByText(/^lambda academy of computer science$/i)).toBeDefined();
+    expect(screen.getByText(/^lambda academy of computer science$/i })).toBeDefined();
     expect(screen.getByRole("heading", { name: /technical supervisor/i })).toBeDefined();
     expect(screen.getByText(/^buzzles concessions$/i)).toBeDefined();
     expect(screen.queryByText(/junior developer|first line of code|mern/i)).toBeNull();
+    expect(screen.queryByText(/global shop solutions/i)).toBeNull();
   });
 
   it("makes the eight-year enterprise chapter concrete and scannable", () => {
     render(<ExperienceTimeline />);
 
     expect(screen.getByText(/^8 years$/i)).toBeDefined();
+    expect(screen.getByText(/^enterprise software$/i)).toBeDefined();
+    expect(screen.getByText(/^full-stack product$/i)).toBeDefined();
 
     const timeline = screen.getByRole("list", { name: /career experience/i });
     expect(timeline.querySelectorAll(":scope > li")).toHaveLength(3);
     expect(timeline.querySelectorAll("time")).toHaveLength(3);
 
-    const globalShopEntry = screen.getByRole("heading", { name: /^software engineer$/i }).closest("li");
-    expect(globalShopEntry).not.toBeNull();
-    const entry = within(globalShopEntry!);
-    expect(entry.getByText(/manufacturing and erp workflows/i)).toBeDefined();
-    expect(entry.getByText(/cobol and vb\.net.*c#\/.net/i)).toBeDefined();
+    const enterpriseEntry = screen.getByRole("heading", { name: /^software engineer$/i }).closest("li");
+    expect(enterpriseEntry).not.toBeNull();
+    const entry = within(enterpriseEntry!);
+    expect(entry.getByText(/full-stack product and systems work/i)).toBeDefined();
+    expect(entry.getByText(/legacy components into reusable, typed libraries/i)).toBeDefined();
     expect(entry.getByText(/production troubleshooting.*regression/i)).toBeDefined();
-    expect(entry.getByText(/model context protocol.*knowledge-search/i)).toBeDefined();
+    expect(entry.getByText(/constrained ai coding workflows.*verification and human review/i)).toBeDefined();
+    expect(entry.queryByText(/manufacturing and erp|cobol|model context protocol/i)).toBeNull();
   });
 });
