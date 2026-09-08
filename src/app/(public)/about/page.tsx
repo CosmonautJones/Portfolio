@@ -73,7 +73,7 @@ export default function AboutPage() {
             asChild
             className="h-12 rounded-full border-border/60 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Start a Thread</Link>
+            <Link href="/contact">Talk hiring</Link>
           </Button>
         </div>
       </AnimateOnScroll>

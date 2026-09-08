@@ -102,7 +102,7 @@ export function HeroSection() {
         <m.div {...entry(0)}>
           <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
             <span className="inline-block h-1.5 w-1.5 rounded-full accent-dot" aria-hidden="true" />
-            Software Developer
+            {SITE_CONFIG.title}
           </div>
         </m.div>
 
@@ -132,7 +132,7 @@ export function HeroSection() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Link href="/work">
-              See the Work
+              See the work
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -142,7 +142,7 @@ export function HeroSection() {
             asChild
             className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Get in Touch</Link>
+            <Link href="/contact">Talk hiring</Link>
           </Button>
         </m.div>
 

@@ -104,7 +104,7 @@ export function ContactForm() {
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-        Tell me what you are building, what feels stuck, or where the system needs sharper hands.
+        Hiring for mid–senior full-stack or governed-agent work? Say what the team needs, the stack, and how to reach you. I reply to concrete notes.
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
@@ -184,7 +184,15 @@ export function ContactForm() {
             <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
           <p className="text-xs text-muted-foreground">
-            Clean signal gets a clean reply.
+            Serious roles get a serious reply.
+          </p>
+          <p className="text-xs">
+            <a
+              href={`mailto:${SITE_CONFIG.email}`}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Email {SITE_CONFIG.email}
+            </a>
           </p>
         </div>
       </form>

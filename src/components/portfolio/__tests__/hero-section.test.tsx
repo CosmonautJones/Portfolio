@@ -62,8 +62,8 @@ describe("HeroSection", () => {
 
   it("renders CTA links", () => {
     render(<HeroSection />);
-    expect(screen.getByText("See the Work")).toBeDefined();
-    expect(screen.getByText("Get in Touch")).toBeDefined();
+    expect(screen.getByText("See the work")).toBeDefined();
+    expect(screen.getByText("Talk hiring")).toBeDefined();
   });
 
   it("surfaces concrete proof paths from the hero", () => {
