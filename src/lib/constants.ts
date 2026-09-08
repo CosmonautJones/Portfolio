@@ -30,7 +30,7 @@ export const PROJECTS: Project[] = [
     title: "Lumen Garden",
     description:
       "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
-    image: "/projects/lumen-garden.jpg",
+    image: "/projects/lumen-inbox.jpg",
     tags: ["React", "TypeScript", "Vite", "Vitest"],
     liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
     githubUrl: "https://github.com/CosmonautJones/lumen-garden",
@@ -79,7 +79,7 @@ export const PROJECTS: Project[] = [
     ],
     role: "Open Source",
     featured: true,
-    proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData. TravOS portfolio piece.",
+    proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData.",
     actionLabel: "Read code",
   },
   {
