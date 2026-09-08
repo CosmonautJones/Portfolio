@@ -184,7 +184,7 @@ export function ContactForm() {
             <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
           <p className="text-xs text-muted-foreground">
-            Serious roles get a serious reply.
+            Thanks for taking a look at my work.
           </p>
           <p className="text-xs">
             <a
@@ -199,7 +199,7 @@ export function ContactForm() {
 
       <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          Prefer the old route?{" "}
+          You can also email me directly:{" "}
           <span className="font-medium text-foreground">{SITE_CONFIG.email}</span>
         </p>
         <Button

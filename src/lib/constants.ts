@@ -61,14 +61,14 @@ export const PROJECTS: Project[] = [
   {
     title: "Lumen Garden",
     description:
-      "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
+      "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",
     image: "/projects/lumen-inbox.jpg",
     tags: ["React", "TypeScript", "Vite", "Vitest"],
     liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
     githubUrl: "https://github.com/CosmonautJones/lumen-garden",
     role: "Interactive Demo",
     featured: true,
-    proof: "Local-only React workspace (Inbox, Constellation, Focus, Review), keyboard access, no accounts or telemetry.",
+    proof: "Versioned local storage, validated backups, reversible edits, and scoped assistant handoffs. No accounts or automatic AI access.",
     actionLabel: "Open demo",
   },
   {

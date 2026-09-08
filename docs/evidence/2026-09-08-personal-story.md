@@ -19,4 +19,5 @@ Career claims are based on Travis's supplied work history. No employer source, c
 - ESLint passed with one existing unrelated use-game-engine.ts dependency warning.
 - Next.js production build passed.
 - Git diff whitespace check passed.
-- Hosted page verification follows publishing; no contact message was submitted.
+- Hosted Home, About, and Contact verified after publishing 12fd0a5. The experience link opens the updated About page, and the current professional/personal copy renders. No contact message was submitted.
+- Follow-up removes remaining aloof contact microcopy and describes Lumen in plain language rather than garden terminology.
