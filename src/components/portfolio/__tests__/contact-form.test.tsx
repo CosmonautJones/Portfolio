@@ -35,7 +35,10 @@ describe("ContactForm", () => {
   it("renders the send button", () => {
     const { container } = render(<ContactForm />);
     expect(submitButton()).toBeDefined();
-    expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
+    // Hire CTA: mailto fallback is intentional alongside the send button.
+    const mailto = container.querySelector('a[href^="mailto:"]');
+    expect(mailto).not.toBeNull();
+    expect(mailto?.getAttribute("href")).toMatch(/^mailto:/);
   });
 
   it("renders social links", () => {

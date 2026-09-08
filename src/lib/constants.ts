@@ -2,8 +2,9 @@ import type { Project } from "@/lib/types";
 
 export const SITE_CONFIG = {
   name: "Travis Jones",
-  title: "Software Developer",
-  tagline: "I like learning how things work, building useful software, and collaborating with good people.",
+  title: "Product-minded Full-Stack Engineer",
+  tagline:
+    "I build web products and governed agent tools — TypeScript, React, Next.js — and I'm open to mid–senior roles (Spring, TX / remote).",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -12,9 +13,9 @@ export const SITE_CONFIG = {
 };
 
 export const PROOF_POINTS = [
+  { label: "Check the HUD", href: "https://github.com/CosmonautJones/ai-usage-overlays", detail: "Windows usage overlay" },
   { label: "Capture a fragment", href: "https://cosmonautjones.github.io/lumen-garden/", detail: "Offline idea greenhouse" },
   { label: "Review an approval", href: "https://github.com/CosmonautJones/mission-control", detail: "Local agent control plane" },
-  { label: "Check the HUD", href: "https://github.com/CosmonautJones/ai-usage-overlays", detail: "Windows usage overlay" },
 ] as const;
 
 export const NAV_LINKS = [
