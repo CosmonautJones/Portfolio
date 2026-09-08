@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Compass, LogOut, Settings, Wrench } from "lucide-react";
+import { Compass, LogIn, LogOut, Settings, Wrench } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 
@@ -42,8 +42,15 @@ export function UserMenu({ isAdmin = false }: UserMenuProps) {
 
   if (!user) {
     return (
-      <Button variant="outline" size="sm" asChild>
-        <Link href="/login">Sign In</Link>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 rounded-full text-muted-foreground transition-colors hover:text-foreground"
+        asChild
+      >
+        <Link href="/login" aria-label="Sign in">
+          <LogIn className="h-4 w-4" />
+        </Link>
       </Button>
     );
   }
