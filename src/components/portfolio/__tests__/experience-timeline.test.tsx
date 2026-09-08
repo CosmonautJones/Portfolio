@@ -26,9 +26,9 @@ describe("ExperienceTimeline", () => {
     expect(orgDash || orgVendor).toBeTruthy();
     expect(screen.getByText(/^sep 2018 - aug 2026$/i).tagName).toBe("TIME");
     expect(screen.getByRole("heading", { name: /software engineering program/i })).toBeDefined();
-    expect(screen.getByText(/^lambda academy of computer science$/i })).toBeDefined();
+    expect(screen.getByText(/^lambda academy of computer science$/i)).toBeDefined();
     expect(screen.getByRole("heading", { name: /technical supervisor/i })).toBeDefined();
-    expect(screen.getByText(/^buzzles concessions$/i })).toBeDefined();
+    expect(screen.getByText(/^buzzles concessions$/i)).toBeDefined();
     expect(screen.queryByText(/junior developer|first line of code|mern/i)).toBeNull();
     expect(screen.queryByText(/global shop solutions/i)).toBeNull();
   });
