@@ -72,7 +72,9 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
   }
 
   const githubLabel =
-    project.demoUrl || project.liveUrl ? "Code" : (project.actionLabel ?? "Code");
+    project.demoUrl || project.liveUrl || project.caseStudyUrl
+      ? "Code"
+      : (project.actionLabel ?? "Code");
 
   return (
     <m.div
@@ -150,6 +152,18 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
           ))}
         </div>
         <div className="flex gap-2">
+          {project.caseStudyUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-8 rounded-full border-border/50 text-xs transition-all duration-300 hover:border-border hover:bg-secondary/80"
+            >
+              <Link href={project.caseStudyUrl}>
+                <Play className="mr-1.5 h-3 w-3" /> Case study
+              </Link>
+            </Button>
+          )}
           {project.demoUrl && (
             <Button
               variant="outline"
