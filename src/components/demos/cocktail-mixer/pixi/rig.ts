@@ -6,12 +6,12 @@ import {
 import type { PointData, Texture } from "pixi.js";
 import { GARNISH_POSE, garnishPlates } from "../garnish-map";
 import {
-  CONDENSATION_LAYOUT,
   GLASS_BOUNDS,
   GLASS_RECT,
   ICE_LAYOUT,
   STAGE,
   bowlWidthAt,
+  condensationPoints,
   pourContactX,
   rimGarnishPoint,
 } from "../glass-bounds";
@@ -120,18 +120,14 @@ function makeIce(
   return ice;
 }
 
-function makeCondensation(
-  glass: GlassType,
-  bowlCenterX: number,
-  liquidTop: number,
-): Container {
+function makeCondensation(glass: GlassType, glassX: number, glassY: number): Container {
   const condensation = new Container();
 
-  for (const drop of CONDENSATION_LAYOUT[glass]) {
+  for (const drop of condensationPoints(glass)) {
     const sprite = new Sprite({ texture: texture("condensation-dot.png") });
     sprite.anchor.set(0.5);
     sprite.setSize(6, 9);
-    sprite.position.set(bowlCenterX + drop.dx, liquidTop + drop.dy);
+    sprite.position.set(glassX + drop.x, glassY + drop.y);
     condensation.addChild(sprite);
   }
 
@@ -246,19 +242,16 @@ export function createRig(
       mote: texture("star-mote.png"),
     },
   });
+  const condensation = makeCondensation(cocktail.glass, glassX, glassY);
   interior.addChild(
     liquid.mesh,
     liquid.displacementMap,
     ice,
     stream.inner,
     particles.foam,
+    condensation,
   );
 
-  const condensation = makeCondensation(
-    cocktail.glass,
-    bowlCenterX,
-    liquidTop,
-  );
   const frontGlass = plate(
     `glass-${cocktail.glass}-front.png`,
     GLASS_RECT.width,
@@ -266,14 +259,6 @@ export function createRig(
     glassX,
     glassY,
   );
-  const rimHighlight = plate(
-    "rim-highlight.png",
-    28,
-    72,
-    glassX + 22,
-    rimY + 18,
-  );
-  rimHighlight.alpha = 0.28;
   const salt = saltAlias
     ? plate(
         saltAlias,
@@ -311,8 +296,10 @@ export function createRig(
   );
   bottle.alpha = 0;
 
-  root.addChild(barSurface, backGlass, mask, interior, condensation, frontGlass);
-  root.addChild(particles.splash, rimHighlight);
+  // Front glass already paints the key-light. rim-highlight.png is an
+  // unmasked S-curve that reads as a stray pour hanging in empty air.
+  root.addChild(barSurface, backGlass, mask, interior, frontGlass);
+  root.addChild(particles.splash);
   if (salt) root.addChild(salt);
   root.addChild(stream.air, frost, particles.motes, garnish, bottle);
   stage.addChild(root);
@@ -420,6 +407,7 @@ export function createRig(
         surfaceY,
         contactStageX,
         uniforms.streamOn,
+        performance.now() / 1000,
       );
       bottle.rotation = uniforms.bottleAngle * (Math.PI / 180);
       bottle.alpha = uniforms.bottleAlpha;
@@ -438,7 +426,6 @@ export function createRig(
         displacementBudget.sample(fps)
       ) {
         uniforms.displacementOn = false;
-        rimHighlight.alpha = 0;
       }
     },
     destroy() {

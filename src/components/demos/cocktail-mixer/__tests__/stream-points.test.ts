@@ -1,8 +1,10 @@
 /** @vitest-environment node */
 import { describe, expect, it } from "vitest";
 import {
+  collapseStreamPoints,
   rimCrossingTime,
   streamSag,
+  wobbleStreamPoints,
   writeSplitStream,
   writeStreamPoints,
   type StreamPointData,
@@ -49,5 +51,34 @@ describe("writeSplitStream", () => {
     expect(air.at(-1)?.y).toBeCloseTo(inner[0].y, 1);
     expect(rimCrossingTime(neck, surface, streamSag(neck, surface), rimY)).toBeGreaterThan(0);
     expect(rimCrossingTime(neck, surface, streamSag(neck, surface), rimY)).toBeLessThan(1);
+  });
+});
+
+describe("collapseStreamPoints", () => {
+  it("pins every vertex onto the neck so a hidden rope has no leftover ribbon", () => {
+    const points = blankPoints();
+    writeStreamPoints(points, { x: 210, y: 90 }, { x: 160, y: 180 });
+    collapseStreamPoints(points, { x: 210, y: 42 });
+
+    for (const point of points) {
+      expect(point).toEqual({ x: 210, y: 42 });
+    }
+  });
+});
+
+describe("wobbleStreamPoints", () => {
+  it("leaves endpoints pinned and only nudges the interior", () => {
+    const start = { x: 210, y: 90 };
+    const end = { x: 160, y: 180 };
+    const rest = blankPoints();
+    const live = blankPoints();
+    writeStreamPoints(rest, start, end);
+    writeStreamPoints(live, start, end);
+    wobbleStreamPoints(live, 0.4, 1);
+
+    expect(live[0]).toEqual(rest[0]);
+    expect(live.at(-1)).toEqual(rest.at(-1));
+    expect(live[1].x).not.toBe(rest[1].x);
+    expect(live[1].y).toBe(rest[1].y);
   });
 });

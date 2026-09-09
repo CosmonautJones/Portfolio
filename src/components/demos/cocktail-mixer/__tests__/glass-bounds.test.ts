@@ -7,6 +7,7 @@ import {
   STAGE,
   GLASS_RECT,
   bowlWidthAt,
+  condensationPoints,
   foamOffsetsForWidth,
   pourContactX,
   rimGarnishPoint,
@@ -90,6 +91,17 @@ describe("glass-bounds", () => {
   it("has condensation dots for every glass", () => {
     for (const type of TYPES) {
       expect(CONDENSATION_LAYOUT[type].length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps condensation inside the live bowl", () => {
+    for (const type of TYPES) {
+      for (const drop of condensationPoints(type)) {
+        const half = bowlWidthAt(type, drop.y) / 2;
+        expect(Math.abs(drop.x - GLASS_BOUNDS[type].bowlCenterX)).toBeLessThan(
+          half,
+        );
+      }
     }
   });
 });

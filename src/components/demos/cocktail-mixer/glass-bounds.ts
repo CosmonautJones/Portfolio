@@ -161,6 +161,23 @@ export const CONDENSATION_LAYOUT: Record<GlassType, { dx: number; dy: number }[]
   ],
 };
 
+const CONDENSATION_INSET = 8;
+
+/** Condensation in glass-local pixels, clipped to the live bowl. */
+export function condensationPoints(
+  glass: GlassType,
+): { x: number; y: number }[] {
+  const bounds = GLASS_BOUNDS[glass];
+  return CONDENSATION_LAYOUT[glass].map((drop) => {
+    const y = bounds.liquidTop + drop.dy;
+    const half = Math.max(4, bowlWidthAt(glass, y) / 2 - CONDENSATION_INSET);
+    return {
+      x: bounds.bowlCenterX + Math.max(-half, Math.min(half, drop.dx)),
+      y,
+    };
+  });
+}
+
 const WALL_INSET = 6;
 
 export function bowlWidthAt(glass: GlassType, yInGlass: number): number {

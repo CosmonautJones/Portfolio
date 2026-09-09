@@ -100,3 +100,30 @@ export function writeSplitStream(
 
   return quadraticPoint(neck, surface, sagY, rimTime);
 }
+
+export function collapseStreamPoints(
+  points: StreamPointData[],
+  origin: StreamPointData,
+): void {
+  for (const point of points) {
+    point.x = origin.x;
+    point.y = origin.y;
+  }
+}
+
+/**
+ * Pixi MeshRope live-point wobble (official snake/ribbon pattern):
+ * mutate interior points each frame; leave the endpoints pinned.
+ */
+export function wobbleStreamPoints(
+  points: StreamPointData[],
+  timeSec: number,
+  amount: number,
+): void {
+  if (amount <= 0 || points.length < 3) return;
+
+  const amplitude = 1.2 * Math.max(0, Math.min(1, amount));
+  for (let index = 1; index < points.length - 1; index += 1) {
+    points[index].x += Math.sin(timeSec * 14 + index * 0.7) * amplitude;
+  }
+}
