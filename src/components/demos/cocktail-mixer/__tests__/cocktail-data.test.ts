@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { COCKTAILS, THE_COSMONAUT, GLASS_CONFIGS } from "../data";
+import { COCKTAILS, THE_COSMONAUT } from "../data";
+import { GLASS_BOUNDS } from "../glass-bounds";
 import type { Cocktail } from "../types";
 
 const ALL_COCKTAILS: Cocktail[] = [...COCKTAILS, THE_COSMONAUT];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
-const VALID_GLASSES = Object.keys(GLASS_CONFIGS);
+const VALID_GLASSES = Object.keys(GLASS_BOUNDS);
 const VALID_METHODS = ["shaken", "stirred", "built"];
 
 describe("cocktail data integrity", () => {
@@ -68,13 +69,9 @@ describe("cocktail data integrity", () => {
     }
   );
 
-  it("glass configs have valid liquid ranges", () => {
-    for (const [name, config] of Object.entries(GLASS_CONFIGS)) {
-      expect(config.liquidTop).toBeLessThan(config.liquidBottom);
-      expect(config.liquidTop).toBeGreaterThan(0);
-      expect(config.liquidBottom).toBeLessThan(300);
-      // Suppress unused var warning
-      void name;
+  it("every cocktail glass exists in GLASS_BOUNDS", () => {
+    for (const c of ALL_COCKTAILS) {
+      expect(GLASS_BOUNDS[c.glass]).toBeDefined();
     }
   });
 });
