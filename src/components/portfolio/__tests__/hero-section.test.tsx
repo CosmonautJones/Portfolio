@@ -63,7 +63,7 @@ describe("HeroSection", () => {
   it("renders CTA links", () => {
     render(<HeroSection />);
     expect(screen.getByText("See the work")).toBeDefined();
-    expect(screen.getByText("Talk hiring")).toBeDefined();
+    expect(screen.getByRole("link", { name: "View resume" }).getAttribute("href")).toBe("/resume");
   });
 
   it("surfaces concrete proof paths from the hero", () => {

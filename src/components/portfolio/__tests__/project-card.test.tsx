@@ -84,7 +84,7 @@ describe("ProjectCard", () => {
   it("applies hover zoom class to the image", () => {
     const { container } = render(<ProjectCard project={baseProject} />);
     const img = container.querySelector("img");
-    expect(img?.className).toContain("group-hover:scale-105");
+    expect(img?.className).toContain("group-hover:scale-[1.015]");
   });
 
   it("handles pointer interactions without crashing", () => {

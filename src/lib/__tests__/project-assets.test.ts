@@ -29,12 +29,12 @@ describe("portfolio artwork", () => {
     );
   });
 
-  it("gives every project a unique local 16:9 image", async () => {
+  it("validates supplied artwork and permits intentional text covers", async () => {
     const missionControl = PROJECTS.find((project) => project.title === "Mission Control");
     expect(missionControl?.image).toBe("/projects/mission-control.jpg");
 
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(12);
+    expect(imagePaths).toHaveLength(14);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);

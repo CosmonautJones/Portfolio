@@ -21,8 +21,8 @@ export function AboutPreview() {
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.1}>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-          Eight years at Global Shop Solutions shaped that habit. These days, I bring
-          it to .NET, web products, and tools that make AI useful in everyday work.
+          Outside work, I’m a dad settling into Michigan, an electronics tinkerer,
+          and someone who tends to learn by taking things apart and building them back up.
         </p>
       </AnimateOnScroll>
       <AnimateOnScroll delay={0.15}>

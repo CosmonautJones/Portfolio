@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Play } from "lucide-react";
+import { ExternalLink, Github, Play, ScanLine, FileText } from "lucide-react";
 import {
   m,
   useReducedMotion,
@@ -24,7 +24,7 @@ import { shouldUnlockRoadScholar } from "@/lib/easter-eggs/triggers";
 const viewedProjects = new Set<string>();
 
 const gradientClasses = ["project-gradient-1", "project-gradient-2"];
-const MAX_TILT = 6; // degrees
+const MAX_TILT = 1.5; // degrees
 
 interface ProjectCardProps {
   project: Project;
@@ -34,6 +34,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
   const gradientClass = gradientClasses[project.title.length % gradientClasses.length];
+  const CoverIcon = project.title === "Whole Page Capture" ? ScanLine : FileText;
   const heightClass = featured ? "h-56" : "h-48";
 
   const shouldReduce = useReducedMotion();
@@ -95,7 +96,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
     >
       <Card
         onClick={handleViewProject}
-        className="glass-card gradient-border-glow hover-shadow-accent group flex h-full flex-col overflow-hidden transition-all duration-500 hover:-translate-y-1"
+        className="glass-card group flex h-full flex-col overflow-hidden transition-all duration-300"
       >
         {project.image ? (
           <div className={`relative ${heightClass} w-full overflow-hidden`}>
@@ -105,21 +106,19 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={priority}
-              className="rounded-t-lg object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+              className="rounded-t-lg object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.015]"
             />
           </div>
         ) : (
           <div className={`relative ${heightClass} w-full overflow-hidden rounded-t-lg ${gradientClass}`}>
-            {/* Large faded tag overlay */}
-            {project.tags[0] && (
-              <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-foreground/[0.06] select-none sm:text-6xl">
-                {project.tags[0]}
-              </span>
-            )}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-foreground/60">
+              <CoverIcon className="h-14 w-14" strokeWidth={1} aria-hidden="true" />
+              <span className="text-xs font-medium uppercase tracking-[.16em]">{project.tags[0]}</span>
+            </div>
           </div>
         )}
         <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <CardTitle className="text-lg font-semibold tracking-tight transition-colors duration-300 group-hover:text-foreground">
             {project.title}
           </CardTitle>
@@ -136,10 +135,10 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
           {project.description}
         </p>
         {project.proof && (
-          <p className="rounded-lg border border-border/50 bg-secondary/35 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">Under the hood: </span>
-            {project.proof}
-          </p>
+          <details className="text-sm leading-relaxed text-muted-foreground">
+            <summary className="cursor-pointer py-2 font-medium text-foreground/80 focus-visible:outline-2 focus-visible:outline-offset-4">Engineering details</summary>
+            <p className="pt-2">{project.proof}</p>
+          </details>
         )}
         <div className="flex flex-wrap gap-1.5">
           {project.tags.map((tag) => (
@@ -151,7 +150,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
             </span>
           ))}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {project.caseStudyUrl && (
             <Button
               variant="outline"

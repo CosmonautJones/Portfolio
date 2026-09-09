@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Travis Jones — Software Developer",
+    name: "Travis Jones — Software Engineer",
     short_name: "Travis Jones",
-    description: "Portfolio site for Travis Jones, software developer.",
+    description: "Portfolio site for Travis Jones, software engineer.",
     start_url: "/",
     display: "standalone",
     background_color: "#09090b",
