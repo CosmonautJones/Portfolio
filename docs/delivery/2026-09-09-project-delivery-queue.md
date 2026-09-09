@@ -1,6 +1,6 @@
 # Project delivery queue
 
-Status: inspected on 2026-09-09. Capture presentation and article extraction implementation are prepared in the portfolio; integrated verification passed (930 tests, production build, ESLint with one existing warning); hosted verification remains the integrator's gate. This plan does not claim a persistent or scheduled agent service has been provisioned.
+Status: inspected on 2026-09-09. Capture presentation and article extraction implementation are prepared in the portfolio; integrated verification passed (930 tests, production build, ESLint with one existing warning); desktop hosted verification passed for the public pages, downloads, X extraction and pasted-text conversion. This plan does not claim a persistent or scheduled agent service has been provisioned.
 
 ## Decision
 
@@ -53,7 +53,7 @@ Existing verification in this session: runtime boundary check passed; 31 unit te
 - [x] Keep attributed Markdown and warnings visible; provide copy/download. A failed read preserves the previous result.
 - [x] Provide a separate collapsed browser-only pasted-text fallback with title, author, source, original example, and optional safely quoted YAML frontmatter. URL reads never overwrite that draft.
 - [x] Explicitly exclude complete threads, profile timelines, private/deleted/unavailable posts, and automatic AI summaries.
-- [ ] Verify the deployed URL-reader interaction against a real public post and an attached article.
+- [x] Verify the deployed URL-reader interaction against a real public post and an attached article. Both succeeded through the public site; copy action reported success.
 
 ### Acceptance
 
@@ -66,7 +66,7 @@ Existing verification in this session: runtime boundary check passed; 31 unit te
 
 ### Verification and next real slice
 
-Scoped validation passed: 37 tests across eight files covering original structured conversion, URL validation, provider failure/timeout, byte limits, request allowance, paste export contents, clipboard fallback, and separate URL-reader failure retention. Focused ESLint passed. A direct live request to FxTwitter for public post `20` returned HTTP 200 and the expected structured post response; the final same-site handler and browser flow still require hosted verification. No canned content is substituted for retrieval.
+Scoped validation passed: 37 tests across eight files covering original structured conversion, URL validation, provider failure/timeout, byte limits, request allowance, paste export contents, clipboard fallback, and separate URL-reader failure retention. Focused ESLint passed. A direct live request to FxTwitter for public post `20` returned HTTP 200 and the expected structured post response; the integrator subsequently verified the same-site handler and browser flow using a real post and attached article. See the release evidence document. No canned content is substituted for retrieval.
 
 Next, reconcile the working Vellum branch with its incomplete main before advertising a standalone Vellum repository. Add live availability checks and a verified public-article fixture refresh process, without importing private data. Prefer better extraction fidelity and usable error handling over another superficial generator.
 

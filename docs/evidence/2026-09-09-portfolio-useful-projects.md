@@ -22,6 +22,17 @@
 
 - No claim of mobile device or installed-extension end-to-end verification. Extension packaging rerun requires unavailable PowerShell; existing release archive is mirrored unchanged.
 - Provider availability and extraction fidelity can vary. Complete threads, profile timelines, unavailable/private posts and AI summaries are not offered.
-- Site deploy and public visitor interactions must be checked after publishing.
+- Mobile-device and installed-extension checks remain follow-up work; desktop hosted flows were checked below.
 - Sand project identity is unresolved; request its link before adding it.
 - Legacy-to-.NET behavior comparison lab is proposed, not built. No persistent Grok/Cursor service or paid subscription was provisioned; Codex agents worked in this session.
+
+## Hosted verification
+
+Release commit: `9a0f0bfcd343c2fdf91c838766b39bf88868affd`. GitHub CI run `34294538480` completed successfully.
+
+- Live desktop homepage, resume and capture page inspected in the browser; resume navigation and featured order confirmed.
+- Public resume PDF returned HTTP 200 with `application/pdf`, 48,500 bytes, byte-identical to the verified release.
+- Public extension ZIP returned HTTP 200 with `application/zip`, 17,483 bytes, byte-identical to the verified release and checksum.
+- Same-site X reader successfully converted public post `20` and attached article `2080668775796314331`; article output contained attribution, sections, links, images and code fences. Copy action reported success.
+- Pasted-text fallback accepted original smoke-test text and produced the expected titled Markdown while leaving extracted article output separate.
+- No contact form submitted, private sharing changed, or extension installation claimed.
