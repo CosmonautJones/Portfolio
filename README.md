@@ -158,7 +158,7 @@ Harness workflow files live in:
 
 ## Current Known Warnings
 
-Recent `main` CI runs have concluded **failure** on the Test step (e.g. runs `b2b6a39`, `1da9c87`, `168c49b`). Treat the Actions badge / workflow runs as the source of truth — do not assume CI is green from this README.
+CI status is tracked by the live badge and [Actions on `main`](https://github.com/CosmonautJones/Portfolio/actions?query=branch%3Amain) above.
 
 Other follow-ups tracked in the harness mission:
 
