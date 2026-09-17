@@ -34,20 +34,22 @@ describe("portfolio artwork", () => {
     expect(missionControl?.image).toBe("/projects/mission-control.jpg");
 
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(14);
+    expect(imagePaths).toHaveLength(15);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);
 
     for (const imagePath of presentPaths) {
-      expect(imagePath).toMatch(/^\/projects\/.+\.jpg$/);
+      expect(imagePath).toMatch(/^\/projects\/.+\.(jpg|png)$/);
 
       const assetPath = path.join(process.cwd(), "public", imagePath);
       expect(existsSync(assetPath), `${imagePath} should exist`).toBe(true);
 
       const metadata = await sharp(assetPath).metadata();
-      expect(metadata.width, `${imagePath} width`).toBe(1600);
-      expect(metadata.height, `${imagePath} height`).toBe(900);
+      // Alcubemy uses its original share card; keep the actual renderer artwork intact.
+      const [width, height] = imagePath === "/projects/alcubemy.png" ? [1200, 630] : [1600, 900];
+      expect(metadata.width, `${imagePath} width`).toBe(width);
+      expect(metadata.height, `${imagePath} height`).toBe(height);
     }
   });
 

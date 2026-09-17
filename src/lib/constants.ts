@@ -84,6 +84,19 @@ export const PROJECTS: Project[] = [
     actionLabel: "Read code",
   },
   {
+    title: "Alcubemy",
+    description:
+      "An experimental falling-sand art game. Paint with sand, water, heat and alchemy, then watch the vessel change.",
+    image: "/projects/alcubemy.png",
+    tags: ["TypeScript", "Three.js", "Cellular simulation"],
+    liveUrl: "https://alcubemy.travisjohnjones.com/",
+    githubUrl: "https://github.com/CosmonautJones/falling-sand",
+    role: "Experimental sandbox",
+    featured: false,
+    proof: "129,600 cells with local reactions, living habitats and material-aware lighting. Living construction remains on the roadmap.",
+    actionLabel: "Play Alcubemy",
+  },
+  {
     title: "Lumen Garden",
     description:
       "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",
