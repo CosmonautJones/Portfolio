@@ -67,6 +67,26 @@ const baseProject: Project = {
 };
 
 describe("ProjectCard", () => {
+  it("offers an inline reaction preview without autoplay or an eager video download", () => {
+    const { container } = render(
+      <ProjectCard project={{
+        ...baseProject,
+        preview: {
+          src: "/projects/alcubemy-reaction.mp4",
+          caption: "Water meets lava. Captured in Alcubemy.",
+        },
+      }} />
+    );
+    const video = container.querySelector("video");
+    expect(video).not.toBeNull();
+    expect(video?.getAttribute("preload")).toBe("none");
+    expect(video?.hasAttribute("controls")).toBe(true);
+    expect(video?.hasAttribute("playsinline")).toBe(true);
+    expect(video?.hasAttribute("autoplay")).toBe(false);
+    expect(video?.getAttribute("poster")).toBe(baseProject.image);
+    expect(video?.querySelector("source")?.getAttribute("src")).toBe("/projects/alcubemy-reaction.mp4");
+    expect(screen.getByText("Water meets lava. Captured in Alcubemy.")).toBeDefined();
+  });
   beforeEach(() => {
     reduced = false;
   });

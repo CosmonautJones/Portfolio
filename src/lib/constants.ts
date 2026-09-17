@@ -85,6 +85,11 @@ export const PROJECTS: Project[] = [
   },
   {
     title: "Alcubemy",
+    playground: true,
+    preview: {
+      src: "/projects/alcubemy-reaction.mp4",
+      caption: "Water meets lava. Captured in Alcubemy.",
+    },
     description:
       "An experimental falling-sand art game. Paint with sand, water, heat and alchemy, then watch the vessel change.",
     image: "/projects/alcubemy.png",

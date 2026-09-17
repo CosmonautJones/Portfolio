@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function WorkPage() {
   const featured = PROJECTS.filter((p) => p.featured);
-  const play = PROJECTS.filter((p) => !p.featured && p.demoUrl);
-  const more = PROJECTS.filter((p) => !p.featured && !p.demoUrl);
+  const play = PROJECTS.filter((p) => !p.featured && (p.demoUrl || p.playground));
+  const more = PROJECTS.filter((p) => !p.featured && !p.demoUrl && !p.playground);
 
   return (
     <div className="container mx-auto px-6 py-24 sm:py-32">
@@ -47,7 +47,7 @@ export default function WorkPage() {
 
       {/* Playground */}
       {play.length > 0 && (
-        <section className="mb-14">
+        <section className="mb-14" aria-label="Playground">
           <p className="mb-6 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Playground
           </p>

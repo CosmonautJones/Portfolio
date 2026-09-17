@@ -98,7 +98,23 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
         onClick={handleViewProject}
         className="glass-card group flex h-full flex-col overflow-hidden transition-all duration-300"
       >
-        {project.image ? (
+        {project.preview ? (
+          <figure>
+            <video
+              controls
+              playsInline
+              preload="none"
+              poster={project.image}
+              aria-label={`${project.title} reaction preview`}
+              className={`${heightClass} w-full bg-black object-contain`}
+            >
+              <source src={project.preview.src} type="video/mp4" />
+            </video>
+            <figcaption className="px-6 pt-3 text-xs text-muted-foreground">
+              {project.preview.caption}
+            </figcaption>
+          </figure>
+        ) : project.image ? (
           <div className={`relative ${heightClass} w-full overflow-hidden`}>
             <Image
               src={project.image}

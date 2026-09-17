@@ -34,6 +34,8 @@ export interface Project {
   gallery?: { src: string; caption: string; alt: string }[];
   role: string;
   featured?: boolean;
+  playground?: boolean;
+  preview?: { src: string; caption: string };
   proof?: string;
   actionLabel?: string;
 }
