@@ -19,14 +19,14 @@ export function FeaturedProjects() {
             A few projects
           </h2>
           <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Some practical, some playful, all built to be opened.
+            Small tools with a clear job.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            I learn best by making things you can poke at, break down, and improve.
+            Try a browser tool, install a utility, or inspect how it works. Each project explains what you can use today.
           </p>
         </div>
       </AnimateOnScroll>
-      <StaggerChildren className="grid gap-6 sm:grid-cols-2">
+      <StaggerChildren className="grid gap-6 md:grid-cols-3">
         {featured.slice(0, 4).map((project, index) => (
           <StaggerItem key={project.title}>
             <ProjectCard project={project} featured priority={index < 2} />

@@ -14,12 +14,12 @@ describe("AboutPreview", () => {
 
   it("renders the blockquote", () => {
     render(<AboutPreview />);
-    expect(screen.getByText(/software with a point of view/i)).toBeDefined();
+    expect(screen.getByText(/figuring out how a system really works/i)).toBeDefined();
   });
 
   it("renders a link to the about page", () => {
     render(<AboutPreview />);
-    const link = screen.getByRole("link", { name: /read the room/i });
+    const link = screen.getByRole("link", { name: /more about me/i });
     expect(link.getAttribute("href")).toBe("/about");
   });
 });

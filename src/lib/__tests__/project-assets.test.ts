@@ -12,9 +12,10 @@ describe("portfolio artwork", () => {
     expect(loopedIn).toMatchObject({
       image: "/projects/loopedin.jpg",
       liveUrl: "https://loopedin-family.netlify.app",
-      githubUrl: "https://github.com/CosmonautJones/family-loop",
       role: "Full-Stack Product",
     });
+    // Private-source honesty: no public githubUrl for LoopedIn.
+    expect(loopedIn?.githubUrl).toBeUndefined();
     expect(PROJECTS.some((project) => project.title === "Plan'd")).toBe(false);
   });
 
@@ -28,25 +29,27 @@ describe("portfolio artwork", () => {
     );
   });
 
-  it("gives every project a unique local 16:9 image", async () => {
+  it("validates supplied artwork and permits intentional text covers", async () => {
     const missionControl = PROJECTS.find((project) => project.title === "Mission Control");
-    expect(missionControl?.image).toBe("");
+    expect(missionControl?.image).toBe("/projects/mission-control.jpg");
 
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(12);
+    expect(imagePaths).toHaveLength(15);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);
 
     for (const imagePath of presentPaths) {
-      expect(imagePath).toMatch(/^\/projects\/.+\.jpg$/);
+      expect(imagePath).toMatch(/^\/projects\/.+\.(jpg|png)$/);
 
       const assetPath = path.join(process.cwd(), "public", imagePath);
       expect(existsSync(assetPath), `${imagePath} should exist`).toBe(true);
 
       const metadata = await sharp(assetPath).metadata();
-      expect(metadata.width, `${imagePath} width`).toBe(1600);
-      expect(metadata.height, `${imagePath} height`).toBe(900);
+      // Alcubemy uses its original share card; keep the actual renderer artwork intact.
+      const [width, height] = imagePath === "/projects/alcubemy.png" ? [1200, 630] : [1600, 900];
+      expect(metadata.width, `${imagePath} width`).toBe(width);
+      expect(metadata.height, `${imagePath} height`).toBe(height);
     }
   });
 

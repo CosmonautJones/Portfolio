@@ -8,6 +8,7 @@ import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { XPBar } from "@/components/progression/xp-bar";
 import { AchievementPanel } from "@/components/progression/achievement-panel";
@@ -50,12 +51,12 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
       <div className="container mx-auto flex h-14 items-center justify-between px-6">
         <Link
           href="/"
-          className="text-sm font-semibold tracking-tight text-foreground transition-opacity hover:opacity-70"
+          className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground transition-opacity hover:opacity-70"
         >
-          {SITE_CONFIG.name}
+          <BrandMark />{SITE_CONFIG.name}
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-6 md:flex">
           {NAV_LINKS.map((link) => {
             const isActive =
               pathname === link.href ||
@@ -85,8 +86,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
         <div className="flex items-center gap-1">
           <XPBar />
           <AchievementPanel />
-          <TerminalToggle />
-          <ColorSchemePicker />
+          <div className="hidden items-center gap-1 sm:flex"><TerminalToggle /><ColorSchemePicker /></div>
           <Button
             variant="ghost"
             size="icon"

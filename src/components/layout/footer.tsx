@@ -17,14 +17,14 @@ export function Footer() {
           {/* Col 1: Branding */}
           <div>
             <p className="text-sm font-bold">{SITE_CONFIG.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground/70">
-              {SITE_CONFIG.tagline}
+            <p className="mt-1 text-sm text-muted-foreground">
+              {SITE_CONFIG.location}
             </p>
           </div>
 
           {/* Col 2: Pages */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Pages
             </p>
             <ul className="space-y-2">
@@ -43,7 +43,7 @@ export function Footer() {
 
           {/* Col 3: Connect */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Connect
             </p>
             <div className="flex gap-3">
@@ -65,10 +65,10 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 border-t border-border/30 pt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <p className="text-xs text-muted-foreground/50">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} {SITE_CONFIG.name}
           </p>
-          <p className="text-xs text-muted-foreground/40">
+          <p className="text-xs text-muted-foreground">
             Built with Next.js &amp; Supabase
           </p>
         </div>

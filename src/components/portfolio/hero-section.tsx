@@ -57,7 +57,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       aria-label="Hero"
-      className="relative flex min-h-[min(100dvh,52rem)] flex-col items-center justify-center px-6 text-center"
+      className="relative flex min-h-[min(90dvh,44rem)] flex-col items-center justify-center px-6 pb-20 pt-20 sm:pt-24 text-center"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
@@ -66,7 +66,7 @@ export function HeroSection() {
       {/* Ambient glow — large, soft, slow-moving.
           Outer m.div carries pointer parallax (transform); inner div carries the
           CSS keyframe animation so the two transforms don't fight. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-50" aria-hidden="true">
         <m.div
           className="absolute -left-40 -top-40 h-[600px] w-[600px]"
           style={shouldReduce ? undefined : { x: blob1X, y: blob1Y }}
@@ -102,13 +102,13 @@ export function HeroSection() {
         <m.div {...entry(0)}>
           <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
             <span className="inline-block h-1.5 w-1.5 rounded-full accent-dot" aria-hidden="true" />
-            Software Developer
+            {SITE_CONFIG.title}
           </div>
         </m.div>
 
         <m.h1
           {...entry(0.1)}
-          className="gradient-text-animated font-display text-[clamp(3rem,8vw,6.5rem)] font-extrabold leading-[0.98] tracking-tight"
+          className="gradient-text font-display text-[clamp(2.8rem,7vw,5.2rem)] font-extrabold leading-[0.98] tracking-tight"
         >
           Hi, I&apos;m Travis.
         </m.h1>
@@ -116,9 +116,13 @@ export function HeroSection() {
         {/* Tagline */}
         <m.p
           {...entry(0.2)}
-          className="mx-auto mt-5 max-w-xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl"
+          className="mx-auto mt-5 max-w-2xl text-lg font-normal leading-relaxed text-foreground/80 sm:text-xl"
         >
           {SITE_CONFIG.tagline}
+        </m.p>
+
+        <m.p {...entry(0.25)} className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+          {SITE_CONFIG.location}<br />{SITE_CONFIG.availability}
         </m.p>
 
         {/* CTA buttons */}
@@ -132,7 +136,7 @@ export function HeroSection() {
             className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
           >
             <Link href="/work">
-              See the Work
+              See the work
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -142,8 +146,9 @@ export function HeroSection() {
             asChild
             className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
           >
-            <Link href="/contact">Get in Touch</Link>
+            <Link href="/resume">View resume</Link>
           </Button>
+          <Link href="/contact" className="px-3 py-3 text-sm text-muted-foreground underline-offset-4 hover:underline">Get in touch</Link>
         </m.div>
 
         <m.div
@@ -154,7 +159,7 @@ export function HeroSection() {
             <Link
               key={proof.href}
               href={proof.href}
-              className="group rounded-lg border border-border/50 bg-background/45 px-4 py-3 backdrop-blur-md transition-colors hover:border-border hover:bg-secondary/70"
+              className="group border-t border-border/60 px-2 py-3 transition-colors hover:border-foreground/40"
             >
               <span className="block text-sm font-medium text-foreground transition-colors group-hover:underline">
                 {proof.label}

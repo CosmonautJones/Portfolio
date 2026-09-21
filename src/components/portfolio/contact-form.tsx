@@ -104,7 +104,7 @@ export function ContactForm() {
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-        Tell me what you are building, what feels stuck, or where the system needs sharper hands.
+        I’m based in the Ann Arbor / Ypsilanti area and open to local or remote software engineering roles. If your team works on .NET, full-stack products, developer tools, or practical AI, I’d love to hear what you’re building.
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
@@ -184,14 +184,22 @@ export function ContactForm() {
             <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
           <p className="text-xs text-muted-foreground">
-            Clean signal gets a clean reply.
+            Thanks for taking a look at my work.
+          </p>
+          <p className="text-xs">
+            <a
+              href={`mailto:${SITE_CONFIG.email}`}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Email {SITE_CONFIG.email}
+            </a>
           </p>
         </div>
       </form>
 
       <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          Prefer the old route?{" "}
+          You can also email me directly:{" "}
           <span className="font-medium text-foreground">{SITE_CONFIG.email}</span>
         </p>
         <Button

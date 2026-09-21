@@ -2,8 +2,11 @@ import type { Project } from "@/lib/types";
 
 export const SITE_CONFIG = {
   name: "Travis Jones",
-  title: "Software Developer",
-  tagline: "I like learning how things work, building useful software, and collaborating with good people.",
+  title: "Software Engineer",
+  tagline:
+    "Eight years building and modernizing enterprise software. I connect established systems, modern .NET, and practical AI tools.",
+  location: "Ann Arbor / Ypsilanti, Michigan",
+  availability: "Open to software engineering roles locally and remotely",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -12,43 +15,43 @@ export const SITE_CONFIG = {
 };
 
 export const PROOF_POINTS = [
-  { label: "Capture a fragment", href: "https://cosmonautjones.github.io/lumen-garden/", detail: "Offline idea greenhouse" },
-  { label: "Review an approval", href: "https://github.com/CosmonautJones/mission-control", detail: "Local agent control plane" },
-  { label: "Check the HUD", href: "https://github.com/CosmonautJones/ai-usage-overlays", detail: "Windows usage overlay" },
+  { label: "Enterprise experience", href: "/about#experience", detail: "8 years at Global Shop Solutions" },
+  { label: "Practical AI tooling", href: "/about#knowledge-tooling", detail: "Read-only tools for QA and support" },
+  { label: "Explore the projects", href: "/work", detail: "Source, demos, and engineering notes" },
 ] as const;
 
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/work", label: "Projects" },
   { href: "/about", label: "About" },
+  { href: "/resume", label: "Resume" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
 export const PROJECTS: Project[] = [
   {
-    title: "Lumen Garden",
-    description:
-      "Offline-first idea greenhouse: capture fragments, connect them into projects, and take one focused next action. Local-only React/TypeScript (no accounts or telemetry), with tests, keyboard access, and a live demo.",
-    image: "/projects/lumen-inbox.jpg",
-    tags: ["React", "TypeScript", "Vite", "Vitest"],
-    liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
-    githubUrl: "https://github.com/CosmonautJones/lumen-garden",
-    role: "Interactive Demo",
+    title: "Whole Page Capture",
+    description: "Capture a long web page as one PNG using a local Chrome or Edge extension. Useful for design reviews, bug reports, and keeping a visual record.",
+    image: "",
+    tags: ["Browser extension", "JavaScript", "Canvas"],
+    demoUrl: "/work/whole-page-capture",
+    githubUrl: "https://github.com/CosmonautJones/whole-page-capture",
+    role: "Installable utility",
     featured: true,
-    proof: "Local-only React workspace (Inbox, Constellation, Focus, Review), keyboard access, no accounts or telemetry.",
-    actionLabel: "Open demo",
+    proof: "Scroll-and-stitch capture with explicit tab access. Download the verified release and follow the local installation guide.",
+    actionLabel: "Get the extension",
   },
   {
-    title: "Mission Control",
-    description:
-      "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
+    title: "Article to Markdown",
+    description: "Export a public X post or attached article as Markdown, or convert text you paste yourself. Keep an attributed copy for notes, research, or an assistant handoff.",
     image: "",
-    tags: ["TypeScript", "Node.js", "React", "Python"],
-    githubUrl: "https://github.com/CosmonautJones/mission-control",
-    role: "Open Source",
+    tags: ["TypeScript", "Local processing", "Markdown"],
+    demoUrl: "/work/article-to-markdown",
+    githubUrl: "https://github.com/CosmonautJones/Portfolio",
+    role: "Browser tool",
     featured: true,
-    proof: "Bounded worktree teams, verifier loops, approval gates, and auditable run evidence. Local-first, no cloud account.",
-    actionLabel: "Read code",
+    proof: "Public X links are read through FxTwitter with request limits and timeouts. Local pasted-text mode needs no network request; both paths support preview and Markdown download.",
+    actionLabel: "Use the tool",
   },
   {
     title: "AI Usage Overlays",
@@ -57,9 +60,71 @@ export const PROJECTS: Project[] = [
     image: "/projects/ai-usage-overlays.jpg",
     tags: ["PowerShell", "Windows", "WPF"],
     githubUrl: "https://github.com/CosmonautJones/ai-usage-overlays",
+    caseStudyUrl: "/work/ai-usage-overlays",
+    gallery: [
+      {
+        src: "/projects/overlays-full-hud.jpg",
+        caption: "Always-on-top tray view",
+        alt: "AI Usage Overlays HUD on black",
+      },
+      {
+        src: "/projects/overlays-provider-tiles.jpg",
+        caption: "Claude, Codex, Cursor, Grok",
+        alt: "AI Usage Overlays provider tiles",
+      },
+      {
+        src: "/projects/overlays-travos-footer.jpg",
+        caption: "Brand + install path",
+        alt: "AI Usage Overlays TravOS footer",
+      },
+    ],
     role: "Open Source",
     featured: true,
     proof: "Always-on-top tray HUD with themes, opacity, section toggles, and start-at-login. Providers write their own auth — the overlay never stores passwords. One-liner PowerShell install under LocalAppData.",
+    actionLabel: "Read code",
+  },
+  {
+    title: "Alcubemy",
+    playground: true,
+    preview: {
+      src: "/projects/alcubemy-reaction.mp4",
+      caption: "Water meets lava. Captured in Alcubemy.",
+    },
+    description:
+      "An experimental falling-sand art game. Paint with sand, water, heat and alchemy, then watch the vessel change.",
+    image: "/projects/alcubemy.png",
+    tags: ["TypeScript", "Three.js", "Cellular simulation"],
+    liveUrl: "https://alcubemy.travisjohnjones.com/",
+    githubUrl: "https://github.com/CosmonautJones/falling-sand",
+    role: "Experimental sandbox",
+    featured: false,
+    proof: "129,600 cells with local reactions, living habitats and material-aware lighting. Living construction remains on the roadmap.",
+    actionLabel: "Play Alcubemy",
+  },
+  {
+    title: "Lumen Garden",
+    description:
+      "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",
+    image: "/projects/lumen-garden.jpg",
+    tags: ["React", "TypeScript", "Vite", "Vitest"],
+    liveUrl: "https://cosmonautjones.github.io/lumen-garden/",
+    githubUrl: "https://github.com/CosmonautJones/lumen-garden",
+    role: "Interactive Demo",
+    featured: false,
+    proof: "Versioned local storage, validated backups, reversible edits, and scoped assistant handoffs. No accounts or automatic AI access.",
+    actionLabel: "Open demo",
+  },
+  {
+    title: "Mission Control",
+    description:
+      "A local control plane for supervised coding agents. Goals are divided among bounded workers in separate worktrees, verifier loops can reject and retry work, and approval decisions remain visible to the operator.",
+    image: "/projects/mission-control.jpg",
+    tags: ["TypeScript", "Node.js", "React", "Python"],
+    githubUrl: "https://github.com/CosmonautJones/mission-control",
+    caseStudyUrl: "/work/mission-control",
+    role: "Open Source",
+    featured: false,
+    proof: "Bounded worktree teams, verifier loops, approval gates, and auditable run evidence. Local-first, no cloud account.",
     actionLabel: "Read code",
   },
   {
@@ -70,7 +135,7 @@ export const PROJECTS: Project[] = [
     tags: ["TypeScript", "Vitest", "Claude Code"],
     githubUrl: "https://github.com/CosmonautJones/the-conductor",
     role: "Open Source",
-    featured: true,
+    featured: false,
     proof: "Orchestrator does not write code; persists run state; human-gated escalations only.",
     actionLabel: "Read code",
   },
@@ -145,9 +210,9 @@ export const PROJECTS: Project[] = [
     image: "/projects/loopedin.jpg",
     tags: ["React Native", "Supabase", "TypeScript", "Netlify"],
     liveUrl: "https://loopedin-family.netlify.app",
-    githubUrl: "https://github.com/CosmonautJones/family-loop",
     role: "Full-Stack Product",
-    proof: "Hosted auth and invitations, family membership, shared events, RSVPs, discussions, private attributed photos, and verified release drills.",
+    proof:
+      "Private source. Hosted product with auth, invitations, shared events, RSVPs, discussions, and private attributed photos.",
     actionLabel: "Open LoopedIn",
   },
   {
@@ -176,22 +241,22 @@ export const PROJECTS: Project[] = [
 ];
 
 export const SKILLS = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python",
-  "PostgreSQL", "MongoDB", "Tailwind CSS", "Supabase", "AWS",
+  "C#", ".NET", "COBOL", "VB.NET", "Python", "TypeScript",
+  "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Git",
 ];
 
 export const SKILL_CATEGORIES = [
   {
-    label: "Frontend",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML Canvas"],
+    label: "Enterprise experience",
+    skills: ["C# / .NET", "ACU & Fujitsu COBOL", "VB.NET", "PSQL", "SVN", "Visual Studio"],
   },
   {
-    label: "Backend",
-    skills: ["Node.js", "Python", "PostgreSQL", "MongoDB", "Supabase"],
+    label: "Web & personal projects",
+    skills: ["TypeScript", "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Tailwind CSS"],
   },
   {
-    label: "Infrastructure",
-    skills: ["AWS", "Netlify", "Docker", "CI/CD", "Git"],
+    label: "Developer tools & verification",
+    skills: ["Python", "Model Context Protocol", "Git", "Vitest", "GitHub Actions"],
   },
 ];
 
@@ -207,14 +272,14 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
   {
     year: "Sep 2018 - Aug 2026",
     title: "Software Engineer",
-    organization: "—",
+    organization: "Global Shop Solutions",
     description:
-      "Built, modernized, tested, and supported enterprise software across full-stack product and systems work.",
+      "Spent eight years in R&D on manufacturing ERP software, working with teams across shop floor, engineering, sales, shipping, payroll, and accounting. Helped evolve established systems while preserving the business behavior people relied on.",
     highlights: [
-      "Shipped production workflows across tightly coupled systems without losing existing behavior.",
-      "Modernized legacy components into reusable, typed libraries.",
-      "Owned production troubleshooting and side-by-side regression work.",
-      "Built constrained AI coding workflows with verification and human review.",
+      "Contributed to DataLayer modernization: ACU-to-Fujitsu COBOL migration and .NET interoperability.",
+      "Built a read-only COBOL knowledge tool used by the QA department, support, and colleagues outside the core team, with filters for sensitive data.",
+      "Worked on production troubleshooting, regression comparisons, and program naming changes that aligned legacy code with C# counterparts.",
+      "Helped colleagues adopt AI through an internal help desk, training sessions, documentation, and demos.",
     ],
   },
   {

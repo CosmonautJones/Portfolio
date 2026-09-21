@@ -19,13 +19,13 @@ describe("WhatIDo", () => {
 
   it("renders all three cards with titles", () => {
     render(<WhatIDo />);
-    expect(screen.getByText("Building useful software")).toBeDefined();
-    expect(screen.getByText("Learning the system")).toBeDefined();
-    expect(screen.getByText("Collaborating well")).toBeDefined();
+    expect(screen.getByText("Modernizing established systems")).toBeDefined();
+    expect(screen.getByText("Making knowledge accessible")).toBeDefined();
+    expect(screen.getByText("Helping people use AI")).toBeDefined();
   });
 
   it("has an accessible section label", () => {
     render(<WhatIDo />);
-    expect(screen.getByRole("region", { name: "What I enjoy working on" })).toBeDefined();
+    expect(screen.getByRole("region", { name: "What I bring to a team" })).toBeDefined();
   });
 });

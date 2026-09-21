@@ -8,12 +8,23 @@ describe("NAV_LINKS", () => {
 });
 
 describe("PROJECTS", () => {
-  it("every provided project image uses the local jpg path format", () => {
+  it("every provided project image uses a local jpg or png path", () => {
     for (const project of PROJECTS) {
       if (project.image) {
-        expect(project.image).toMatch(/^\/projects\/.+\.jpg$/);
+        expect(project.image).toMatch(/^\/projects\/.+\.(jpg|png)$/);
       }
     }
+  });
+
+  it("offers a direct play link for the experimental Alcubemy sandbox", () => {
+    const matches = PROJECTS.filter((project) => project.title === "Alcubemy");
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({
+      liveUrl: "https://alcubemy.travisjohnjones.com/",
+      githubUrl: "https://github.com/CosmonautJones/falling-sand",
+      role: "Experimental sandbox",
+      actionLabel: "Play Alcubemy",
+    });
   });
 
   it("every project has required fields", () => {

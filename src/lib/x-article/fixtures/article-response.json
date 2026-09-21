@@ -1,0 +1,102 @@
+{
+  "code": 200,
+  "status": {
+    "id": "2080668775796314331",
+    "url": "https://x.com/AnatoliKopadze/status/2080668775796314331",
+    "text": "",
+    "created_at": "Fri Jul 24 14:57:47 +0000 2026",
+    "author": {
+      "name": "Anatoli Kopadze",
+      "screen_name": "AnatoliKopadze",
+      "avatar_url": "https://pbs.twimg.com/profile_images/example/avatar.jpg"
+    },
+    "article": {
+      "id": "2080620345854140416",
+      "created_at": "2026-07-24T14:57:47Z",
+      "title": "Graph Engineering explained",
+      "preview_text": "A structured guide to graph engineering.",
+      "content": {
+        "blocks": [
+          {
+            "key": "intro",
+            "type": "unstyled",
+            "text": "A bounded job produces a useful result.",
+            "data": {},
+            "entityRanges": [],
+            "inlineStyleRanges": [
+              { "offset": 2, "length": 11, "style": "Bold" }
+            ]
+          },
+          {
+            "key": "heading",
+            "type": "header-two",
+            "text": "What a graph is",
+            "data": {},
+            "entityRanges": [],
+            "inlineStyleRanges": []
+          },
+          {
+            "key": "media",
+            "type": "atomic",
+            "text": " ",
+            "data": {},
+            "entityRanges": [{ "key": 0, "offset": 0, "length": 1 }],
+            "inlineStyleRanges": []
+          },
+          {
+            "key": "code",
+            "type": "atomic",
+            "text": " ",
+            "data": {},
+            "entityRanges": [{ "key": 1, "offset": 0, "length": 1 }],
+            "inlineStyleRanges": []
+          }
+        ],
+        "entityMap": [
+          {
+            "key": "0",
+            "value": {
+              "type": "MEDIA",
+              "mutability": "Immutable",
+              "data": {
+                "mediaItems": [
+                  {
+                    "localMediaId": "1",
+                    "mediaCategory": "DraftTweetImage",
+                    "mediaId": "2080633727265165312"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "key": "1",
+            "value": {
+              "type": "MARKDOWN",
+              "mutability": "Mutable",
+              "data": { "markdown": "```ts\nconst graph = true;\n```" }
+            }
+          }
+        ]
+      },
+      "media_entities": [
+        {
+          "media_id": "2080633727265165312",
+          "media_info": {
+            "__typename": "ApiImage",
+            "original_img_url": "https://pbs.twimg.com/media/example.jpg",
+            "original_img_width": 1672,
+            "original_img_height": 941
+          }
+        }
+      ]
+    }
+  },
+  "thread": null,
+  "author": {
+    "name": "Anatoli Kopadze",
+    "screen_name": "AnatoliKopadze",
+    "avatar_url": "https://pbs.twimg.com/profile_images/example/avatar.jpg"
+  }
+}
+

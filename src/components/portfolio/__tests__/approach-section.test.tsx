@@ -19,9 +19,9 @@ describe("ApproachSection", () => {
 
   it("renders all three principles", () => {
     render(<ApproachSection />);
-    expect(screen.getByText("Obsessively User-First")).toBeDefined();
-    expect(screen.getByText("Ship It, Then Perfect It")).toBeDefined();
-    expect(screen.getByText("Built to Last")).toBeDefined();
+    expect(screen.getByText("Understand the workflow")).toBeDefined();
+    expect(screen.getByText("Preserve what matters")).toBeDefined();
+    expect(screen.getByText("Make AI accountable")).toBeDefined();
   });
 
   it("has an accessible section label", () => {

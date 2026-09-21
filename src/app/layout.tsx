@@ -32,13 +32,13 @@ const LevelUpOverlay = dynamic(
 export const metadata: Metadata = {
   metadataBase: new URL("https://travisjohnjones.com"),
   title: {
-    default: "Travis Jones | Software Developer",
+    default: "Travis Jones | Software Engineer",
     template: "%s | Travis Jones",
   },
-  description: "Portfolio and developer tools hub for Travis Jones.",
+  description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
   openGraph: {
-    title: "Travis Jones | Software Developer",
-    description: "Portfolio and developer tools hub for Travis Jones.",
+    title: "Travis Jones | Software Engineer",
+    description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
     url: "https://travisjohnjones.com",
     siteName: "Travis Jones",
     locale: "en_US",
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Travis Jones | Software Developer",
-    description: "Portfolio and developer tools hub for Travis Jones.",
+    title: "Travis Jones | Software Engineer",
+    description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
   },
 };
 
