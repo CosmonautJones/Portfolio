@@ -33,8 +33,20 @@ describe("portfolio artwork", () => {
     const missionControl = PROJECTS.find((project) => project.title === "Mission Control");
     expect(missionControl?.image).toBe("/projects/mission-control.jpg");
 
+    const pad7 = PROJECTS.find((project) => project.title === "PAD-7 Firing Room");
+    expect(pad7).toMatchObject({
+      image: "/projects/pad-7.jpg",
+      liveUrl: "/pad-7/PAD-7.html",
+      githubUrl: "https://github.com/CosmonautJones/pad-7-firing-room",
+      featured: true,
+      role: "Simulation",
+    });
+    expect(existsSync(path.join(process.cwd(), "public", "pad-7", "PAD-7.html"))).toBe(true);
+    expect(existsSync(path.join(process.cwd(), "public", "pad-7", "desk.js"))).toBe(true);
+    expect(existsSync(path.join(process.cwd(), "public", "pad-7", "physics.js"))).toBe(true);
+
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(15);
+    expect(imagePaths).toHaveLength(16);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);

@@ -84,6 +84,20 @@ export const PROJECTS: Project[] = [
     actionLabel: "Read code",
   },
   {
+    title: "PAD-7 Firing Room",
+    description:
+      "A dawn blockhouse on the Eastern Range. Arm a ten-second count, light Kestrel I, and warp the range clock until the orbit lamp comes up green.",
+    image: "/projects/pad-7.jpg",
+    tags: ["Three.js", "Orbital mechanics", "Web Audio"],
+    liveUrl: "/pad-7/PAD-7.html",
+    githubUrl: "https://github.com/CosmonautJones/pad-7-firing-room",
+    role: "Simulation",
+    featured: true,
+    proof:
+      "No bundler. Physics, the optical window, and the paper desk are separate scripts, and the flight math is tested on its own. RANGE flies the gravity turn. The room stays formica, brass, and mosaic lamps.",
+    actionLabel: "Open the firing room",
+  },
+  {
     title: "Alcubemy",
     playground: true,
     preview: {
