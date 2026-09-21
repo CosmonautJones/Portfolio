@@ -16,12 +16,7 @@ import {
 } from "motion/react";
 import type { Project } from "@/lib/types";
 import { useVisitor } from "@/hooks/use-visitor";
-import { shouldUnlockRoadScholar } from "@/lib/easter-eggs/triggers";
-
-// Distinct projects opened this session — feeds the "road_scholar"
-// achievement (view 3 distinct projects). Module-level so it survives
-// re-renders and route changes within a single session.
-const viewedProjects = new Set<string>();
+import { rememberProjectView } from "@/lib/project-views";
 
 const gradientClasses = ["project-gradient-1", "project-gradient-2"];
 const MAX_TILT = 6; // degrees
@@ -42,8 +37,7 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
 
   function handleViewProject() {
     awardXP("view_project", { key: project.title });
-    viewedProjects.add(project.title);
-    if (shouldUnlockRoadScholar(viewedProjects)) {
+    if (rememberProjectView(project.title)) {
       unlockAchievement("road_scholar");
     }
   }
