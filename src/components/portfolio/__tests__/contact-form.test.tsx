@@ -13,7 +13,7 @@ import { ContactForm } from "../contact-form";
 
 describe("ContactForm", () => {
   function submitButton() {
-    return screen.getByRole("button", { name: /send the note/i });
+    return screen.getByRole("button", { name: /send message/i });
   }
 
   beforeEach(() => {

@@ -1,5 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { NAV_LINKS, PROJECTS } from "@/lib/constants";
+import { NAV_LINKS, PROJECTS, PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
+
+describe("SITE_CONFIG", () => {
+  it("presents Travis as an AI engineer", () => {
+    expect(SITE_CONFIG.title).toBe("AI Engineer");
+  });
+
+  it("keeps copy free of em dashes", () => {
+    for (const value of Object.values(SITE_CONFIG)) {
+      expect(value).not.toContain("—");
+    }
+  });
+});
+
+describe("PROOF_POINTS", () => {
+  it("ties each hero claim to an internal page that backs it up", () => {
+    expect(PROOF_POINTS.length).toBe(3);
+    for (const proof of PROOF_POINTS) {
+      expect(proof.claim.length).toBeGreaterThan(0);
+      expect(proof.label.length).toBeGreaterThan(0);
+      expect(proof.detail.length).toBeGreaterThan(0);
+      expect(proof.linkLabel.length).toBeGreaterThan(0);
+      expect(proof.href.startsWith("/")).toBe(true);
+    }
+  });
+});
 
 describe("NAV_LINKS", () => {
   it("labels the project catalog clearly without changing its route", () => {

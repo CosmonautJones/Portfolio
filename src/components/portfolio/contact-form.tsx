@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { SITE_CONFIG } from "@/lib/constants";
 import { validateContact, type ContactFormErrors, type ContactFormValues } from "@/lib/contact";
-import { Github, Linkedin, Twitter, ArrowUpRight, Send, Copy, Check } from "lucide-react";
+import { Github, Linkedin, Twitter, Send, Copy, Check } from "lucide-react";
 
 const EMPTY_VALUES: ContactFormValues = { name: "", email: "", message: "" };
 
@@ -76,7 +76,7 @@ export function ContactForm() {
         return;
       }
 
-      toast.success("Message sent!", {
+      toast.success("Message sent", {
         description: "Thanks for reaching out. I will get back to you soon.",
       });
 
@@ -104,7 +104,7 @@ export function ContactForm() {
   return (
     <div className="space-y-10">
       <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-        I’m based in the Ann Arbor / Ypsilanti area and open to local or remote software engineering roles. If your team works on .NET, full-stack products, developer tools, or practical AI, I’d love to hear what you’re building.
+        I’m based in the Ann Arbor / Ypsilanti area and open to AI and software engineering roles, local or remote. If your team works on practical AI, developer tools, .NET, or full-stack products, I’d like to hear about the role.
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
@@ -177,11 +177,10 @@ export function ContactForm() {
             type="submit"
             size="lg"
             disabled={isSubmitting}
-            className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
+            className="h-12 rounded-md bg-foreground px-6 text-background transition-opacity hover:bg-foreground hover:opacity-85"
           >
-            <Send className="mr-2 h-4 w-4" />
-            {isSubmitting ? "Sending..." : "Send the Note"}
-            <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+            <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+            {isSubmitting ? "Sending…" : "Send message"}
           </Button>
           <p className="text-xs text-muted-foreground">
             Thanks for taking a look at my work.
@@ -197,21 +196,21 @@ export function ContactForm() {
         </div>
       </form>
 
-      <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
+      <div className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          You can also email me directly:{" "}
-          <span className="font-medium text-foreground">{SITE_CONFIG.email}</span>
+          Prefer your own email app? Copy the address.
         </p>
         <Button
           variant="ghost"
           size="sm"
           onClick={copyEmail}
+          aria-label={copied ? "Email address copied" : "Copy email address"}
           className="ml-auto h-8 shrink-0 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
           {copied ? (
             <>
               <Check className="h-3.5 w-3.5" />
-              Copied!
+              Copied
             </>
           ) : (
             <>
@@ -222,10 +221,8 @@ export function ContactForm() {
         </Button>
       </div>
 
-      <div className="border-t border-border/50 pt-8">
-        <p className="mb-4 text-sm text-muted-foreground">
-          Elsewhere:
-        </p>
+      <div className="border-t border-border pt-8">
+        <p className="label-mono mb-4">Elsewhere</p>
 
         <div className="flex gap-3">
           {[
@@ -238,7 +235,7 @@ export function ContactForm() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-300 hover:border-border hover:bg-secondary/80 hover:text-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-[var(--rule-strong)] hover:text-foreground"
               aria-label={label}
             >
               <Icon className="h-[18px] w-[18px]" />

@@ -2,11 +2,11 @@ import type { Project } from "@/lib/types";
 
 export const SITE_CONFIG = {
   name: "Travis Jones",
-  title: "Software Engineer",
+  title: "AI Engineer",
   tagline:
-    "Eight years building and modernizing enterprise software. I connect established systems, modern .NET, and practical AI tools.",
+    "I connect AI to the business software companies already run on, with read-only access where it counts and a person signing off on what ships.",
   location: "Ann Arbor / Ypsilanti, Michigan",
-  availability: "Open to software engineering roles locally and remotely",
+  availability: "Open to roles in Michigan or remote",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
   linkedin: "https://www.linkedin.com/in/travis-john-jones/",
@@ -14,10 +14,29 @@ export const SITE_CONFIG = {
   instagram: "https://www.instagram.com/tj_jones/",
 };
 
+/** Each `claim` is underlined in the hero sentence (SITE_CONFIG.tagline); its row says where that claim comes from. */
 export const PROOF_POINTS = [
-  { label: "Enterprise experience", href: "/about#experience", detail: "8 years at Global Shop Solutions" },
-  { label: "Practical AI tooling", href: "/about#knowledge-tooling", detail: "Read-only tools for QA and support" },
-  { label: "Explore the projects", href: "/work", detail: "Source, demos, and engineering notes" },
+  {
+    claim: "business software",
+    label: "Manufacturing ERP, 8 years",
+    detail: "R&D at Global Shop Solutions. COBOL, VB.NET, and C#/.NET across shop floor, shipping, and accounting workflows.",
+    href: "/about#experience",
+    linkLabel: "Experience",
+  },
+  {
+    claim: "read-only access",
+    label: "COBOL knowledge tool over MCP",
+    detail: "Read-only, with filters for sensitive data. QA and support used it to trace how the software behaves.",
+    href: "/about#knowledge-tooling",
+    linkLabel: "How it worked",
+  },
+  {
+    claim: "a person signing off",
+    label: "Supervised coding agents",
+    detail: "Mission Control splits a goal across bounded workers, lets verifiers reject their work, and waits for approval.",
+    href: "/work/mission-control",
+    linkLabel: "Case study",
+  },
 ] as const;
 
 export const NAV_LINKS = [
@@ -32,7 +51,7 @@ export const PROJECTS: Project[] = [
   {
     title: "Whole Page Capture",
     description: "Capture a long web page as one PNG using a local Chrome or Edge extension. Useful for design reviews, bug reports, and keeping a visual record.",
-    image: "",
+    image: "/projects/whole-page-capture.jpg",
     tags: ["Browser extension", "JavaScript", "Canvas"],
     demoUrl: "/work/whole-page-capture",
     githubUrl: "https://github.com/CosmonautJones/whole-page-capture",
@@ -44,7 +63,7 @@ export const PROJECTS: Project[] = [
   {
     title: "Article to Markdown",
     description: "Export a public X post or attached article as Markdown, or convert text you paste yourself. Keep an attributed copy for notes, research, or an assistant handoff.",
-    image: "",
+    image: "/projects/article-to-markdown.jpg",
     tags: ["TypeScript", "Local processing", "Markdown"],
     demoUrl: "/work/article-to-markdown",
     githubUrl: "https://github.com/CosmonautJones/Portfolio",

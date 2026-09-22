@@ -35,3 +35,24 @@
 
 A change is strong only if it makes the visitor's next action clearer, makes a
 working artifact easier to inspect, or makes the portfolio more credible.
+
+## Visual Identity
+
+The site borrows from engineering drawings, the artifacts of the manufacturing
+software Travis worked on for eight years.
+
+- **Signature:** claims in the home hero carry numbered balloons, like parts on
+  a drawing. Each balloon links to a row in an evidence table (a bill of
+  materials) that says where the claim comes from. Pointing at either one
+  highlights both. Add a claim only when there is a page that backs it up.
+- **Logo:** a `tj` ligature. The t and j share one crossbar, and the j's dot is
+  a square amber signal lamp. `brand-mark.tsx` and `src/app/icon.svg` must match.
+- **Palette:** teal graphite ground `#0e1514`, sage-white ink `#e4ece8`, muted
+  `#9aaba5`, one amber signal `#f0b04a` (light mode: `#f2f4f2`, `#0e1514`,
+  `#8f5205`). The signal marks evidence, state, and focus only. No gradients,
+  glass, or glow.
+- **Type:** Archivo set expanded (`font-display`, 116%) for names and titles,
+  IBM Plex Sans for body, IBM Plex Mono for labels and data (`.label-mono`).
+- **Footer:** laid out like a drawing title block. Keep it quiet; the hero is
+  the one bold moment.
+

@@ -44,20 +44,21 @@ export function CaseStudy({
         className="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Work
+        Back to projects
       </Link>
 
       <header className="mb-12">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        <p className="label-mono">Case study</p>
+        <h1 className="font-display mt-4 text-[clamp(2.2rem,5.5vw,3.75rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-foreground">
           {title}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{lede}</p>
         {tags && tags.length > 0 ? (
-          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Stack">
+          <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-1" aria-label="Stack">
             {tags.map((tag) => (
               <li
                 key={tag}
-                className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                className="font-mono text-xs text-muted-foreground"
               >
                 {tag}
               </li>
@@ -66,7 +67,7 @@ export function CaseStudy({
         ) : null}
         <div className="mt-8 flex flex-wrap gap-3">
           {githubUrl ? (
-            <Button asChild className="rounded-full">
+            <Button asChild className="h-11 rounded-md px-5">
               <a href={githubUrl} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
                 Read code
@@ -74,14 +75,14 @@ export function CaseStudy({
             </Button>
           ) : null}
           {downloadUrl ? (
-            <Button asChild variant="outline" className="rounded-full">
+            <Button asChild variant="outline" className="h-11 rounded-md px-5">
               <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 {downloadLabel}
               </a>
             </Button>
           ) : githubUrl ? (
-            <Button asChild variant="outline" className="rounded-full">
+            <Button asChild variant="outline" className="h-11 rounded-md px-5">
               <a href={`${githubUrl}#install`} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Install notes
@@ -94,7 +95,7 @@ export function CaseStudy({
       {gallery && gallery.length > 0 ? (
         <figure className="mb-14 space-y-6">
           {gallery.map((shot) => (
-            <figure key={shot.src} className="overflow-hidden rounded-xl border border-border/50 bg-black">
+            <figure key={shot.src} className="overflow-hidden rounded-lg border border-border bg-black">
               <div className="relative aspect-[16/9] w-full">
                 <Image
                   src={shot.src}
@@ -104,7 +105,7 @@ export function CaseStudy({
                   sizes="(max-width: 768px) 100vw, 768px"
                 />
               </div>
-              <figcaption className="border-t border-border/40 px-4 py-3 text-sm text-muted-foreground">
+              <figcaption className="border-t border-border px-4 py-3 font-mono text-xs text-muted-foreground">
                 {shot.caption}
               </figcaption>
             </figure>
@@ -115,9 +116,7 @@ export function CaseStudy({
       <div className="space-y-10">
         {sections.map((section) => (
           <section key={section.heading}>
-            <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              {section.heading}
-            </h2>
+            <h2 className="label-mono">{section.heading}</h2>
             <p className="mt-3 text-base leading-7 text-foreground/90 whitespace-pre-line">
               {section.body}
             </p>
@@ -126,10 +125,8 @@ export function CaseStudy({
       </div>
 
       {installHint ? (
-        <aside className="mt-14 rounded-xl border border-border/50 bg-secondary/30 px-5 py-4">
-          <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Install
-          </h2>
+        <aside className="mt-14 rounded-lg border border-[var(--rule-strong)] bg-card px-5 py-4">
+          <h2 className="label-mono">Install</h2>
           <pre className="mt-3 overflow-x-auto font-mono text-sm text-foreground">
             <code>{installHint}</code>
           </pre>

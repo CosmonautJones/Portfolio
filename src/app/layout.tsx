@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Hanken_Grotesk, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { VisitorProvider } from "@/lib/visitor-context";
@@ -8,12 +8,15 @@ import { TerminalProvider } from "@/components/terminal/terminal-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import "./globals.css";
 
-// Body / UI — a clean, friendly grotesque with more character than Inter.
-const sans = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
-// Display / headings — distinctive editorial grotesque for big type moments.
-const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" });
-// Mono — real developer monospace for the game HUD, terminal, and code.
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
+// Body / UI: IBM Plex Sans, a nod to the enterprise systems Travis grew up on.
+const sans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-plex-sans", display: "swap" });
+// Display: Archivo with its width axis, set expanded like an equipment nameplate.
+const display = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo", display: "swap" });
+// Mono: labels, evidence tables, the terminal, and the game HUD.
+const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono", display: "swap" });
+
+const SITE_DESCRIPTION =
+  "Travis Jones is an AI engineer in Ann Arbor / Ypsilanti, Michigan. Eight years on manufacturing ERP software, now building MCP tools and supervised coding agents.";
 
 const TerminalSheet = dynamic(
   () => import("@/components/terminal/terminal-sheet").then((m) => ({ default: m.TerminalSheet })),
@@ -32,13 +35,13 @@ const LevelUpOverlay = dynamic(
 export const metadata: Metadata = {
   metadataBase: new URL("https://travisjohnjones.com"),
   title: {
-    default: "Travis Jones | Software Engineer",
+    default: "Travis Jones | AI Engineer",
     template: "%s | Travis Jones",
   },
-  description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "Travis Jones | Software Engineer",
-    description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
+    title: "Travis Jones | AI Engineer",
+    description: SITE_DESCRIPTION,
     url: "https://travisjohnjones.com",
     siteName: "Travis Jones",
     locale: "en_US",
@@ -46,8 +49,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Travis Jones | Software Engineer",
-    description: "Travis Jones: Software Engineer in Michigan. Eight years in enterprise software, .NET modernization, and practical AI tooling.",
+    title: "Travis Jones | AI Engineer",
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -64,6 +67,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `(function(){var s=localStorage.getItem('color-scheme');if(s&&['ocean','ember','emerald'].includes(s)){document.documentElement.classList.add('theme-'+s)}})()`,
           }}
         />
+        {/* Without JavaScript, scroll reveals never run; show their content instead. */}
+        <noscript>
+          <style>{`[style*="opacity:0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
       </head>
       <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>

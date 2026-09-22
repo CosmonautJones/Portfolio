@@ -115,16 +115,33 @@ describe("ProjectCard", () => {
     expect(wrapper).toBeDefined();
   });
 
-  it("renders without image using the gradient fallback", () => {
+  it("renders without image using a labeled typographic cover", () => {
     const noImage: Project = { ...baseProject, image: "" };
     const { container } = render(<ProjectCard project={noImage} />);
-    expect(container.querySelector(".project-gradient-1, .project-gradient-2")).not.toBeNull();
+    const cover = container.querySelector("[data-cover='fallback']");
+    expect(cover).not.toBeNull();
+    expect(cover?.textContent).toContain("React");
   });
 
   it("still renders under reduced motion", () => {
     reduced = true;
     render(<ProjectCard project={baseProject} />);
     expect(screen.getByText("Test Project")).toBeDefined();
+  });
+
+  it("renders identical markup whether or not reduced motion is on", () => {
+    reduced = false;
+    const first = render(<ProjectCard project={baseProject} />);
+    const motionHtml = first.container.innerHTML;
+    first.unmount();
+    reduced = true;
+    const second = render(<ProjectCard project={baseProject} />);
+    expect(second.container.innerHTML).toBe(motionHtml);
+  });
+
+  it("exposes the title as a heading for the page outline", () => {
+    render(<ProjectCard project={baseProject} />);
+    expect(screen.getByRole("heading", { level: 3, name: "Test Project" })).toBeDefined();
   });
 
   it("uses actionLabel on liveUrl and keeps GitHub as Code", () => {

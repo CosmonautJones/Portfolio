@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ArticleToMarkdownPage() {
   return (
     <article className="container mx-auto max-w-6xl px-6 py-16 sm:py-24">
-      <Link href="/work" className="mb-12 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Back to Work</Link>
+      <Link href="/work" className="mb-12 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Back to projects</Link>
       <header className="max-w-2xl">
         <div className="mb-6 flex items-center gap-3 text-sm text-muted-foreground"><FileText className="size-6 text-primary" aria-hidden="true" /> A small tool for keeping what matters</div>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Article to Markdown</h1>

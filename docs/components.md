@@ -56,8 +56,10 @@ All components live under `src/components/`. They are organized by feature domai
 
 | Component | Description |
 |---|---|
-| `color-scheme-picker.tsx` | Color scheme selector (ocean/ember/emerald) |
-| `footer.tsx` | Site footer with links |
+| `brand-mark.tsx` | The `tj` ligature logo; its square dot is the amber signal lamp. Mirrors `src/app/icon.svg` |
+| `color-scheme-picker.tsx` | Color scheme selector (ocean/ember/emerald); swaps only the signal color |
+| `footer.tsx` | Footer laid out like a drawing title block: name, role, location, status, contact |
+| `page-header.tsx` | Shared inner-page header: mono eyebrow, expanded display title, lede |
 | `mobile-nav.tsx` | Mobile hamburger navigation menu |
 | `navbar.tsx` | Top navigation bar with links, theme toggle, terminal toggle, user menu |
 
@@ -67,12 +69,14 @@ All components live under `src/components/`. They are organized by feature domai
 |---|---|
 | `about-preview.tsx` | Brief about section on home page |
 | `approach-section.tsx` | Development approach/philosophy section |
+| `contact-band.tsx` | Closing hire CTA with mailto link, copy button, and resume link |
 | `contact-form.tsx` | Contact form |
 | `experience-timeline.tsx` | Career timeline |
 | `featured-projects.tsx` | Featured projects grid on home page |
-| `hero-section.tsx` | Hero/intro section on home page |
+| `hero-section.tsx` | Home hero: name, role, and a lede whose claims carry numbered balloons that link to an evidence table (`PROOF_POINTS`). Server component, CSS-only entrance |
 | `project-card.tsx` | Card for displaying a portfolio project |
 | `skills-grid.tsx` | Skills display by category |
+| `skywatch-glint.tsx` | Hidden drifting light in the hero; click for the skywatch note |
 | `what-i-do.tsx` | Services/specialties section |
 
 ## Progression (`src/components/progression/`)
@@ -155,7 +159,7 @@ Props:
 - `duration`: number (seconds)
 - `className`: string
 
-Respects `prefers-reduced-motion` via `useReducedMotion()`.
+Reduced motion comes from `<MotionConfig reducedMotion="user">` in `MotionProvider`. The wrapper renders the same markup either way so hydration always matches the server.
 
 **`stagger-children.tsx`**
 

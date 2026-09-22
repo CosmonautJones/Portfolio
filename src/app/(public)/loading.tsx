@@ -1,9 +1,8 @@
-function CardSkeleton({ featured = false }: { featured?: boolean }) {
-  const heightClass = featured ? "h-56" : "h-48";
+function CardSkeleton() {
   return (
-    <div className="glass-card flex flex-col overflow-hidden rounded-xl">
+    <div className="glass-card flex flex-col overflow-hidden rounded-lg">
       {/* Image block */}
-      <div className={`${heightClass} w-full animate-pulse bg-muted/60`} />
+      <div className="aspect-[16/9] w-full animate-pulse bg-muted/60" />
       {/* Header bar */}
       <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
         <div className="h-5 w-2/5 animate-pulse rounded bg-muted/60" />
@@ -28,21 +27,17 @@ function CardSkeleton({ featured = false }: { featured?: boolean }) {
 export default function Loading() {
   return (
     <div className="container mx-auto px-6 py-16" aria-busy="true" aria-label="Loading content">
-      {/* Hero-ish block */}
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 py-12 text-center">
-        <div className="h-7 w-40 animate-pulse rounded-full bg-muted/40" />
-        <div className="h-14 w-3/4 animate-pulse rounded-lg bg-muted/60" />
+      {/* Page header block */}
+      <div className="flex max-w-3xl flex-col gap-5 border-b border-border py-12">
+        <div className="h-3 w-28 animate-pulse rounded bg-muted/60" />
+        <div className="h-14 w-3/4 animate-pulse rounded bg-muted/60" />
         <div className="h-5 w-2/3 animate-pulse rounded bg-muted/40" />
-        <div className="mt-4 flex gap-3">
-          <div className="h-11 w-36 animate-pulse rounded-full bg-muted/50" />
-          <div className="h-11 w-36 animate-pulse rounded-full bg-muted/40" />
-        </div>
       </div>
 
       {/* Grid of project-card skeletons */}
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <CardSkeleton key={i} featured={i < 2} />
+          <CardSkeleton key={i} />
         ))}
       </div>
     </div>

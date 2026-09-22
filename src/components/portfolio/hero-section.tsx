@@ -1,199 +1,119 @@
-"use client";
-
 import Link from "next/link";
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { SkywatchGlint } from "@/components/portfolio/skywatch-glint";
 import { PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { m, useReducedMotion, useMotionValue, useSpring, useTransform } from "motion/react";
 
-const ease = [0.16, 1, 0.3, 1] as const;
+function Claim({ n }: { n: 1 | 2 | 3 }) {
+  const proof = PROOF_POINTS[n - 1];
+  return (
+    <span className="whitespace-nowrap">
+      <span className="claim" data-claim={n}>
+        {proof.claim}
+      </span>
+      <a href={`#evidence-${n}`} className="balloon" data-claim={n} aria-label={`Evidence ${n}: ${proof.label}`}>
+        {n}
+      </a>
+    </span>
+  );
+}
+
+function rise(delayMs: number) {
+  return { animationDelay: `${delayMs}ms` };
+}
 
 export function HeroSection() {
-  const shouldReduce = useReducedMotion();
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Pointer position normalized to [-1, 1] from hero center, spring-smoothed.
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const springConfig = { stiffness: 80, damping: 20, mass: 0.5 };
-  const smoothX = useSpring(pointerX, springConfig);
-  const smoothY = useSpring(pointerY, springConfig);
-
-  // Blobs translate in opposite directions, small magnitude for subtlety.
-  const blob1X = useTransform(smoothX, [-1, 1], [-22, 22]);
-  const blob1Y = useTransform(smoothY, [-1, 1], [-18, 18]);
-  const blob2X = useTransform(smoothX, [-1, 1], [18, -18]);
-  const blob2Y = useTransform(smoothY, [-1, 1], [15, -15]);
-  const blob3X = useTransform(smoothX, [-1, 1], [12, -12]);
-  const blob3Y = useTransform(smoothY, [-1, 1], [-10, 10]);
-
-  function handlePointerMove(e: React.PointerEvent<HTMLElement>) {
-    if (shouldReduce) return;
-    const rect = sectionRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    pointerX.set(nx);
-    pointerY.set(ny);
-  }
-
-  function handlePointerLeave() {
-    pointerX.set(0);
-    pointerY.set(0);
-  }
-
-  function entry(delay: number) {
-    if (shouldReduce) return {};
-    return {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.7, delay, ease },
-    };
-  }
-
   return (
-    <section
-      ref={sectionRef}
-      aria-label="Hero"
-      className="relative flex min-h-[min(90dvh,44rem)] flex-col items-center justify-center px-6 pb-20 pt-20 sm:pt-24 text-center"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-    >
+    <section aria-label="Hero" className="hero relative overflow-hidden">
       <SkywatchGlint />
 
-      {/* Ambient glow — large, soft, slow-moving.
-          Outer m.div carries pointer parallax (transform); inner div carries the
-          CSS keyframe animation so the two transforms don't fight. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-50" aria-hidden="true">
-        <m.div
-          className="absolute -left-40 -top-40 h-[600px] w-[600px]"
-          style={shouldReduce ? undefined : { x: blob1X, y: blob1Y }}
-        >
-          <div
-            className="hero-glow hero-glow-1 h-full w-full"
-            style={{ position: "static", animation: "pulse-glow 10s ease-in-out infinite" }}
-          />
-        </m.div>
-        <m.div
-          className="absolute -bottom-40 -right-40 h-[500px] w-[500px]"
-          style={shouldReduce ? undefined : { x: blob2X, y: blob2Y }}
-        >
-          <div
-            className="hero-glow hero-glow-2 h-full w-full"
-            style={{ position: "static", animation: "pulse-glow 10s ease-in-out infinite 5s" }}
-          />
-        </m.div>
-        <m.div
-          className="absolute left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2"
-          style={shouldReduce ? undefined : { x: blob3X, y: blob3Y }}
-        >
-          <div
-            className="hero-glow hero-glow-3 h-full w-full"
-            style={{ position: "static", animation: "float 12s ease-in-out infinite" }}
-          />
-        </m.div>
-      </div>
+      <div className="container relative z-[2] mx-auto px-6 pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pt-24">
+        <p className="hero-rise label-mono flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3" style={rise(0)}>
+          <span className="text-foreground">{SITE_CONFIG.title}</span>
+          <span aria-hidden="true" className="hidden text-[var(--rule-strong)] sm:inline">/</span>
+          <span>{SITE_CONFIG.location}</span>
+        </p>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl">
-        {/* Pill badge */}
-        <m.div {...entry(0)}>
-          <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground backdrop-blur-md">
-            <span className="inline-block h-1.5 w-1.5 rounded-full accent-dot" aria-hidden="true" />
-            {SITE_CONFIG.title}
+        <h1 className="hero-rise hero-name font-display mt-6 text-foreground" style={rise(80)}>
+          Travis Jones
+        </h1>
+
+        <p
+          data-testid="hero-lede"
+          className="hero-rise mt-8 max-w-[44rem] text-pretty text-[clamp(1.2rem,2.1vw,1.6rem)] leading-[1.5] text-foreground/90"
+          style={rise(180)}
+        >
+          I connect AI to the <Claim n={1} /> companies already run on, with <Claim n={2} /> where it counts
+          and <Claim n={3} /> on what ships.
+        </p>
+
+        <div className="hero-rise mt-9 flex flex-wrap items-center gap-3" style={rise(280)}>
+          <Link
+            href="/work"
+            className="inline-flex h-12 items-center gap-2 rounded-md bg-foreground px-6 text-sm font-semibold text-background transition-opacity hover:opacity-85"
+          >
+            See the work
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/resume"
+            className="inline-flex h-12 items-center rounded-md border border-[var(--rule-strong)] px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            View resume
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex h-12 items-center px-3 text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            Get in touch
+          </Link>
+          <p className="label-mono flex basis-full items-center gap-2.5 pt-3 sm:ml-3 sm:basis-auto sm:border-l sm:border-[var(--rule-strong)] sm:pl-6 sm:pt-0">
+            <span className="signal-lamp" aria-hidden="true" />
+            {SITE_CONFIG.availability}
+          </p>
+        </div>
+
+        <div className="hero-rise mt-16 sm:mt-20" style={rise(380)}>
+          <div
+            aria-hidden="true"
+            className="label-mono hidden grid-cols-[3rem_minmax(14rem,18rem)_1fr_auto] gap-6 border-b border-[var(--rule-strong)] pb-3 md:grid"
+          >
+            <span>Item</span>
+            <span>Claim</span>
+            <span>Where it comes from</span>
+            <span />
           </div>
-        </m.div>
-
-        <m.h1
-          {...entry(0.1)}
-          className="gradient-text font-display text-[clamp(2.8rem,7vw,5.2rem)] font-extrabold leading-[0.98] tracking-tight"
-        >
-          Hi, I&apos;m Travis.
-        </m.h1>
-
-        {/* Tagline */}
-        <m.p
-          {...entry(0.2)}
-          className="mx-auto mt-5 max-w-2xl text-lg font-normal leading-relaxed text-foreground/80 sm:text-xl"
-        >
-          {SITE_CONFIG.tagline}
-        </m.p>
-
-        <m.p {...entry(0.25)} className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          {SITE_CONFIG.location}<br />{SITE_CONFIG.availability}
-        </m.p>
-
-        {/* CTA buttons */}
-        <m.div
-          {...entry(0.3)}
-          className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
-        >
-          <Button
-            asChild
-            size="lg"
-            className="btn-glow h-12 rounded-full bg-foreground px-8 text-background transition-all duration-300 hover:scale-[1.02] hover:opacity-90 active:scale-[0.98]"
-          >
-            <Link href="/work">
-              See the work
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            asChild
-            className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
-          >
-            <Link href="/resume">View resume</Link>
-          </Button>
-          <Link href="/contact" className="px-3 py-3 text-sm text-muted-foreground underline-offset-4 hover:underline">Get in touch</Link>
-        </m.div>
-
-        <m.div
-          {...entry(0.4)}
-          className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3"
-        >
-          {PROOF_POINTS.map((proof) => (
-            <Link
-              key={proof.href}
-              href={proof.href}
-              className="group border-t border-border/60 px-2 py-3 transition-colors hover:border-foreground/40"
-            >
-              <span className="block text-sm font-medium text-foreground transition-colors group-hover:underline">
-                {proof.label}
-              </span>
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {proof.detail}
-              </span>
-            </Link>
-          ))}
-        </m.div>
+          <ol aria-label="Evidence" className="divide-y divide-border border-b border-border">
+            {PROOF_POINTS.map((proof, index) => {
+              const n = index + 1;
+              return (
+                <li
+                  key={proof.href}
+                  id={`evidence-${n}`}
+                  data-claim={n}
+                  className="evidence-row grid grid-cols-[2.25rem_1fr] gap-x-4 gap-y-1 py-5 md:grid-cols-[3rem_minmax(14rem,18rem)_1fr_auto] md:items-baseline md:gap-6"
+                >
+                  <span className="balloon !ml-0 !align-baseline" aria-hidden="true">
+                    {n}
+                  </span>
+                  <p className="font-display text-[0.95rem] font-semibold tracking-tight text-foreground">
+                    {proof.label}
+                  </p>
+                  <p className="col-start-2 text-sm leading-relaxed text-muted-foreground md:col-start-auto">
+                    {proof.detail}
+                  </p>
+                  <Link
+                    href={proof.href}
+                    className="col-start-2 mt-2 inline-flex items-center gap-1 justify-self-start text-sm font-medium text-foreground underline decoration-[var(--rule-strong)] underline-offset-4 transition-colors hover:decoration-[var(--signal)] md:col-start-auto md:mt-0 md:whitespace-nowrap"
+                  >
+                    {proof.linkLabel}
+                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
-
-      {/* Scroll cue — hints there's more below the full-height hero */}
-      {shouldReduce ? (
-        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-muted-foreground/60" aria-hidden="true">
-          <ChevronDown className="h-6 w-6" />
-        </div>
-      ) : (
-        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-muted-foreground/60" aria-hidden="true">
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: [0, 8, 0] }}
-            transition={{
-              opacity: { duration: 0.7, delay: 0.6, ease },
-              y: { duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.6 },
-            }}
-          >
-            <ChevronDown className="h-6 w-6" />
-          </m.div>
-        </div>
-      )}
-
-      {/* Bottom fade — seamless transition to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

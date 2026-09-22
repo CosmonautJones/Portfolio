@@ -65,6 +65,14 @@ describe("portfolio artwork", () => {
     }
   });
 
+  it("leads every featured project with a real product image instead of a placeholder", () => {
+    const featured = PROJECTS.filter((project) => project.featured);
+    expect(featured.length).toBeGreaterThan(0);
+    for (const project of featured) {
+      expect(project.image, `${project.title} needs a product image`).not.toBe("");
+    }
+  });
+
   it("publishes the personal Travis Jones icon set", () => {
     expect(existsSync(path.join(process.cwd(), "src", "app", "icon.svg"))).toBe(true);
     expect(existsSync(path.join(process.cwd(), "src", "app", "apple-icon.png"))).toBe(true);

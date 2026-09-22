@@ -24,7 +24,7 @@ export default function WholePageCapturePage() {
     <article className="container mx-auto max-w-4xl px-6 py-16 sm:py-24">
       <Link href="/work" className="mb-12 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" aria-hidden="true" />
-        Back to Work
+        Back to projects
       </Link>
 
       <header className="max-w-2xl">

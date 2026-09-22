@@ -1,12 +1,14 @@
 "use client";
 
-import { LazyMotion, domAnimation } from "motion/react";
+import { LazyMotion, MotionConfig, domAnimation } from "motion/react";
 import type { ReactNode } from "react";
 
 export function MotionProvider({ children }: { children: ReactNode }) {
   return (
     <LazyMotion features={domAnimation} strict={false}>
-      {children}
+      {/* "user" drops transform animations for visitors who prefer reduced
+          motion while keeping markup identical to the server render. */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </LazyMotion>
   );
 }

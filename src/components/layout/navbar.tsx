@@ -41,30 +41,31 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-lg backdrop-saturate-150">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/85 backdrop-blur-md">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground"
       >
         Skip to content
       </a>
-      <div className="container mx-auto flex h-14 items-center justify-between px-6">
+      <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground transition-opacity hover:opacity-70"
+          className="flex items-center gap-2.5 text-foreground transition-opacity hover:opacity-80"
         >
-          <BrandMark />{SITE_CONFIG.name}
+          <BrandMark />
+          <span className="font-display text-[0.95rem] font-bold tracking-tight">{SITE_CONFIG.name}</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {NAV_LINKS.map((link) => {
-            const isActive =
-              pathname === link.href ||
-              (link.href !== "/" && pathname.startsWith(link.href));
+        <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
+          {NAV_LINKS.filter((link) => link.href !== "/").map((link) => {
+            // Home is filtered out above (the logo links home), so a prefix match is safe.
+            const isActive = pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative text-sm font-medium transition-colors duration-200",
                   isActive
@@ -75,7 +76,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
                 {link.label}
                 {isActive && (
                   <div
-                    className="absolute -bottom-[19px] left-0 right-0 h-[2px] nav-underline"
+                    className="absolute -bottom-[22px] left-0 right-0 h-[2px] nav-underline"
                   />
                 )}
               </Link>

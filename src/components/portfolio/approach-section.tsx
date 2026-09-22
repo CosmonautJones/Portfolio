@@ -29,16 +29,14 @@ export function ApproachSection() {
   return (
     <section aria-label="How I Work">
       <AnimateOnScroll>
-        <h2 className="mb-8 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          How I Work
-        </h2>
+        <h2 className="label-mono mb-8">How I work</h2>
       </AnimateOnScroll>
-      <StaggerChildren className="grid gap-6 sm:grid-cols-3">
+      <StaggerChildren className="grid gap-8 sm:grid-cols-3 sm:gap-6">
         {principles.map((item) => (
           <StaggerItem key={item.title}>
-            <div className="glass-card gradient-border-glow rounded-2xl p-6">
-              <item.icon className="mb-4 h-8 w-8 text-muted-foreground" />
-              <h3 className="mb-2 text-lg font-semibold tracking-tight">
+            <div className="border-t border-[var(--rule-strong)] pt-5">
+              <item.icon className="mb-4 h-5 w-5 text-[var(--signal)]" aria-hidden="true" />
+              <h3 className="font-display mb-2 text-lg font-bold tracking-tight">
                 {item.title}
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">

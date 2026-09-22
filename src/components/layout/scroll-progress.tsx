@@ -23,7 +23,7 @@ export function ScrollProgress() {
     <m.div
       aria-hidden="true"
       style={{ scaleX, transformOrigin: "left" }}
-      className="scroll-progress-fill pointer-events-none fixed inset-x-0 top-14 z-40 h-[3px] origin-left"
+      className="scroll-progress-fill pointer-events-none fixed inset-x-0 top-16 z-40 h-[2px] origin-left"
     />
   );
 }

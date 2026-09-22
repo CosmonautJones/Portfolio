@@ -1,76 +1,83 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
-import { Github, Linkedin, Twitter } from "lucide-react";
 
 const socials = [
-  { href: SITE_CONFIG.github, icon: Github, label: "GitHub" },
-  { href: SITE_CONFIG.linkedin, icon: Linkedin, label: "LinkedIn" },
-  { href: SITE_CONFIG.twitter, icon: Twitter, label: "Twitter" },
+  { href: SITE_CONFIG.github, label: "GitHub" },
+  { href: SITE_CONFIG.linkedin, label: "LinkedIn" },
+  { href: SITE_CONFIG.twitter, label: "X" },
 ];
 
+function Cell({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`border-[var(--rule-strong)] p-4 sm:p-5 ${className}`}>
+      <p className="label-mono">{label}</p>
+      <div className="mt-2 text-sm text-foreground">{children}</div>
+    </div>
+  );
+}
+
+/** Laid out like the title block in the corner of an engineering drawing. */
 export function Footer() {
   return (
-    <footer className="border-t border-border/40 py-12 sm:py-16">
+    <footer className="mt-8 pb-10">
       <div className="container mx-auto px-6">
-        {/* 3-column grid */}
-        <div className="grid gap-10 sm:grid-cols-3">
-          {/* Col 1: Branding */}
-          <div>
-            <p className="text-sm font-bold">{SITE_CONFIG.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {SITE_CONFIG.location}
-            </p>
+        <div className="grid border border-[var(--rule-strong)] sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.1fr_1.2fr]">
+          <div className="flex items-center gap-3 border-b border-[var(--rule-strong)] p-4 sm:p-5 lg:border-b-0 lg:border-r">
+            <BrandMark className="h-9 w-9" />
+            <div>
+              <p className="font-display text-base font-bold tracking-tight">{SITE_CONFIG.name}</p>
+              <p className="text-sm text-muted-foreground">{SITE_CONFIG.title}</p>
+            </div>
           </div>
+          <Cell label="Location" className="border-b sm:border-l lg:border-b-0 lg:border-l-0 lg:border-r">
+            {SITE_CONFIG.location}
+          </Cell>
+          <Cell label="Status" className="border-b sm:border-b-0 lg:border-r">
+            <span className="inline-flex items-center gap-2.5">
+              <span className="signal-lamp" aria-hidden="true" />
+              <span>{SITE_CONFIG.availability}</span>
+            </span>
+          </Cell>
+          <Cell label="Contact" className="sm:border-l lg:border-l-0">
+            <a
+              href={`mailto:${SITE_CONFIG.email}`}
+              className="break-all underline decoration-[var(--rule-strong)] underline-offset-4 transition-colors hover:decoration-[var(--signal)]"
+            >
+              {SITE_CONFIG.email}
+            </a>
+          </Cell>
+        </div>
 
-          {/* Col 2: Pages */}
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Pages
-            </p>
-            <ul className="space-y-2">
+        <div className="flex flex-col gap-4 border-x border-b border-[var(--rule-strong)] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <nav aria-label="Footer">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
               {NAV_LINKS.map(({ href, label }) => (
                 <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
-                  >
+                  <Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
-
-          {/* Col 3: Connect */}
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Connect
-            </p>
-            <div className="flex gap-3">
-              {socials.map(({ href, icon: Icon, label }) => (
+          </nav>
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {socials.map(({ href, label }) => (
+              <li key={label}>
                 <a
-                  key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="gradient-border-glow flex h-9 w-9 items-center justify-center rounded-full border border-border/50 text-muted-foreground/60 transition-all duration-300 hover:border-border hover:bg-secondary/80 hover:text-foreground"
-                  aria-label={label}
+                  className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <Icon className="h-4 w-4" />
+                  {label}
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="mt-12 border-t border-border/30 pt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} {SITE_CONFIG.name}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Built with Next.js &amp; Supabase
-          </p>
+              </li>
+            ))}
+            <li className="label-mono">&copy; {new Date().getFullYear()}</li>
+          </ul>
         </div>
       </div>
     </footer>

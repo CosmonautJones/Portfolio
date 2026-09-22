@@ -1,45 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 export function AboutPreview() {
   return (
-    <section aria-label="About" className="container mx-auto max-w-3xl px-6 py-16 sm:py-24">
-      <AnimateOnScroll>
-        <h2 className="mb-12 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          About
-        </h2>
-      </AnimateOnScroll>
-      <AnimateOnScroll delay={0.05}>
-        <blockquote className="font-display border-l-4 border-accent-glow pl-6 text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
-          &ldquo;I like figuring out how a system really works, then making it
-          easier for the next person to use, understand, or change.&rdquo;
-        </blockquote>
-      </AnimateOnScroll>
-      <AnimateOnScroll delay={0.1}>
-        <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-          Outside work, I’m a dad settling into Michigan, an electronics tinkerer,
-          and someone who tends to learn by taking things apart and building them back up.
-        </p>
-      </AnimateOnScroll>
-      <AnimateOnScroll delay={0.15}>
-        <div className="mt-8">
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
-          >
-            <Link href="/about">
+    <section aria-labelledby="about-preview" className="container mx-auto px-6 py-16 sm:py-24">
+      <div className="grid gap-10 border-t border-[var(--rule-strong)] pt-10 md:grid-cols-[minmax(10rem,14rem)_1fr] md:gap-16">
+        <AnimateOnScroll>
+          <h2 id="about-preview" className="label-mono">
+            About
+          </h2>
+        </AnimateOnScroll>
+        <div className="max-w-3xl">
+          <AnimateOnScroll delay={0.05}>
+            <blockquote className="font-display text-2xl font-semibold leading-snug tracking-tight text-foreground sm:text-[2rem]">
+              &ldquo;I like figuring out how a system really works, then making it
+              easier for the next person to use, understand, or change.&rdquo;
+            </blockquote>
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={0.1}>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+              Outside work, I’m a dad settling into Michigan, an electronics tinkerer,
+              and someone who tends to learn by taking things apart and building them back up.
+            </p>
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={0.15}>
+            <Link
+              href="/about"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-foreground underline decoration-[var(--rule-strong)] underline-offset-4 transition-colors hover:decoration-[var(--signal)]"
+            >
               More about me
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-          </Button>
+          </AnimateOnScroll>
         </div>
-      </AnimateOnScroll>
+      </div>
     </section>
   );
 }

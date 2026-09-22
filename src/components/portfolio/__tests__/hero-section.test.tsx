@@ -1,58 +1,11 @@
 /** @vitest-environment jsdom */
-import React, { forwardRef, createElement } from "react";
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-
-const MOTION_PROPS = new Set([
-  "initial",
-  "animate",
-  "exit",
-  "transition",
-  "variants",
-  "whileHover",
-  "whileTap",
-  "whileInView",
-]);
-
-let reduced = false;
-
-vi.mock("motion/react", () => {
-  function createMotionComponent(tag: string) {
-    return forwardRef(function MotionComponent(
-      props: Record<string, unknown>,
-      ref: React.Ref<HTMLElement>
-    ) {
-      const filtered: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(props)) {
-        if (!MOTION_PROPS.has(k)) filtered[k] = v;
-      }
-      // motion style may contain MotionValue objects; strip to plain object
-      if (filtered.style && typeof filtered.style === "object") {
-        filtered.style = {};
-      }
-      return createElement(tag, { ...filtered, ref });
-    });
-  }
-  const m = new Proxy(
-    {},
-    { get: (_t, prop: string) => createMotionComponent(prop) }
-  );
-  const mv = (v: number) => ({ get: () => v, set: vi.fn() });
-  return {
-    m,
-    useReducedMotion: () => reduced,
-    useMotionValue: (v: number) => mv(v),
-    useSpring: (v: unknown) => v,
-    useTransform: () => mv(0),
-  };
-});
-
+import React from "react";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { HeroSection } from "../hero-section";
+import { PROOF_POINTS } from "@/lib/constants";
 
 describe("HeroSection", () => {
-  beforeEach(() => {
-    reduced = false;
-  });
   afterEach(cleanup);
 
   it("renders the hero with an accessible label", () => {
@@ -60,44 +13,53 @@ describe("HeroSection", () => {
     expect(screen.getByRole("region", { name: "Hero" })).toBeDefined();
   });
 
-  it("renders CTA links", () => {
+  it("leads with the name and role instead of a greeting", () => {
     render(<HeroSection />);
-    expect(screen.getByText("See the work")).toBeDefined();
-    expect(screen.getByRole("link", { name: "View resume" }).getAttribute("href")).toBe("/resume");
+    expect(screen.getByRole("heading", { level: 1, name: "Travis Jones" })).toBeDefined();
+    expect(screen.getByText("AI Engineer")).toBeDefined();
+    expect(screen.queryByText(/Hi, I.m Travis/i)).toBeNull();
   });
 
-  it("surfaces concrete proof paths from the hero", () => {
+  it("establishes current location without the old Texas address", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Enterprise experience")).toBeDefined();
-    expect(screen.getByText("Practical AI tooling")).toBeDefined();
-    expect(screen.getByText("Explore the projects")).toBeDefined();
-  });
-
-  it("establishes current location and engineering experience", () => {
-    render(<HeroSection />);
-    expect(screen.getByText(/eight years building and modernizing enterprise software/i)).toBeDefined();
     expect(screen.getByText(/Ann Arbor \/ Ypsilanti, Michigan/i)).toBeDefined();
-    expect(screen.getByRole("link", { name: /enterprise experience/i }).getAttribute("href")).toBe("/about#experience");
     expect(screen.queryByText(/Spring, TX/i)).toBeNull();
   });
 
-  it("renders a scroll cue chevron", () => {
-    const { container } = render(<HeroSection />);
-    // lucide ChevronDown renders an svg with class lucide-chevron-down
-    expect(container.querySelector("svg.lucide-chevron-down")).not.toBeNull();
+  it("states what Travis builds in plain terms", () => {
+    render(<HeroSection />);
+    const lede = screen.getByTestId("hero-lede");
+    expect(lede.textContent).toMatch(/I connect AI to the business software/i);
+    expect(lede.textContent).toMatch(/companies already run on/i);
+    expect(lede.textContent).toMatch(/read-only access/i);
+    expect(lede.textContent).toMatch(/a person signing off/i);
   });
 
-  it("handles pointer move without crashing", () => {
-    const { container } = render(<HeroSection />);
-    const section = container.querySelector("section")!;
-    fireEvent.pointerMove(section, { clientX: 100, clientY: 100 });
-    fireEvent.pointerLeave(section);
-    expect(section).toBeDefined();
+  it("renders CTA links", () => {
+    render(<HeroSection />);
+    expect(screen.getByRole("link", { name: /see the work/i }).getAttribute("href")).toBe("/work");
+    expect(screen.getByRole("link", { name: "View resume" }).getAttribute("href")).toBe("/resume");
+    expect(screen.getByRole("link", { name: /get in touch/i }).getAttribute("href")).toBe("/contact");
   });
 
-  it("renders a static scroll cue under reduced motion", () => {
-    reduced = true;
-    const { container } = render(<HeroSection />);
-    expect(container.querySelector("svg.lucide-chevron-down")).not.toBeNull();
+  it("backs every claim in the lede with a numbered evidence row", () => {
+    render(<HeroSection />);
+    const list = screen.getByRole("list", { name: "Evidence" });
+    const rows = within(list).getAllByRole("listitem");
+    expect(rows).toHaveLength(PROOF_POINTS.length);
+
+    PROOF_POINTS.forEach((proof, index) => {
+      const n = index + 1;
+      const balloon = screen.getByRole("link", { name: `Evidence ${n}: ${proof.label}` });
+      expect(balloon.getAttribute("href")).toBe(`#evidence-${n}`);
+      expect(rows[index].id).toBe(`evidence-${n}`);
+      expect(within(rows[index]).getByRole("link").getAttribute("href")).toBe(proof.href);
+    });
+  });
+
+  it("links the evidence to experience, the knowledge tool, and the agent case study", () => {
+    render(<HeroSection />);
+    const hrefs = PROOF_POINTS.map((proof) => proof.href);
+    expect(hrefs).toEqual(["/about#experience", "/about#knowledge-tooling", "/work/mission-control"]);
   });
 });

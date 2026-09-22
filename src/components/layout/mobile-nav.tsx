@@ -31,20 +31,17 @@ export function MobileNav() {
             Choose a page to continue exploring the portfolio.
           </SheetDescription>
         </SheetHeader>
-        <nav className="mt-8 flex flex-col gap-4">
+        <nav aria-label="Mobile" className="mt-12 flex flex-col gap-5 px-6">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-lg font-medium"
+              className="font-display text-2xl font-bold tracking-tight"
               onClick={() => setOpen(false)}
             >
               {link.label}
             </Link>
           ))}
-          <Link href="/tools" className="text-lg font-medium" onClick={() => setOpen(false)}>
-            Tools
-          </Link>
         </nav>
       </SheetContent>
     </Sheet>

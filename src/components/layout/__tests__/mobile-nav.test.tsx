@@ -18,4 +18,14 @@ describe("MobileNav", () => {
     expect(screen.getByRole("dialog", { name: "Site navigation" })).toBeDefined();
     expect(screen.getByText("Choose a page to continue exploring the portfolio.")).toBeDefined();
   });
+
+  it("does not send visitors to the sign-in-only tools hub", async () => {
+    const user = userEvent.setup();
+    render(<MobileNav />);
+
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+
+    expect(screen.queryByRole("link", { name: "Tools" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Projects" }).getAttribute("href")).toBe("/work");
+  });
 });

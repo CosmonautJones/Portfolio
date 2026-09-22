@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { m, useInView, useReducedMotion } from "motion/react";
+import { m, useInView } from "motion/react";
 import type { ReactNode } from "react";
 
 type AnimationVariant =
@@ -55,12 +55,10 @@ export function AnimateOnScroll({
 }: AnimateOnScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, amount });
-  const shouldReduce = useReducedMotion();
 
-  if (shouldReduce) {
-    return <div className={className}>{children}</div>;
-  }
-
+  // Reduced motion is handled by <MotionConfig reducedMotion="user"> in
+  // MotionProvider. Branching the markup here would diverge from the server
+  // render and leave the content stuck at opacity 0 after hydration.
   return (
     <m.div
       ref={ref}

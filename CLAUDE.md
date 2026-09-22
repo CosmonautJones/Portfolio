@@ -85,7 +85,8 @@ The game has its own in-game level system (6 levels at score thresholds) separat
 ### Animation Patterns
 
 Uses `motion/react` (Motion library, not legacy framer-motion). Two reusable wrappers:
-- **`src/components/ui/animate-on-scroll.tsx`** — `useInView`-triggered animations with 5 variants (fade-up, fade-in, scale-in, slide-in-left/right). Respects `prefers-reduced-motion` via `useReducedMotion()`.
+- **`src/components/ui/animate-on-scroll.tsx`** — `useInView`-triggered animations with 5 variants (fade-up, fade-in, scale-in, slide-in-left/right). Reduced motion is handled globally by `<MotionConfig reducedMotion="user">` in `MotionProvider`.
+- **Never branch rendered markup on `useReducedMotion()`.** It returns `null` on the server, so a client that renders a different tree for reduced motion fails hydration and React keeps the server's inline `opacity: 0`, leaving content invisible (this shipped once and hid the About page). Use it only inside event handlers, or rely on `MotionConfig` and the global reduced-motion CSS rule. `motion-wrappers.test.tsx` pins this.
 - **`src/components/ui/stagger-children.tsx`** — Container/child pair for staggered entrance animations.
 
 Easing constant used throughout: `[0.16, 1, 0.3, 1]`.

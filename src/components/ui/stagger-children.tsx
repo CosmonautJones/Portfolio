@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { m, useInView, useReducedMotion } from "motion/react";
+import { m, useInView } from "motion/react";
 import type { ReactNode } from "react";
 
 interface StaggerChildrenProps {
@@ -21,12 +21,9 @@ export function StaggerChildren({
 }: StaggerChildrenProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, amount });
-  const shouldReduce = useReducedMotion();
 
-  if (shouldReduce) {
-    return <div className={className}>{children}</div>;
-  }
-
+  // See AnimateOnScroll: reduced motion comes from MotionConfig, never from
+  // a markup branch that would disagree with the server render.
   return (
     <m.div
       ref={ref}

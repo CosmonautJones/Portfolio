@@ -6,19 +6,17 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 
 export function SkillsGrid() {
   return (
-    <section aria-label="Skills" className="space-y-6">
+    <section aria-label="Skills" className="grid gap-8 sm:grid-cols-3 sm:gap-6">
       {SKILL_CATEGORIES.map((category) => (
         <AnimateOnScroll key={category.label}>
-          <div>
-            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="border-t border-[var(--rule-strong)] pt-5">
+            <h3 className="font-display mb-4 text-base font-bold tracking-tight text-foreground">
               {category.label}
             </h3>
-            <StaggerChildren className="flex flex-wrap gap-2.5" staggerDelay={0.03}>
+            <StaggerChildren className="space-y-2" staggerDelay={0.03}>
               {category.skills.map((skill) => (
                 <StaggerItem key={skill}>
-                  <span className="rounded-full border border-border/50 bg-secondary/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:bg-secondary hover:text-foreground">
-                    {skill}
-                  </span>
+                  <span className="block font-mono text-sm text-muted-foreground">{skill}</span>
                 </StaggerItem>
               ))}
             </StaggerChildren>

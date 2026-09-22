@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/portfolio/project-card";
 import { PROJECTS } from "@/lib/constants";
 import { ArrowRight } from "lucide-react";
@@ -12,40 +11,34 @@ export function FeaturedProjects() {
   const featured = PROJECTS.filter((p) => p.featured);
 
   return (
-    <section aria-label="Featured Work" className="container mx-auto px-6 py-16 sm:py-24">
+    <section aria-labelledby="selected-work" className="container mx-auto px-6 py-16 sm:py-24">
       <AnimateOnScroll>
-        <div className="mb-12 max-w-2xl">
-          <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            A few projects
-          </h2>
-          <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Small tools with a clear job.
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Try a browser tool, install a utility, or inspect how it works. Each project explains what you can use today.
-          </p>
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-[var(--rule-strong)] pb-6">
+          <div className="max-w-2xl">
+            <p className="label-mono">Selected work</p>
+            <h2 id="selected-work" className="font-display mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Running today.
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+              Open it in the browser, install it, or read the source. Each card lists what works now.
+            </p>
+          </div>
+          <Link
+            href="/work"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-foreground underline decoration-[var(--rule-strong)] underline-offset-4 transition-colors hover:decoration-[var(--signal)]"
+          >
+            All {PROJECTS.length} projects
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
       </AnimateOnScroll>
-      <StaggerChildren className="grid gap-6 md:grid-cols-3">
+      <StaggerChildren className="grid gap-6 md:grid-cols-2">
         {featured.slice(0, 4).map((project, index) => (
           <StaggerItem key={project.title}>
             <ProjectCard project={project} featured priority={index < 2} />
           </StaggerItem>
         ))}
       </StaggerChildren>
-      <AnimateOnScroll delay={0.3} className="mt-12 text-center">
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="btn-glow h-12 rounded-full border-border/50 px-8 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/80 active:scale-[0.98]"
-        >
-          <Link href="/work">
-            See more work
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      </AnimateOnScroll>
     </section>
   );
 }
