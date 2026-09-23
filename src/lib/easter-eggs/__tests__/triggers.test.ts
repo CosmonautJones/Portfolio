@@ -5,6 +5,7 @@ import {
   shouldUnlockCartographer,
   shouldUnlockRoadScholar,
   isCanvasFull,
+  isPixelPerfectCanvas,
 } from "../triggers";
 import { getAllEasterEggs } from "../registry";
 
@@ -76,6 +77,18 @@ describe("easter-egg / progression triggers", () => {
 
     it("returns false for an empty grid", () => {
       expect(isCanvasFull([])).toBe(false);
+    });
+  });
+
+  describe("isPixelPerfectCanvas", () => {
+    it("rejects a full canvas that is not 32x32", () => {
+      const grid = Array.from({ length: 8 }, () => Array(8).fill(1));
+      expect(isPixelPerfectCanvas(grid, 8)).toBe(false);
+    });
+
+    it("accepts a fully painted 32x32 canvas", () => {
+      const grid = Array.from({ length: 32 }, () => Array(32).fill(2));
+      expect(isPixelPerfectCanvas(grid, 32)).toBe(true);
     });
   });
 });

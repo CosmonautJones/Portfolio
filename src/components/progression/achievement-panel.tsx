@@ -19,6 +19,7 @@ import {
   getSiteAchievements,
   getGameAchievements,
 } from "@/lib/achievements";
+import { AchievementTracker } from "@/lib/game/achievement-tracker";
 import type { Achievement } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -82,12 +83,17 @@ function AchievementGrid({
 
 export function AchievementPanel() {
   const { profile, isAuthenticated, loading } = useVisitor();
-  const unlockedIds = useMemo(() => new Set(profile?.achievements ?? []), [profile?.achievements]);
+  const unlockedIds = useMemo(() => {
+    const fromProfile = profile?.achievements ?? [];
+    const fromGame =
+      typeof window === "undefined" ? [] : AchievementTracker.loadUnlocked();
+    return new Set([...fromProfile, ...fromGame]);
+  }, [profile?.achievements]);
 
   const siteAchievements = useMemo(() => getSiteAchievements(), []);
   const gameAchievements = useMemo(() => getGameAchievements(), []);
 
-  if (!isAuthenticated || loading) return null;
+  if (loading || !profile) return null;
 
   const unlockedCount = unlockedIds.size;
   const totalCount = getTotalAchievementCount();
@@ -122,6 +128,11 @@ export function AchievementPanel() {
             {profile && (
               <span className="ml-2 text-accent-glow">
                 &middot; Level {profile.level} &middot; {profile.title}
+              </span>
+            )}
+            {!isAuthenticated && (
+              <span className="mt-1 block text-[11px]">
+                Saved on this device. Sign in to sync across devices.
               </span>
             )}
           </SheetDescription>

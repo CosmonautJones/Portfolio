@@ -34,3 +34,8 @@ export function isCanvasFull(grid: number[][]): boolean {
   if (grid.length === 0) return false;
   return grid.every((row) => row.length > 0 && row.every((cell) => cell !== 0));
 }
+
+/** Pixel Perfect is specifically a filled 32x32 canvas. */
+export function isPixelPerfectCanvas(grid: number[][], gridSize: number): boolean {
+  return gridSize === 32 && grid.length === 32 && isCanvasFull(grid);
+}

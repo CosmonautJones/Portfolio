@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { X } from "lucide-react";
 
 const STORAGE_KEY = "adventure-welcomed";
@@ -25,6 +26,8 @@ export function WelcomeBanner() {
     } catch {
       return;
     }
+
+    if (!hasSupabaseConfig()) return;
 
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {

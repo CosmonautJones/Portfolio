@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
+import { ProjectViewTracker } from "@/components/portfolio/project-view-tracker";
 
 const demos: Record<string, ComponentType> = {};
 
@@ -45,5 +46,10 @@ demos["table-stakes"] = TableStakes;
 export function DemoLoader({ slug }: { slug: string }) {
   const DemoComponent = demos[slug];
   if (!DemoComponent) return null;
-  return <DemoComponent />;
+  return (
+    <>
+      <ProjectViewTracker projectKey={slug} />
+      <DemoComponent />
+    </>
+  );
 }
