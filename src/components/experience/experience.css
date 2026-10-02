@@ -1,0 +1,50 @@
+.cosmic-experience { position: relative; isolation: isolate; overflow: hidden; background: #090f19; color: #e7edf1; min-height: 100vh; padding: clamp(24px, 5vw, 80px); }
+.cosmic-experience a, .cosmic-experience button { color: inherit; }
+.cosmic-experience button { cursor: pointer; }
+.cosmic-experience :focus-visible { outline: 2px solid #b2e3de; outline-offset: 5px; }
+.cosmic-atmosphere { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 30% 40%, #17303560, transparent 65%); }
+.cosmic-header { display: flex; justify-content: space-between; gap: 24px; font-size: 13px; }
+.cosmic-label { font-family: monospace; letter-spacing: .16em; font-size: 11px; color: #9eb8c5; }
+.cosmic-intro { max-width: 720px; margin: 80px 0 48px; }
+.cosmic-intro h1 { font-size: clamp(40px, 6vw, 80px); letter-spacing: -.05em; line-height: 1.1; margin: 20px 0; font-weight: 400; }
+.cosmic-intro > p:last-child { max-width: 510px; line-height: 1.8; color: #aabac8; }
+.cosmic-modes, .cosmic-layers { display: flex; flex-wrap: wrap; gap: 8px; }
+.cosmic-modes button, .cosmic-layers button { padding: 12px 18px; border: 1px solid #afc9d22b; border-radius: 30px; font: 12px monospace; background: transparent; transition: background .6s, border-color .6s; }
+.cosmic-modes button[aria-pressed=true], .cosmic-layers button[aria-pressed=true] { background: #b0e4dc18; border-color: #9bcac3; }
+.cosmic-caption { color: #aabac8; font-size: 14px; margin: 24px 0; }
+.cosmic-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; }
+.cosmic-stage { min-height: 650px; position: relative; border-top: 1px solid #afc9d22b; transition: background 1.2s; }
+.cosmic-core { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 0 24px; }
+.cosmic-node { display: flex; gap: 12px; align-items: center; text-align: left; background: transparent; border: 0; padding: 16px 0; font-size: 14px; transition: left 1.2s ease, top 1.2s ease, opacity .6s, color .6s; }
+.cosmic-node small { display: block; font: 9px monospace; letter-spacing: .08em; color: #8fa6b6; margin-bottom: 6px; }
+.cosmic-core .cosmic-node { border-bottom: 1px solid #afc9d22b; }
+.cosmic-jac .cosmic-node, .cosmic-cosmos .cosmic-node { position: absolute; transform: translate(-50%, -50%); width: 130px; font-size: 12px; opacity: .5; }
+.cosmic-jac .connected, .cosmic-cosmos .connected { opacity: 1; color: #c9ede7; }
+.cosmic-star { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: #8da9bf; transition: box-shadow .6s; }
+.cosmic-node[aria-pressed=true] .cosmic-star { background: #d8fff2; box-shadow: 0 0 18px #a6e7dc; }
+.cosmic-cosmos .cosmic-star { animation: cosmic-breathe 9s ease-in-out infinite alternate; }
+.cosmic-edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.cosmic-edges line { stroke: #abc9da; stroke-width: .1; opacity: .07; transition: opacity .6s; }
+.cosmic-edges .lit { opacity: .45; }
+.cosmic-detail { border-top: 1px solid #afc9d22b; padding-top: 24px; }
+.cosmic-detail h2 { font-size: 26px; font-weight: 400; margin: 20px 0; }
+.cosmic-layers button { padding: 8px 12px; }
+.cosmic-detail > p { min-height: 130px; color: #b2c1cb; line-height: 1.8; font-size: 14px; margin: 24px 0; }
+.cosmic-tags { display: flex; flex-wrap: wrap; gap: 12px; color: #9fb4c2; font: 11px monospace; }
+.cosmic-detail > a { display: block; font-size: 13px; margin-top: 18px; }
+.cosmic-proof { padding: 16px 0; border-bottom: 1px solid #afc9d22b; }
+.cosmic-relations { margin-top: 36px; }
+.cosmic-relations h3 { font: 11px monospace; color: #9fb4c2; margin-bottom: 16px; }
+.cosmic-relations button { display: block; text-align: left; padding: 10px 0; background: transparent; border: 0; font-size: 12px; }
+.cosmic-relations small { display: block; color: #8fa6b6; margin-top: 4px; }
+.cosmic-terminal { padding: 24px 0; font: 13px monospace; }
+.cosmic-terminal pre { white-space: pre-wrap; overflow-wrap: anywhere; height: 420px; overflow-y: auto; color: #bce0d6; }
+.cosmic-terminal form { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.cosmic-terminal input { background: #ffffff08; color: #e7edf1; min-width: 100px; flex: 1; padding: 8px; border-bottom: 1px solid #9fb4c2; }
+.cosmic-terminal button { padding: 8px 12px; }
+.cosmic-footnote { border-top: 1px solid #afc9d22b; margin-top: 48px; padding-top: 24px; color: #9fb4c2; font-size: 12px; display: flex; justify-content: space-between; gap: 16px; }
+@keyframes cosmic-breathe { from { opacity: .5; } to { opacity: 1; } }
+@media (max-width: 900px) { .cosmic-workspace { grid-template-columns: 1fr; } .cosmic-stage { min-height: 700px; } .cosmic-detail > p { min-height: auto; } }
+@media (max-width: 540px) { .cosmic-intro { margin-top: 56px; } .cosmic-core { grid-template-columns: 1fr; } .cosmic-jac .cosmic-node, .cosmic-cosmos .cosmic-node { width: 78px; font-size: 10px; gap: 5px; } .cosmic-node small { font-size: 8px; } .cosmic-modes button { padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .cosmic-experience *, .cosmic-experience *::before, .cosmic-experience *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 540px) { .cosmic-jac, .cosmic-cosmos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 12px 20px; padding-top: 24px; } .cosmic-jac .cosmic-node, .cosmic-cosmos .cosmic-node { position: relative; left: auto !important; top: auto !important; transform: none; width: auto; min-height: 70px; font-size: 12px; } .cosmic-edges { display: none; } }
