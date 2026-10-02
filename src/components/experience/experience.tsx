@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { SITE_CONFIG } from "@/lib/constants";
 import { Atmosphere } from "./atmosphere";
 import { connections, modes, position, projects, type Mode } from "./graph";
+import { useLivingGraph } from "./use-living-graph";
 
 
 const descriptions: Record<Mode, string> = {
@@ -15,8 +16,10 @@ const descriptions: Record<Mode, string> = {
 };
 
 export function Experience() {
-  const [mode, setMode] = useState<Mode>("CORE");
-  const [selected, setSelected] = useState(0);
+  const [mode, setMode] = useState<Mode>("COSMOS");
+  const [selected, setSelected] = useState(Math.max(0, projects.findIndex((_, index) => connections(index).length >= 4)));
+  const [paused, setPaused] = useState(false);
+  const field = useLivingGraph(mode, paused);
   const [hovered, setHovered] = useState<number | null>(null);
   const [layer, setLayer] = useState("Purpose");
   const [command, setCommand] = useState("");
@@ -47,8 +50,8 @@ export function Experience() {
   }
 
   return (
-    <section className="cosmic-experience" aria-label="Cosmic portfolio prototype">
-      <Atmosphere />
+    <section className={`cosmic-experience ${paused ? "cosmic-paused" : ""}`} aria-label="Cosmic portfolio prototype">
+      <Atmosphere paused={paused} />
       <header className="cosmic-header">
         <span className="cosmic-label">TJ / EXPLORATION 001</span>
         <Link href="/contact">Let’s build something ↗</Link>
@@ -60,10 +63,15 @@ export function Experience() {
       </div>
       <nav className="cosmic-modes" aria-label="Experience mode">
         {modes.map((item) => <button key={item} aria-pressed={mode === item} onClick={() => { setMode(item); setHovered(null); }}>{item}</button>)}
+        <button className="cosmic-motion-toggle" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Resume motion" : "Pause motion"}</button>
       </nav>
       <p className="cosmic-caption" role="status">{descriptions[mode]}</p>
       <div className="cosmic-workspace">
-        <div className={`cosmic-stage cosmic-${mode.toLowerCase()}`}>
+        <div ref={field} className={`cosmic-stage cosmic-${mode.toLowerCase()}`}>
+          <div className="cosmic-starfield" aria-hidden="true">
+            {Array.from({ length: 64 }, (_, index) => <i key={index} style={{ left: `${(index * 61.803) % 100}%`, top: `${(index * 37.71) % 100}%`, "--twinkle-delay": `${-(index % 13)}s`, "--star-size": `${index % 5 === 0 ? 2 : 1}px` } as CSSProperties} />)}
+          </div>
+          {mode !== "CORE" && mode !== "TERMINAL" && <div className="cosmic-orbits" aria-hidden="true"><i /><i /><i /></div>}
           {mode === "TERMINAL" ? <div className="cosmic-terminal">
             <pre role="log" aria-label="Command output">{history.join("\n\n")}</pre>
             <form onSubmit={(event) => { event.preventDefault(); runCommand(); }}>
@@ -75,13 +83,17 @@ export function Experience() {
             {mode !== "CORE" && <svg className="cosmic-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               {projects.flatMap((_, index) => connections(index).filter((edge) => edge.index > index).map((edge) => {
                 const from = position(index, mode); const to = position(edge.index, mode);
-                return <line key={`${index}-${edge.index}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} className={index === active || edge.index === active ? "lit" : ""} />;
+                return <g key={`${index}-${edge.index}`} data-from={index} data-to={edge.index} className={`cosmic-connection ${index === active || edge.index === active ? "lit" : ""}`}>
+                  <line className="cosmic-edge-halo" x1={from.x} y1={from.y} x2={to.x} y2={to.y} />
+                  <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} />
+                  <circle className="cosmic-signal" cx={from.x} cy={from.y} r=".24" />
+                </g>;
               }))}
             </svg>}
             {projects.map((item, index) => {
               const point = position(index, mode);
               const connected = index === active || related.some((edge) => edge.index === index);
-              return <button key={item.title} className={`cosmic-node ${connected ? "connected" : ""}`} style={mode === "CORE" ? undefined : { left: `${point.x}%`, top: `${point.y}%` }} aria-pressed={selected === index}
+              return <button key={item.title} className={`cosmic-node ${connected ? "connected" : ""}`} style={{ ...(mode === "CORE" ? {} : { left: `${point.x}%`, top: `${point.y}%` }), "--node-hue": `${165 + index % 4 * 25}`, "--node-delay": `${-index * .7}s` } as CSSProperties} aria-pressed={selected === index}
                 onMouseEnter={() => setHovered(index)} onMouseLeave={() => setHovered(null)} onFocus={() => setHovered(index)} onBlur={() => setHovered(null)} onClick={() => { setSelected(index); setLayer("Purpose"); }}>
                 <span className="cosmic-star" aria-hidden="true" /><span><small>{String(index + 1).padStart(2, "0")} / {item.role}</small>{item.title}</span>
               </button>;

@@ -1,11 +1,25 @@
 /** @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Experience } from "./experience";
-import { connections, modes, position, projects } from "./graph";
+import { connections, driftingPosition, modes, position, projects } from "./graph";
 
 vi.mock("./atmosphere", () => ({ Atmosphere: () => null }));
-afterEach(cleanup);
+let reduced = false;
+let frames = new Map<number, FrameRequestCallback>();
+beforeEach(() => {
+  reduced = false;
+  frames = new Map();
+  let id = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { frames.set(++id, callback); return id; });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: reduced && query.includes("reduced-motion"), addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+});
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+
+function tick(now: number) {
+  act(() => { const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach((callback) => callback(now)); });
+}
 
 describe("cosmic experience", () => {
   it("connects projects only through actual shared tags and keeps positions within the field", () => {
@@ -48,5 +62,50 @@ describe("cosmic experience", () => {
     submit("projects"); expect(screen.getByRole("log")).toHaveTextContent(projects[0].title);
     submit("clear"); expect(screen.getByRole("log")).toBeEmptyDOMElement();
     submit("mode jac"); expect(screen.getByRole("button", { name: "JAC", exact: true })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("moves nodes while keeping edges attached and freezes motion on pause", () => {
+    const { container } = render(<Experience />);
+    tick(1000); tick(1050); tick(1100);
+    const nodes = container.querySelectorAll<HTMLElement>(".cosmic-node");
+    const connection = container.querySelector<SVGGElement>(".cosmic-connection")!;
+    const line = connection.querySelector("line")!;
+    expect(Number(line.getAttribute("x1"))).toBeCloseTo(parseFloat(nodes[Number(connection.dataset.from)].style.left));
+    expect(Number(line.getAttribute("y2"))).toBeCloseTo(parseFloat(nodes[Number(connection.dataset.to)].style.top));
+    const previous = nodes[0].style.left;
+    tick(1150);
+    expect(nodes[0].style.left).not.toBe(previous);
+    fireEvent.click(screen.getByRole("button", { name: "Pause motion" }));
+    tick(1200);
+    const frozen = nodes[0].style.left;
+    expect(frames.size).toBe(0);
+    tick(1250);
+    expect(nodes[0].style.left).toBe(frozen);
+    fireEvent.click(screen.getByRole("button", { name: "Resume motion" }));
+    tick(1300); tick(1350);
+    expect(frames.size).toBe(1);
+    expect(nodes[0].style.left).not.toBe(frozen);
+    cleanup(); expect(frames.size).toBe(0);
+  });
+
+  it("renders static positions and schedules no animation under reduced motion", () => {
+    reduced = true;
+    const { container } = render(<Experience />);
+    tick(1000);
+    expect(frames.size).toBe(0);
+    expect(parseFloat(container.querySelector<HTMLElement>(".cosmic-node")!.style.left)).toBe(position(0, "COSMOS").x);
+  });
+
+  it("keeps drift bounded over time in both graph modes", () => {
+    for (const mode of ["JAC", "COSMOS"] as const) {
+      projects.forEach((_, index) => {
+        for (const seconds of [0, 5, 30, 300]) {
+          const point = driftingPosition(index, mode, seconds);
+          expect(point.x).toBeGreaterThan(0); expect(point.x).toBeLessThan(100);
+          expect(point.y).toBeGreaterThan(0); expect(point.y).toBeLessThan(100);
+        }
+        expect(driftingPosition(index, mode, 0)).not.toEqual(driftingPosition(index, mode, 30));
+      });
+    }
   });
 });
