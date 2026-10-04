@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HeroSection } from "@/components/portfolio/hero-section";
 import { FeaturedProjects } from "@/components/portfolio/featured-projects";
+import { ContributionAtlas } from "@/components/portfolio/contribution-atlas";
 import { AboutPreview } from "@/components/portfolio/about-preview";
 import { ContactBand } from "@/components/portfolio/contact-band";
 
@@ -15,6 +16,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <FeaturedProjects />
+      <ContributionAtlas />
       <AboutPreview />
       <ContactBand />
     </>
