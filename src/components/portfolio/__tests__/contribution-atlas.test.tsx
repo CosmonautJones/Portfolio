@@ -19,13 +19,16 @@ afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 
 it("exposes both views, source attribution, and a dated fallback before loading the canvas", () => {
   render(<ContributionAtlas />);
-  expect(screen.getByRole("heading", { name: "A year, in another dimension." })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "A year of building." })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Top view" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByRole("button", { name: "3D landscape" })).toHaveAttribute("aria-pressed", "false");
   expect(screen.getByRole("link", { name: "View on GitHub" })).toHaveAttribute("href", "https://github.com/CosmonautJones");
   expect(screen.getByText(/including commits, pull requests, issues, and reviews/)).toBeInTheDocument();
   expect(screen.getByText(/Oct 4, 2025 — Oct 3, 2026/)).toBeInTheDocument();
   expect(initialize).not.toHaveBeenCalled();
+  expect(screen.getByLabelText("Inspect a date")).toHaveAttribute("min", snapshot.from);
+  expect(screen.getByLabelText("Inspect a date")).toHaveAttribute("max", snapshot.to);
+  expect(screen.getByText(/repository names and details stay private/)).toBeInTheDocument();
 });
 
 it("loads only on entry, replaces the snapshot with fresh data, and cleans up the renderer on unmount", async () => {
@@ -49,4 +52,17 @@ it("keeps the dated snapshot usable when the refresh request fails", async () =>
   await waitFor(() => expect(initialize).toHaveBeenCalled());
   expect(screen.getByText(/Saved snapshot/)).toBeInTheDocument();
   expect(screen.getByText("1,621")).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText("Recent changes are available on GitHub.")).toBeInTheDocument());
+});
+
+it("links public changes separately from aggregate calendar counts", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockImplementation((url) => Promise.resolve(Response.json(url === "/api/github-activity" ? {
+    items: [{ repo: "CosmonautJones/Portfolio", kind: "Commit", title: "Polish contribution atlas", url: "https://github.com/CosmonautJones/Portfolio/commit/123", date: "2026-10-04T05:00:00Z" }],
+  } : { ...snapshot, stale: false }))));
+  render(<ContributionAtlas />);
+  await act(async () => enter([{ isIntersecting: true }]));
+  const link = await screen.findByRole("link", { name: /Polish contribution atlas/ });
+  expect(link).toHaveAttribute("href", "https://github.com/CosmonautJones/Portfolio/commit/123");
+  expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  expect(screen.getByText(/A few recent changes from public repositories/)).toBeInTheDocument();
 });

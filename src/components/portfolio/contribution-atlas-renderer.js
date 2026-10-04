@@ -6,7 +6,25 @@ export function initializeContributionAtlas(root, data) {
   const scene = root.querySelector('#scene');
   const tooltip = root.querySelector('#tooltip');
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  const colors = ['#22342e', '#0e5835', '#238b4b', '#46c96e', '#8aefaa'];
+  let palette;
+  function mix(a, b, amount) {
+    return '#' + [1,3,5].map(i => Math.round(parseInt(a.slice(i,i+2),16) * (1-amount) + parseInt(b.slice(i,i+2),16) * amount).toString(16).padStart(2,'0')).join('');
+  }
+  function readTheme() {
+    const styles = getComputedStyle(root);
+    const background = styles.getPropertyValue('--background').trim();
+    const ink = styles.getPropertyValue('--foreground').trim();
+    const signal = styles.getPropertyValue('--signal').trim();
+    palette = {
+      colors: [mix(background,ink,.1), ...[.3,.5,.75,1].map(amount => mix(background,signal,amount))],
+      board: styles.getPropertyValue('--muted').trim(),
+      rule: styles.getPropertyValue('--rule-strong').trim(),
+      grid: styles.getPropertyValue('--border').trim(),
+      label: styles.getPropertyValue('--muted-foreground').trim(),
+      ink,
+    };
+    schedule();
+  }
   const start = Date.parse(data.from + 'T00:00:00Z');
   const offset = new Date(start).getUTCDay();
   const weeks = Math.ceil((data.days.length + offset) / 7);
@@ -20,11 +38,17 @@ export function initializeContributionAtlas(root, data) {
   let suppressClick = false;
   const formatter = new Intl.DateTimeFormat('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'UTC'});
   const number = new Intl.NumberFormat('en-US');
+  const dateInput = root.querySelector('#inspect-date');
+  let described = peakIndex;
   root.querySelector('#total').textContent = number.format(days.reduce((sum, day) => sum + day.count, 0));
   root.querySelector('#active').textContent = days.filter(day => day.count > 0).length;
   root.querySelector('#peak').textContent = peak.count;
   function describe(index, label = 'Selected day') {
     const day = days[index];
+    described = index;
+    dateInput.value = day.date;
+    root.querySelector('#previous-day').disabled = index === 0;
+    root.querySelector('#next-day').disabled = index === days.length - 1;
     root.querySelector('#day-label').textContent = label;
     root.querySelector('#day-description').textContent = `${number.format(day.count)} contribution${day.count === 1 ? '' : 's'}`;
     root.querySelector('#day-date').textContent = formatter.format(new Date(day.date + 'T00:00:00Z'));
@@ -67,20 +91,13 @@ export function initializeContributionAtlas(root, data) {
   }
   function background() {
     ctx.clearRect(0,0,state.width,state.canvasHeight);
-    // A static star field keeps all continuous motion in the contribution grid.
-    for(let i=0;i<45;i++) {
-      const x=((i*127.13+31)%997)/997*state.width;
-      const y=((i*63.73+19)%419)/419*state.canvasHeight;
-      ctx.fillStyle=i%6===0?'#a1c7de35':'#a1c7de15';
-      ctx.fillRect(x,y,i%6===0?1.5:1,1);
-    }
     if(state.blend>0.01) {
       ctx.save();ctx.globalAlpha=state.blend;
       const board=[project(-weeks/2-.25,-3.7,-.08),project(weeks/2+.25,-3.7,-.08),project(weeks/2+.25,3.7,-.08),project(-weeks/2-.25,3.7,-.08)];
-      path(board);ctx.fillStyle='#0b1513';ctx.fill();ctx.strokeStyle='#3a5348';ctx.lineWidth=1;ctx.stroke();
+      path(board);ctx.fillStyle=palette.board;ctx.fill();ctx.strokeStyle=palette.rule;ctx.lineWidth=1;ctx.stroke();
       for(let x=-weeks/2+.5;x<weeks/2;x++) {
         const a=project(x,-3.7,-.07),b=project(x,3.7,-.07);
-        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle='#29403955';ctx.stroke();
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=palette.grid;ctx.stroke();
       }
       ctx.restore();
     }
@@ -93,7 +110,7 @@ export function initializeContributionAtlas(root, data) {
       const x=day.week-(weeks-1)/2,z=day.row-3,h=columnHeight(day),s=.39;
       const b=[project(x-s,z-s,0),project(x+s,z-s,0),project(x+s,z+s,0),project(x-s,z+s,0)];
       const t=[project(x-s,z-s,h),project(x+s,z-s,h),project(x+s,z+s,h),project(x-s,z+s,h)];
-      const color=colors[day.level];
+      const color=palette.colors[day.level];
       const add=(points,fill,top=false)=>faces.push({points,fill,index:day.index,top,depth:points.reduce((n,p)=>n+p.depth,0)/points.length});
       if(state.blend>0.001) {
         add([b[3],b[2],t[2],t[3]],shade(color,.63));
@@ -105,14 +122,14 @@ export function initializeContributionAtlas(root, data) {
     faces.sort((a,b)=>a.depth-b.depth);
     for(const face of faces) {
       path(face.points);ctx.fillStyle=face.fill;ctx.fill();
-      ctx.lineWidth=.5;ctx.strokeStyle=face.top?'#b5ffd015':'#07131c50';ctx.stroke();
+      ctx.lineWidth=.5;ctx.strokeStyle=palette.grid;ctx.stroke();
       if(face.index===state.hovered || face.index===state.selected) {
-        ctx.strokeStyle=face.top?'#d4ffe4':'#a8ffd57a';ctx.lineWidth=face.top?1.7:.8;ctx.stroke();
+        ctx.strokeStyle=palette.ink;ctx.lineWidth=face.top?1.7:.8;ctx.stroke();
       }
     }
     state.faces=faces;
     // Months and weekday markers move with the plane throughout the transformation.
-    ctx.font=`${state.width<500?9:11}px ${getComputedStyle(root).fontFamily}`;ctx.fillStyle='#9bafc2';ctx.textAlign='left';
+    ctx.font=`${state.width<500?9:11}px ${getComputedStyle(root).getPropertyValue('--font-mono')}`;ctx.fillStyle=palette.label;ctx.textAlign='left';
     let prior='';
     for (const day of days) {
       const month=day.date.slice(0,7);
@@ -147,7 +164,7 @@ export function initializeContributionAtlas(root, data) {
     tooltip.style.display='none';state.hovered=-1;
     root.querySelector('#top-view').setAttribute('aria-pressed',String(target===0));
     root.querySelector('#landscape-view').setAttribute('aria-pressed',String(target===1));
-    root.querySelector('#scene-hint').textContent=target?'Drag to orbit · Hover a day to explore':'Hover a day to explore';
+    root.querySelector('#scene-hint').textContent=target?'Drag to orbit · Select a day':'Select a day or choose a date below';
     root.querySelector('#view-name').textContent=target?'Height = daily contributions':'The familiar view';
     canvas.style.touchAction=target?'none':'pan-y';
     if(motion.matches || instant) {state.blend=target;state.animation=null;}
@@ -221,6 +238,15 @@ export function initializeContributionAtlas(root, data) {
   listen(root.querySelector('#height-scale'), 'input',event=>{clearTimeout(introTimer);state.height=Number(event.target.value);root.querySelector('#height-value').value=state.height.toFixed(1)+'×';schedule();});
   listen(root.querySelector('#reset-camera'), 'click',()=>{state.yaw=-.23;state.pitch=.66;schedule();});
   listen(root.querySelector('#show-peak'), 'click',()=>{state.selected=peakIndex;describe(peakIndex,'The highest point');setView(1);});
+  function selectDay(index) {
+    clearTimeout(introTimer);
+    state.selected=Math.max(0,Math.min(days.length-1,index));
+    state.hovered=-1;tooltip.style.display='none';
+    describe(state.selected);schedule();
+  }
+  listen(dateInput, 'change',()=>{const index=days.findIndex(day=>day.date===dateInput.value);if(index>=0)selectDay(index);else dateInput.value=days[described].date;});
+  listen(root.querySelector('#previous-day'), 'click',()=>selectDay(described-1));
+  listen(root.querySelector('#next-day'), 'click',()=>selectDay(described+1));
   listen(motion, 'change',()=>{if(motion.matches){clearTimeout(introTimer);state.animation=null;state.blend=state.target;schedule();}});
   function resize() {
     const rect=scene.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2);
@@ -228,6 +254,9 @@ export function initializeContributionAtlas(root, data) {
     canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);schedule();
   }
   const observer = new ResizeObserver(resize);
+  const themeObserver = new MutationObserver(readTheme);
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+  readTheme();
   observer.observe(scene);
   resize();
   if(!motion.matches) introTimer=setTimeout(()=>setView(1),1400);
@@ -236,5 +265,6 @@ export function initializeContributionAtlas(root, data) {
     cancelAnimationFrame(frame);
     controller.abort();
     observer.disconnect();
+    themeObserver.disconnect();
   };
 }
