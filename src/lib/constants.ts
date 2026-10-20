@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
   name: "Travis Jones",
   title: "Software Engineer | Legacy Modernization & Applied AI",
   tagline:
-    "I modernize manufacturing ERP, build tools for read-only COBOL knowledge access, and contributed UI and QR redemption to M-Local.",
+    "Eight years building and supporting manufacturing ERP at Global Shop Solutions. Strongest in COBOL and VB.NET, with legacy modernization and practical AI tooling experience.",
   location: "Ypsilanti, Michigan",
   availability: "Open to roles in Michigan or remote",
   email: "travisjohn.jones@gmail.com",

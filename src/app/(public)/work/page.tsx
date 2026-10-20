@@ -3,6 +3,9 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PROJECTS } from "@/lib/constants";
 import type { Metadata } from "next";
 import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
+import { FeaturedProjects } from "@/components/portfolio/featured-projects";
+import { ContributionAtlas } from "@/components/portfolio/contribution-atlas";
+import { SELECTED_PROJECT_STORIES } from "@/lib/selected-project-stories";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -21,23 +24,28 @@ function SectionLabel({ children, count }: { children: string; count: number }) 
 }
 
 export default function WorkPage() {
-  const featured = PROJECTS.filter((p) => p.featured);
+  const selectedTitles = new Set<string>(SELECTED_PROJECT_STORIES.map((project) => project.title));
+  const featured = PROJECTS.filter((p) => p.featured && !selectedTitles.has(p.title));
   const play = PROJECTS.filter((p) => !p.featured && (p.demoUrl || p.playground));
   const more = PROJECTS.filter((p) => !p.featured && !p.demoUrl && !p.playground);
 
   return (
-    <div className="container mx-auto px-6 py-16 sm:py-24">
-      <div className="mb-14">
+    <>
+    <div className="container mx-auto px-6 pt-16 sm:pt-24">
+      <div>
         <PageHeader
           eyebrow="Projects"
           title="Engineering, tools, and experiments"
           lede="Production contributions, a team hackathon award, and independent prototypes. Read what I built, inspect the evidence, and see what is still future work."
         />
       </div>
+    </div>
+    <FeaturedProjects showArchiveLink={false} />
+    <div id="collection" className="container mx-auto scroll-mt-24 px-6 py-12 sm:py-16">
 
       {featured.length > 0 && (
-        <section className="mb-16" aria-label="Selected">
-          <SectionLabel count={featured.length}>Selected</SectionLabel>
+        <section className="mb-16" aria-label="Tools and utilities">
+          <SectionLabel count={featured.length}>Tools and utilities</SectionLabel>
           <StaggerChildren className="grid gap-6 md:grid-cols-2">
             {featured.map((project, index) => (
               <StaggerItem key={project.title}>
@@ -74,5 +82,7 @@ export default function WorkPage() {
         </section>
       )}
     </div>
+    <div id="activity" className="scroll-mt-24"><ContributionAtlas /></div>
+    </>
   );
 }

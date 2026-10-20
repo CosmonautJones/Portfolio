@@ -35,7 +35,7 @@ export function ContactBand() {
           {SITE_CONFIG.availability}
         </p>
         <h2 id="contact-band" className="font-display mt-4 max-w-3xl text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Hiring for AI or software engineering? Email me.
+          Hiring for software engineering or modernization? Let’s talk.
         </h2>
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
           <a
