@@ -1,82 +1,52 @@
 # TRAVIS J. JONES
 
-Software Engineer
+**Software Engineer | Legacy Modernization & Applied AI**
 
-Ypsilanti, Michigan  |  [travisjohn.jones@gmail.com](mailto:travisjohn.jones@gmail.com)
+Ypsilanti, MI | 281-245-4591 | travisjohn.jones@gmail.com  
+travisjohnjones.com | github.com/CosmonautJones | linkedin.com/in/travis-john-jones
 
-[travisjohnjones.com](https://www.travisjohnjones.com)  |  [GitHub: CosmonautJones](https://github.com/CosmonautJones)  |  [LinkedIn](https://www.linkedin.com/in/travis-john-jones)
+## PROFESSIONAL SUMMARY
 
-## PROFILE
-
-Software engineer with eight years developing and supporting manufacturing ERP software. My strongest work connects established business systems with modern .NET components and practical AI tooling. I trace existing behavior, make changes that preserve it, and help other teams understand the systems they depend on.
+Software engineer with eight years building and supporting manufacturing ERP software at Global Shop Solutions. Strongest in COBOL and VB.NET, with experience in C#/.NET interoperability, relational data access, and read-only MCP tooling. Traces existing behavior and preserves business rules through modernization.
 
 ## PROFESSIONAL EXPERIENCE
 
-### Global Shop Solutions  |  Software Engineer
+### GLOBAL SHOP SOLUTIONS | Software Engineer
 
-September 2018 - August 2026  |  The Woodlands, Texas
+Sep 2018 - Sep 2026 | The Woodlands, TX / Remote
 
-Developed and supported business software across interconnected manufacturing workflows, from requirements and implementation through regression validation, release, and production support.
+- Built and supported ERP features across manufacturing, engineering, shipping, sales, payroll, and accounting; worked with system owners to clarify business rules and dependencies.
+- Contributed to DataLayer modernization connecting ACU/Fujitsu COBOL with VB.NET, C#/.NET, and PSQL persistence while preserving established production behavior.
+- Supported REST integrations and SQL/Entity Framework data access; traced defects across application, service, data, and legacy code paths.
+- Built a security-filtered, read-only Model Context Protocol (MCP) interface to COBOL business logic for QA, Support, and engineering; provided training and documentation.
+- Built regression, API/integration, and Playwright test tooling; reproduced defects and validated fixes before release. Contributed code reviews and led Scrum meetings.
 
-### Enterprise modernization and DataLayer
+### BUZZLES CONCESSIONS, LLC | Technical Supervisor
 
-- Contributed to the DataLayer modernization effort, moving ACU COBOL functionality toward Fujitsu COBOL and .NET interoperability, including object-oriented calls and PSQL data objects.
+Mar 2015 - Oct 2017
 
-- Modernized COBOL and VB.NET behavior into reusable C#/.NET components. Traced application, service, data-access, and legacy code paths to preserve business rules during migration.
+Maintained POS, networking, security, and production systems across four locations; trained staff and resolved operational issues.
 
-- Compared modernized DataLayer results with existing production behavior, investigated differences, and converted findings into focused fixes and regression coverage.
+## SELECTED PROJECTS
 
-### Production engineering and collaboration
+### M-Local | Jac/Jaseci | JacHacks a2Tech Local Impact - Grand Prize
 
-- Built and maintained ERP features involving shipping, consignment, invoicing, returns, and related business rules; supported REST integrations and SQL/Entity Framework data access.
+Contributed UI and QR redemption workflows on a four-person, 24-hour hackathon team connecting U-M students with local business offers.  
+github.com/CosmonautJones/m-local
 
-- Investigated defects across object collections, services, SQL, and legacy methods. Documented reproducible cases, partnered on root-cause analysis, and validated repairs before release.
+### TravOS | Python | Portfolio prototype
 
-- Worked with system owners across Shop Floor, BOM/Engineering, Sales & Shipping, Payroll, Accounts Receivable, and Accounts Payable to understand dependencies and clarify expected behavior.
+Built a Python prototype that separates worker success claims from evidence-based task acceptance. Its reproducible simulated-worker demo rejects false success, verifies a correction, and retains evidence.
 
-- Contributed code reviews, estimates, technical documentation, and regression checks; led Scrum stand-ups and retrospectives.
+## TECHNICAL SKILLS
 
+**Strongest languages:** ACU/Fujitsu COBOL, VB.NET  
+**Additional experience:** C#/.NET, Python, TypeScript, JavaScript, React, Next.js, Node.js  
+**Data and integration:** PSQL, PostgreSQL, SQL Server, REST/JSON APIs, Entity Framework, MCP  
+**Quality and tools:** Regression and integration testing, Playwright, Vitest, Git/GitHub, GitHub Actions
 
----
+## EDUCATION & RECOGNITION
 
-
-### TRAVIS J. JONES
-
-Software Engineer  |  Selected contributions and technical background
-
-## AI TOOLING AND ENGINEERING ENABLEMENT
-
-### Read-only COBOL knowledge access  |  Global Shop Solutions
-
-Built an MCP interface that made core COBOL business logic accessible through AI tools. The entire QA department, support teams, and colleagues outside the CORE team used it to understand behavior without having to navigate the codebase alone.
-
-- Kept the interface read-only and added filters to strip sensitive data from the information exposed to assistants.
-
-### Practical AI adoption  |  Global Shop Solutions
-
-Supported internal AI adoption through an AI Help Desk, training sessions, documentation, and demonstrations. Helped colleagues apply unfamiliar tools to engineering and support work.
-
-## INDEPENDENT ENGINEERING
-
-### TravOS / Builder OS  |  Independent project in development
-
-Python  |  Agent workflows, validation, and durable task context
-
-Developing a workflow system for replaceable AI coding agents, with durable mission context, reproducible handoffs, and evidence required for task completion. Current work includes task-state persistence, context compilation, and artifact acceptance checks.
-
-## TECHNICAL BACKGROUND
-
-**Languages and applications:** C#, .NET, VB.NET, ACU/Fujitsu COBOL, Python, TypeScript, JavaScript, React, REST/JSON APIs.
-
-**Data and quality:** SQL, SQL Server, PostgreSQL, PSQL, Entity Framework; unit, integration, API, end-to-end, and regression testing; Playwright and Vitest.
-
-**Engineering workflow:** Git/GitHub, SVN, CI/CD, Visual Studio, VS Code, MCP, AI-assisted development, technical documentation, and cross-team troubleshooting.
-
-## EARLIER EXPERIENCE AND EDUCATION
-
-**Buzzles Concessions, LLC | Technical Supervisor | March 2015 - October 2017**
-Maintained POS systems, hardware, security systems, and production equipment across four locations; trained staff and resolved operational issues.
-
-**Lambda Academy of Computer Science** | Software Engineering Program, 2018
-
-**San Jacinto College** | A.A.S., Electronics Technology and Communications Engineering, 2015
+**Lambda Academy of Computer Science** | Software Engineering Program, 2018  
+**San Jacinto College** | A.A.S., Electronics Technology & Communications Engineering, 2015  
+2x Employee of the Quarter | Internal hackathon team lead | Mentored teammates and engineering interns

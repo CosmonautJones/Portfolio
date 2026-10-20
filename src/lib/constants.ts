@@ -2,10 +2,10 @@ import type { Project } from "@/lib/types";
 
 export const SITE_CONFIG = {
   name: "Travis Jones",
-  title: "AI Engineer",
+  title: "Software Engineer | Legacy Modernization & Applied AI",
   tagline:
-    "I connect AI to the business software companies already run on, with read-only access where it counts and a person signing off on what ships.",
-  location: "Ann Arbor / Ypsilanti, Michigan",
+    "I modernize manufacturing ERP, build tools for read-only COBOL knowledge access, and contributed UI and QR redemption to M-Local.",
+  location: "Ypsilanti, Michigan",
   availability: "Open to roles in Michigan or remote",
   email: "travisjohn.jones@gmail.com",
   github: "https://github.com/CosmonautJones",
@@ -17,25 +17,25 @@ export const SITE_CONFIG = {
 /** Each `claim` is underlined in the hero sentence (SITE_CONFIG.tagline); its row says where that claim comes from. */
 export const PROOF_POINTS = [
   {
-    claim: "business software",
-    label: "Manufacturing ERP, 8 years",
-    detail: "R&D at Global Shop Solutions. COBOL, VB.NET, and C#/.NET across shop floor, shipping, and accounting workflows.",
+    claim: "manufacturing ERP",
+    label: "Eight years at Global Shop Solutions",
+    detail: "COBOL and VB.NET are my strongest production languages. My DataLayer work also involved C#/.NET integration and PSQL persistence.",
     href: "/about#experience",
     linkLabel: "Experience",
   },
   {
-    claim: "read-only access",
-    label: "COBOL knowledge tool over MCP",
-    detail: "Read-only, with filters for sensitive data. QA and support used it to trace how the software behaves.",
-    href: "/about#knowledge-tooling",
-    linkLabel: "How it worked",
+    claim: "read-only COBOL knowledge access",
+    label: "Security-filtered MCP interface",
+    detail: "Built an interface to COBOL business logic for QA, Support, and engineering, with training and documentation.",
+    href: "/work/mcp-cobol-bridge",
+    linkLabel: "Synthetic case study",
   },
   {
-    claim: "a person signing off",
-    label: "Supervised coding agents",
-    detail: "Mission Control splits a goal across bounded workers, lets verifiers reject their work, and waits for approval.",
-    href: "/work/mission-control",
-    linkLabel: "Case study",
+    claim: "UI and QR redemption",
+    label: "M-Local: Local Impact Grand Prize",
+    detail: "Contributed UI and QR redemption workflows on a four-person, 24-hour hackathon team connecting U-M students with local offers.",
+    href: "/work/m-local",
+    linkLabel: "Team project",
   },
 ] as const;
 
@@ -48,6 +48,37 @@ export const NAV_LINKS = [
 ] as const;
 
 export const PROJECTS: Project[] = [
+  {
+    title: "M-Local",
+    description: "A team-built prototype connecting U-M students with local business offers. I contributed UI and QR redemption workflows during a four-person, 24-hour hackathon.",
+    image: "/projects/m-local.png",
+    tags: ["Jac/Jaseci", "UI", "QR redemption"],
+    caseStudyUrl: "/work/m-local",
+    githubUrl: "https://github.com/CosmonautJones/m-local",
+    role: "Local Impact Grand Prize · team project",
+    featured: true,
+    proof: "JacHacks a2Tech Local Impact Grand Prize, verified on Devpost. My contribution was UI and QR redemption; the award belongs to the team. The case study includes a historical capture with fictional demo data.",
+  },
+  {
+    title: "MCP-to-COBOL bridge",
+    description: "At Global Shop Solutions, I built a security-filtered, read-only MCP interface to COBOL business logic for QA, Support, and engineering. Explore the problem through a clearly synthetic example.",
+    image: "",
+    tags: ["COBOL", "MCP", "Legacy modernization"],
+    caseStudyUrl: "/work/mcp-cobol-bridge",
+    role: "Production contribution · synthetic illustration",
+    featured: true,
+    proof: "The original contribution is summarized at a high level. All public code, data, and architecture illustrations are newly authored examples; no employer implementation or customer data is included.",
+  },
+  {
+    title: "TravOS",
+    description: "A working engineering prototype that checks artifact evidence separately from a worker's success claim. Its deterministic demo rejects a missing artifact and accepts an explicitly requested correction.",
+    image: "",
+    tags: ["Python", "Verification", "Agent workflows"],
+    caseStudyUrl: "/work/travos",
+    role: "Working prototype · simulated workers",
+    featured: true,
+    proof: "The local demo retained its failed receipts through correction: three fixture dispatches, zero provider calls. Model-agnostic compounding remains a direction for future work, not a demonstrated autonomous capability.",
+  },
   {
     title: "Whole Page Capture",
     description: "Capture a long web page as one PNG using a local Chrome or Edge extension. Useful for design reviews, bug reports, and keeping a visual record.",
@@ -111,7 +142,7 @@ export const PROJECTS: Project[] = [
     liveUrl: "/pad-7/PAD-7.html",
     githubUrl: "https://github.com/CosmonautJones/pad-7-firing-room",
     role: "Simulation",
-    featured: true,
+    featured: false,
     proof:
       "No bundler. Physics, the optical window, and the paper desk are separate scripts, and the flight math is tested on its own. RANGE flies the gravity turn. The room stays formica, brass, and mosaic lamps.",
     actionLabel: "Open the firing room",
@@ -274,22 +305,26 @@ export const PROJECTS: Project[] = [
 ];
 
 export const SKILLS = [
-  "C#", ".NET", "COBOL", "VB.NET", "Python", "TypeScript",
-  "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Git",
+  "COBOL", "VB.NET", "C#/.NET integration", "PSQL", "Entity Framework",
+  "Python", "TypeScript", "React", "Next.js", "Node.js", "Git",
 ];
 
 export const SKILL_CATEGORIES = [
   {
-    label: "Enterprise experience",
-    skills: ["C# / .NET", "ACU & Fujitsu COBOL", "VB.NET", "PSQL", "SVN", "Visual Studio"],
+    label: "Strongest production languages",
+    skills: ["ACU & Fujitsu COBOL", "VB.NET"],
   },
   {
-    label: "Web & personal projects",
-    skills: ["TypeScript", "React", "Next.js", "Node.js", "PostgreSQL", "Supabase", "Tailwind CSS"],
+    label: "Supporting enterprise experience",
+    skills: ["C#/.NET integration", "PSQL", "SQL Server", "Entity Framework", "REST/JSON APIs"],
   },
   {
-    label: "Developer tools & verification",
-    skills: ["Python", "Model Context Protocol", "Git", "Vitest", "GitHub Actions"],
+    label: "Web and independent projects",
+    skills: ["Python", "TypeScript", "JavaScript", "React", "Next.js", "Node.js", "PostgreSQL", "Jac/Jaseci (hackathon)"],
+  },
+  {
+    label: "Tools used",
+    skills: ["Model Context Protocol", "Playwright", "Vitest", "Git/GitHub", "GitHub Actions"],
   },
 ];
 
@@ -303,30 +338,36 @@ type ExperienceItem = {
 
 export const EXPERIENCE: readonly ExperienceItem[] = [
   {
-    year: "Sep 2018 - Aug 2026",
+    year: "Sep 2018 - Sep 2026",
     title: "Software Engineer",
     organization: "Global Shop Solutions",
     description:
-      "Spent eight years in R&D on manufacturing ERP software, working with teams across shop floor, engineering, sales, shipping, payroll, and accounting. Helped evolve established systems while preserving the business behavior people relied on.",
+      "Built and supported manufacturing ERP features across manufacturing, engineering, shipping, sales, payroll, and accounting. Worked with system owners to clarify business rules and dependencies.",
     highlights: [
-      "Contributed to DataLayer modernization: ACU-to-Fujitsu COBOL migration and .NET interoperability.",
-      "Built a read-only COBOL knowledge tool used by the QA department, support, and colleagues outside the core team, with filters for sensitive data.",
-      "Worked on production troubleshooting, regression comparisons, and program naming changes that aligned legacy code with C# counterparts.",
-      "Helped colleagues adopt AI through an internal help desk, training sessions, documentation, and demos.",
+      "Contributed to DataLayer modernization connecting ACU/Fujitsu COBOL with VB.NET, C#/.NET, and PSQL persistence while preserving mature production behavior.",
+      "Built a security-filtered, read-only MCP interface to COBOL business logic for QA, Support, and engineering; supported use through training and documentation.",
+      "Supported REST integrations and SQL/Entity Framework data access; traced defects across application, service, data, and legacy code paths.",
+      "Built regression, API/integration, and Playwright test tooling; reproduced defects and validated fixes before release.",
     ],
   },
   {
     year: "2018",
-    title: "Full-Time Software Engineering Program",
+    title: "Software Engineering Program",
     organization: "Lambda Academy of Computer Science",
     description:
       "Completed a full-time software engineering program before moving into enterprise product development.",
   },
   {
-    year: "2015 - 2017",
+    year: "Mar 2015 - Oct 2017",
     title: "Technical Supervisor",
-    organization: "Buzzles Concessions",
+    organization: "Buzzles Concessions, LLC",
     description:
-      "Kept point-of-sale, computer, security, and production systems running across four locations while training staff and handling daily troubleshooting.",
+      "Maintained POS, networking, security, and production systems across four locations; trained staff and resolved operational issues.",
+  },
+  {
+    year: "2015",
+    title: "A.A.S., Electronics Technology & Communications Engineering",
+    organization: "San Jacinto College",
+    description: "",
   },
 ];

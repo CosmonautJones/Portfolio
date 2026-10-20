@@ -20,11 +20,11 @@ describe("ExperienceTimeline", () => {
 
     expect(screen.getByRole("heading", { name: /^software engineer$/i })).toBeDefined();
     expect(screen.getByText(/^global shop solutions$/i)).toBeDefined();
-    expect(screen.getByText(/^sep 2018 - aug 2026$/i).tagName).toBe("TIME");
+    expect(screen.getByText(/^sep 2018 - sep 2026$/i).tagName).toBe("TIME");
     expect(screen.getByRole("heading", { name: /software engineering program/i })).toBeDefined();
     expect(screen.getByText(/^lambda academy of computer science$/i)).toBeDefined();
     expect(screen.getByRole("heading", { name: /technical supervisor/i })).toBeDefined();
-    expect(screen.getByText(/^buzzles concessions$/i)).toBeDefined();
+    expect(screen.getByText(/^buzzles concessions, LLC$/i)).toBeDefined();
     expect(screen.queryByText(/junior developer|first line of code|mern/i)).toBeNull();
   });
 
@@ -36,16 +36,16 @@ describe("ExperienceTimeline", () => {
     expect(screen.getByText(/^full-stack product$/i)).toBeDefined();
 
     const timeline = screen.getByRole("list", { name: /career experience/i });
-    expect(timeline.querySelectorAll(":scope > li")).toHaveLength(3);
-    expect(timeline.querySelectorAll("time")).toHaveLength(3);
+    expect(timeline.querySelectorAll(":scope > li")).toHaveLength(4);
+    expect(timeline.querySelectorAll("time")).toHaveLength(4);
 
     const enterpriseEntry = screen.getByRole("heading", { name: /^software engineer$/i }).closest("li");
     expect(enterpriseEntry).not.toBeNull();
     const entry = within(enterpriseEntry!);
-    expect(entry.getByText(/manufacturing ERP software/i)).toBeDefined();
+    expect(entry.getByText(/manufacturing ERP features/i)).toBeDefined();
     expect(entry.getByText(/DataLayer modernization/i)).toBeDefined();
-    expect(entry.getByText(/production troubleshooting.*regression/i)).toBeDefined();
-    expect(entry.getByText(/read-only COBOL knowledge tool/i)).toBeDefined();
-    expect(entry.getByText(/internal help desk, training sessions/i)).toBeDefined();
+    expect(entry.getByText(/regression, API\/integration, and Playwright/i)).toBeDefined();
+    expect(entry.getByText(/read-only MCP interface to COBOL/i)).toBeDefined();
+    expect(entry.getByText(/training and documentation/i)).toBeDefined();
   });
 });

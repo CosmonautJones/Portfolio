@@ -5,10 +5,11 @@ import { ContactBand } from "@/components/portfolio/contact-band";
 import { PageHeader } from "@/components/layout/page-header";
 import type { Metadata } from "next";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Meet Travis Jones: eight years at Global Shop Solutions, enterprise modernization, read-only AI tooling, and a move from Texas to Michigan.",
+  description: "Travis Jones: Software Engineer | Legacy Modernization & Applied AI. Eight years at Global Shop Solutions, COBOL and VB.NET, a read-only MCP interface, and M-Local UI and QR contribution.",
 };
 
 const sectionLabel = "label-mono mb-8 scroll-mt-28";
@@ -20,15 +21,15 @@ export default function AboutPage() {
         <PageHeader
           eyebrow="About"
           title="From COBOL to MCP."
-          lede="I’m an AI engineer in the Ann Arbor / Ypsilanti area. I spent eight years at Global Shop Solutions, working on the enterprise software manufacturing teams use to run their businesses."
+          lede="I am a software engineer in Ypsilanti, Michigan. I spent eight years at Global Shop Solutions, developing and supporting manufacturing ERP software."
         />
 
         <AnimateOnScroll className="mt-10">
           <p className="text-lg leading-relaxed text-muted-foreground">
-            My work has taken me from COBOL and VB.NET to C#/.NET interoperability
-            and AI tools for QA and support. I enjoy tracing a complicated problem
-            through a system, talking it through with the people who know it, and
-            making the next change easier to understand.
+            COBOL and VB.NET are my strongest production languages. I contributed to
+            DataLayer modernization connecting ACU/Fujitsu COBOL, VB.NET,
+            C#/.NET, and PSQL persistence. My C# experience supports
+            integration and modernization work.
           </p>
         </AnimateOnScroll>
 
@@ -45,9 +46,21 @@ export default function AboutPage() {
             <h2 id="knowledge-tooling" className="font-display scroll-mt-28 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               A read-only way into the COBOL
             </h2>
-            <p>QA and support often need to understand a rule buried in a large codebase. I built a read-only tool using Model Context Protocol (MCP) to make COBOL business logic easier to explore, with filters to strip sensitive data.</p>
-            <p>The QA department, support teams, and colleagues outside the core team used it to investigate how the software behaves. I also helped with an internal AI help desk, training sessions, and demos.</p>
+            <p>I built a security-filtered, read-only interface using Model Context Protocol (MCP) to expose COBOL business logic for QA, Support, and engineering.</p>
+            <p>I supported the interface with training and documentation. This work connected established business systems with practical AI tools while keeping the interface read-only.</p>
             <p className="text-sm">This is a summary of my contribution. Employer source code and internal data are not published here.</p>
+            <Link href="/work/mcp-cobol-bridge" className="inline-flex min-h-11 items-center text-sm font-semibold text-foreground underline underline-offset-4">Explore the synthetic case study</Link>
+          </section>
+        </AnimateOnScroll>
+
+        <AnimateOnScroll className="mt-20">
+          <section aria-labelledby="m-local" className="space-y-5 border-l-2 border-[var(--signal)] pl-6 text-base leading-relaxed text-muted-foreground">
+            <h2 id="m-local" className="font-display scroll-mt-28 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              M-Local: UI and QR redemption
+            </h2>
+            <p>M-Local connects U-M students with local business offers. I contributed UI and QR redemption workflows on a four-person, 24-hour hackathon team.</p>
+            <p>Our team won Local Impact - Grand Prize at JacHacks a2Tech. My part was the UI and QR redemption workflows.</p>
+            <Link href="/work/m-local" className="inline-flex min-h-11 items-center text-sm font-semibold text-foreground underline underline-offset-4">Read the project story and award submission</Link>
           </section>
         </AnimateOnScroll>
 

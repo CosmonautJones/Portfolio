@@ -3,7 +3,7 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { loadGoogleFont } from "@/lib/og-font";
 
 export const runtime = "edge";
-export const alt = "Travis Jones, AI Engineer";
+export const alt = "Travis Jones, Software Engineer | Legacy Modernization & Applied AI";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -15,7 +15,7 @@ const RULE = "rgba(228,236,232,0.22)";
 
 export default async function Image() {
   const name = SITE_CONFIG.name;
-  const kicker = `${SITE_CONFIG.title}  ·  ${SITE_CONFIG.location}`;
+  const kicker = "SOFTWARE ENGINEER · LEGACY MODERNIZATION & APPLIED AI";
   // Non-breaking hyphen keeps "read-only" together when the line wraps.
   const lede = SITE_CONFIG.tagline.replace("read-only", "read‑only");
 

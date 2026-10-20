@@ -7,7 +7,7 @@ import { StaggerChildren, StaggerItem } from "@/components/ui/stagger-children";
 export const metadata: Metadata = {
   title: "Projects",
   description:
-    "Projects by Travis Jones: browser tools, a Windows usage HUD, supervised coding agents, simulations, and games. Each links to something you can run or read.",
+    "Projects by Travis Jones: M-Local, a synthetic MCP-to-COBOL case study, the TravOS prototype, browser tools, simulations, and games.",
 };
 
 function SectionLabel({ children, count }: { children: string; count: number }) {
@@ -30,8 +30,8 @@ export default function WorkPage() {
       <div className="mb-14">
         <PageHeader
           eyebrow="Projects"
-          title="Tools, agents, and experiments"
-          lede="Working tools, open-source agent infrastructure, and a few things I built for fun. Every card links to something you can run or read."
+          title="Engineering, tools, and experiments"
+          lede="Production contributions, a team hackathon award, and independent prototypes. Read what I built, inspect the evidence, and see what is still future work."
         />
       </div>
 

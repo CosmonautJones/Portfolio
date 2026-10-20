@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
   title: "Resume",
-  description: "Resume of Travis Jones, AI engineer: eight years of manufacturing ERP software, .NET modernization, and read-only AI tooling for QA and support.",
+  description: "Resume of Travis Jones: Software Engineer | Legacy Modernization & Applied AI. Eight years in manufacturing ERP, strongest in COBOL and VB.NET, with read-only MCP tooling experience.",
 };
 
 export default function ResumePage() {
@@ -16,7 +16,7 @@ export default function ResumePage() {
       <PageHeader
         eyebrow="Experience, in detail"
         title="Resume"
-        lede="Enterprise modernization, production engineering, and practical AI. Read it here or keep the two-page PDF."
+        lede="Software Engineer | Legacy Modernization & Applied AI. Read the experience below or download the PDF."
       >
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <a href="/resume/Travis-Jones-Resume.pdf" download className="inline-flex h-12 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-opacity hover:opacity-85"><Download size={16} aria-hidden="true" />Download resume PDF</a>

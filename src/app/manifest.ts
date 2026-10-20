@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Travis Jones, AI Engineer",
+    name: "Travis Jones, Software Engineer",
     short_name: "Travis Jones",
-    description: "Portfolio of Travis Jones, AI engineer in Ann Arbor / Ypsilanti, Michigan.",
+    description: "Travis Jones | Software Engineer | Legacy Modernization & Applied AI. Ypsilanti, Michigan.",
     start_url: "/",
     display: "standalone",
     background_color: "#0e1514",

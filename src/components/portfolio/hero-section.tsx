@@ -6,7 +6,7 @@ import { PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
 function Claim({ n }: { n: 1 | 2 | 3 }) {
   const proof = PROOF_POINTS[n - 1];
   return (
-    <span className="whitespace-nowrap">
+    <span>
       <span className="claim" data-claim={n}>
         {proof.claim}
       </span>
@@ -42,8 +42,8 @@ export function HeroSection() {
           className="hero-rise mt-8 max-w-[44rem] text-pretty text-[clamp(1.2rem,2.1vw,1.6rem)] leading-[1.5] text-foreground/90"
           style={rise(180)}
         >
-          I connect AI to the <Claim n={1} /> companies already run on, with <Claim n={2} /> where it counts
-          and <Claim n={3} /> on what ships.
+          I modernize <Claim n={1} />, build tools for <Claim n={2} />,
+          and contributed <Claim n={3} /> to M-Local.
         </p>
 
         <div className="hero-rise mt-9 flex flex-wrap items-center gap-3" style={rise(280)}>

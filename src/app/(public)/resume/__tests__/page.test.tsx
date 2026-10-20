@@ -8,6 +8,7 @@ it("provides a readable public resume with a direct PDF download", () => {
   render(<ResumePage />);
   expect(screen.getByRole("heading", { name: "Resume", level: 1 })).toBeDefined();
   expect(screen.getByRole("link", { name: "Download resume PDF" }).getAttribute("href")).toBe("/resume/Travis-Jones-Resume.pdf");
-  expect(screen.getByRole("heading", { name: /Global Shop Solutions.*Software Engineer/ })).toBeDefined();
-  expect(screen.getByText(/read-only and added filters/)).toBeDefined();
+  expect(screen.getByRole("heading", { name: /GLOBAL SHOP SOLUTIONS.*Software Engineer/ })).toBeDefined();
+  expect(screen.getByText(/security-filtered, read-only Model Context Protocol/)).toBeDefined();
+  expect(screen.getByText(/reproducible simulated-worker demo rejects false success/)).toBeDefined();
 });

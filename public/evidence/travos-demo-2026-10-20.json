@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "captured_on": "2026-10-20",
+  "project": "TravOS",
+  "status": "working engineering prototype",
+  "evidence_kind": "sanitized summary of a local simulated portfolio demonstration",
+  "proof_kind": "deterministic-core-fixture",
+  "synthetic_tasks": true,
+  "worker_kind": "simulated scripted worker",
+  "fixture_dispatch_count": 3,
+  "provider_dispatch_count": 0,
+  "rejected_attempt": {
+    "worker_claim": "succeeded",
+    "overall_pass": false,
+    "observed_missing_artifact_rejection": true
+  },
+  "completion_at_checkpoint": {
+    "refused": true,
+    "reason": "mission_incomplete: every required task must be done"
+  },
+  "explicitly_requested_correction": {
+    "worker_claim": "succeeded",
+    "overall_pass": true
+  },
+  "final_mission_status": "completed",
+  "retained_rejection_unchanged": true,
+  "not_proven": [
+    "in-flight interruption recovery",
+    "parallel worker isolation",
+    "live provider availability",
+    "unattended supervision",
+    "production readiness",
+    "autonomous compounding learning"
+  ],
+  "scope_note": "This public summary is not a live execution or a replacement for the retained local receipts. No private source, local filesystem paths, credentials, or employer data are included."
+}

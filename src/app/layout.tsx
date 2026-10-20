@@ -16,7 +16,7 @@ const display = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono", display: "swap" });
 
 const SITE_DESCRIPTION =
-  "Travis Jones is an AI engineer in Ann Arbor / Ypsilanti, Michigan. Eight years on manufacturing ERP software, now building MCP tools and supervised coding agents.";
+  "Travis Jones is a software engineer in Ypsilanti, Michigan. Eight years in manufacturing ERP, strongest in COBOL and VB.NET, with legacy modernization and applied AI experience.";
 
 const TerminalSheet = dynamic(
   () => import("@/components/terminal/terminal-sheet").then((m) => ({ default: m.TerminalSheet })),
@@ -35,12 +35,12 @@ const LevelUpOverlay = dynamic(
 export const metadata: Metadata = {
   metadataBase: new URL("https://travisjohnjones.com"),
   title: {
-    default: "Travis Jones | AI Engineer",
+    default: "Travis Jones | Software Engineer | Legacy Modernization & Applied AI",
     template: "%s | Travis Jones",
   },
   description: SITE_DESCRIPTION,
   openGraph: {
-    title: "Travis Jones | AI Engineer",
+    title: "Travis Jones | Software Engineer | Legacy Modernization & Applied AI",
     description: SITE_DESCRIPTION,
     url: "https://travisjohnjones.com",
     siteName: "Travis Jones",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Travis Jones | AI Engineer",
+    title: "Travis Jones | Software Engineer | Legacy Modernization & Applied AI",
     description: SITE_DESCRIPTION,
   },
 };

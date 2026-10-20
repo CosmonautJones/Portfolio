@@ -17,10 +17,10 @@ export function FeaturedProjects() {
           <div className="max-w-2xl">
             <p className="label-mono">Selected work</p>
             <h2 id="selected-work" className="font-display mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Running today.
+              From production work to prototypes.
             </h2>
             <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-              Open it in the browser, install it, or read the source. Each card lists what works now.
+              The contribution, the evidence, and the limits. Explore the stories below or browse the full collection of tools, games, and experiments.
             </p>
           </div>
           <Link

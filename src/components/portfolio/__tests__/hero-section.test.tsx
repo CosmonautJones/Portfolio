@@ -16,23 +16,23 @@ describe("HeroSection", () => {
   it("leads with the name and role instead of a greeting", () => {
     render(<HeroSection />);
     expect(screen.getByRole("heading", { level: 1, name: "Travis Jones" })).toBeDefined();
-    expect(screen.getByText("AI Engineer")).toBeDefined();
+    expect(screen.getByText("Software Engineer | Legacy Modernization & Applied AI")).toBeDefined();
     expect(screen.queryByText(/Hi, I.m Travis/i)).toBeNull();
   });
 
   it("establishes current location without the old Texas address", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Ann Arbor \/ Ypsilanti, Michigan/i)).toBeDefined();
+    expect(screen.getByText(/Ypsilanti, Michigan/i)).toBeDefined();
     expect(screen.queryByText(/Spring, TX/i)).toBeNull();
   });
 
   it("states what Travis builds in plain terms", () => {
     render(<HeroSection />);
     const lede = screen.getByTestId("hero-lede");
-    expect(lede.textContent).toMatch(/I connect AI to the business software/i);
-    expect(lede.textContent).toMatch(/companies already run on/i);
-    expect(lede.textContent).toMatch(/read-only access/i);
-    expect(lede.textContent).toMatch(/a person signing off/i);
+    expect(lede.textContent).toMatch(/I modernize manufacturing ERP/i);
+    expect(lede.textContent).toMatch(/read-only COBOL knowledge access/i);
+    expect(lede.textContent).toMatch(/UI and QR redemption/i);
+    expect(lede.textContent).toMatch(/to M-Local/i);
   });
 
   it("renders CTA links", () => {
@@ -57,9 +57,9 @@ describe("HeroSection", () => {
     });
   });
 
-  it("links the evidence to experience, the knowledge tool, and the agent case study", () => {
+  it("links the evidence to experience and the verified project stories", () => {
     render(<HeroSection />);
     const hrefs = PROOF_POINTS.map((proof) => proof.href);
-    expect(hrefs).toEqual(["/about#experience", "/about#knowledge-tooling", "/work/mission-control"]);
+    expect(hrefs).toEqual(["/about#experience", "/work/mcp-cobol-bridge", "/work/m-local"]);
   });
 });

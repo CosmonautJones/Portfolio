@@ -38,7 +38,7 @@ describe("portfolio artwork", () => {
       image: "/projects/pad-7.jpg",
       liveUrl: "/pad-7/PAD-7.html",
       githubUrl: "https://github.com/CosmonautJones/pad-7-firing-room",
-      featured: true,
+      featured: false,
       role: "Simulation",
     });
     expect(existsSync(path.join(process.cwd(), "public", "pad-7", "PAD-7.html"))).toBe(true);
@@ -46,7 +46,7 @@ describe("portfolio artwork", () => {
     expect(existsSync(path.join(process.cwd(), "public", "pad-7", "physics.js"))).toBe(true);
 
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(16);
+    expect(imagePaths).toHaveLength(19);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);
@@ -58,6 +58,12 @@ describe("portfolio artwork", () => {
       expect(existsSync(assetPath), `${imagePath} should exist`).toBe(true);
 
       const metadata = await sharp(assetPath).metadata();
+      // Keep the genuine historical M-Local capture at its original dimensions.
+      if (imagePath === "/projects/m-local.png") {
+        expect(metadata.width).toBeGreaterThan(0);
+        expect(metadata.height).toBeGreaterThan(0);
+        continue;
+      }
       // Alcubemy uses its original share card; keep the actual renderer artwork intact.
       const [width, height] = imagePath === "/projects/alcubemy.png" ? [1200, 630] : [1600, 900];
       expect(metadata.width, `${imagePath} width`).toBe(width);
@@ -65,11 +71,16 @@ describe("portfolio artwork", () => {
     }
   });
 
-  it("leads every featured project with a real product image instead of a placeholder", () => {
+  it("uses text covers for employer work and the local prototype instead of invented screenshots", () => {
     const featured = PROJECTS.filter((project) => project.featured);
     expect(featured.length).toBeGreaterThan(0);
     for (const project of featured) {
-      expect(project.image, `${project.title} needs a product image`).not.toBe("");
+      if (["MCP-to-COBOL bridge", "TravOS"].includes(project.title)) {
+        expect(project.image).toBe("");
+        expect(project.caseStudyUrl).toBeTruthy();
+      } else {
+        expect(project.image, `${project.title} needs its real product image`).not.toBe("");
+      }
     }
   });
 

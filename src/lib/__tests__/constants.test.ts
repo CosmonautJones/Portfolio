@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { NAV_LINKS, PROJECTS, PROOF_POINTS, SITE_CONFIG } from "@/lib/constants";
 
 describe("SITE_CONFIG", () => {
-  it("presents Travis as an AI engineer", () => {
-    expect(SITE_CONFIG.title).toBe("AI Engineer");
+  it("presents the approved software engineering positioning", () => {
+    expect(SITE_CONFIG.title).toBe("Software Engineer | Legacy Modernization & Applied AI");
   });
 
   it("keeps copy free of em dashes", () => {
@@ -66,7 +66,7 @@ describe("PROJECTS", () => {
     expect(featured.length).toBeGreaterThan(0);
     for (const project of featured) {
       expect(
-        project.demoUrl || project.liveUrl || project.githubUrl,
+        project.demoUrl || project.liveUrl || project.githubUrl || project.caseStudyUrl,
         `${project.title} is featured but has no action`
       ).toBeTruthy();
     }
