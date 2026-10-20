@@ -70,10 +70,10 @@ export function TableStakes() {
           Small thing to try
         </p>
         <h1 id="table-stakes-title" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Table Stakes
+          Poker-night blind clock
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          A simple blind clock for a home poker night. Set the pace, start the timer, and keep the table moving.
+          A separate browser utility for timing a home poker night. This is a blind-level clock, not the TableSense poker app.
         </p>
       </div>
 

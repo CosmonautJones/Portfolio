@@ -12,7 +12,7 @@ A Next.js portfolio where hiring teams and collaborators can inspect projects, t
 | [MCP-to-COBOL bridge](https://www.travisjohnjones.com/work/mcp-cobol-bridge) | Original contribution summary and a clearly synthetic illustration. |
 | [TravOS](https://www.travisjohnjones.com/work/travos) | Working prototype with simulated workers, artifact verification, and retained rejection evidence. |
 | [Pixel Workshop](https://www.travisjohnjones.com/work/pixel-art-editor) | A pixel editor implemented within this application. |
-| [Project collection](https://www.travisjohnjones.com/work) | Release Signal, Table Stakes, The Cosmonaut’s Bar, Adventure, and the broader collection of tools and case studies. |
+| [Project collection](https://www.travisjohnjones.com/work) | Release Signal, TableSense poker practice, The Cosmonaut’s Bar, Adventure, and the broader collection of tools and case studies. |
 | [Lumen Garden](https://cosmonautjones.github.io/lumen-garden/) | An external browser demo linked from the portfolio. |
 
 The site also includes a terminal, hidden discoveries, themes, and visitor progression. These support exploration; visitors can go directly to work, résumé, or contact.

@@ -9,7 +9,7 @@ const VALID_SLUGS = [
   "pixel-art-editor",
   "cocktail-mixer",
   "release-signal",
-  "table-stakes",
+  "blind-clock",
 ];
 
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = PROJECTS.find((p) => p.demoUrl === `/work/${slug}`);
   return {
-    title: project?.title ?? "Demo",
+    title: slug === "blind-clock" ? "Poker-night blind clock" : project?.title ?? "Demo",
   };
 }
 

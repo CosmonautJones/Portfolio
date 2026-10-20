@@ -58,8 +58,8 @@ describe("portfolio artwork", () => {
       expect(existsSync(assetPath), `${imagePath} should exist`).toBe(true);
 
       const metadata = await sharp(assetPath).metadata();
-      // Keep the genuine historical M-Local capture at its original dimensions.
-      if (imagePath === "/projects/m-local.png") {
+      // Keep genuine application captures at their original dimensions.
+      if (["/projects/m-local.png", "/projects/tablesense.jpg"].includes(imagePath)) {
         expect(metadata.width).toBeGreaterThan(0);
         expect(metadata.height).toBeGreaterThan(0);
         continue;

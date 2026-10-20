@@ -40,7 +40,7 @@ const TableStakes = dynamic(
 demos["pixel-art-editor"] = PixelArtEditor;
 demos["cocktail-mixer"] = CocktailMixer;
 demos["release-signal"] = ReleaseSignal;
-demos["table-stakes"] = TableStakes;
+demos["blind-clock"] = TableStakes;
 
 export function DemoLoader({ slug }: { slug: string }) {
   const DemoComponent = demos[slug];
