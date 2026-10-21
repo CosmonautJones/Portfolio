@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import { RecordedTravosEvidence } from "@/components/portfolio/recorded-travos-evidence";
 
 export const metadata: Metadata = {
   title: "TravOS | Evidence before completion",
@@ -52,6 +53,7 @@ export default function TravosCasePage() {
             </li>
           ))}
         </ol>
+        <RecordedTravosEvidence />
         <a href="/evidence/travos-demo-2026-10-20.json" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline decoration-[var(--rule-strong)] underline-offset-4 hover:decoration-[var(--signal)]">
           Inspect the demo evidence summary<ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </a>

@@ -12,10 +12,11 @@ describe("portfolio artwork", () => {
     expect(loopedIn).toMatchObject({
       image: "/projects/loopedin.jpg",
       liveUrl: "https://loopedin-family.netlify.app",
+      githubUrl: "https://github.com/CosmonautJones/family-loop",
       role: "Full-Stack Product",
     });
-    // Private-source honesty: no public githubUrl for LoopedIn.
-    expect(loopedIn?.githubUrl).toBeUndefined();
+    expect(loopedIn?.proof).toContain("Hosted beta");
+    expect(loopedIn?.proof).toContain("no guest demo");
     expect(PROJECTS.some((project) => project.title === "Plan'd")).toBe(false);
   });
 

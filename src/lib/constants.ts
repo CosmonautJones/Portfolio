@@ -275,9 +275,10 @@ export const PROJECTS: Project[] = [
     image: "/projects/loopedin.jpg",
     tags: ["React Native", "Supabase", "TypeScript", "Netlify"],
     liveUrl: "https://loopedin-family.netlify.app",
+    githubUrl: "https://github.com/CosmonautJones/family-loop",
     role: "Full-Stack Product",
     proof:
-      "Private source. Hosted product with auth, invitations, shared events, RSVPs, discussions, and private attributed photos.",
+      "Public source. Hosted beta for private family events, invitations, RSVPs, discussions, and photos. Signed-out visitors see sign-in; there is no guest demo.",
     actionLabel: "Open LoopedIn",
   },
   {
