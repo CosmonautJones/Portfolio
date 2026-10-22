@@ -50,16 +50,22 @@ describe("TryItNow", () => {
     expect(within(tiles[2]).getByText("Experimental")).toBeDefined();
   });
 
-  it("reuses project media with card alt text", () => {
-    render(<TryItNow />);
-    expect(screen.getByAltText("Water meets lava. Captured in Alcubemy.").getAttribute("src")).toBe("/projects/alcubemy.png");
-    expect(screen.getByAltText("TableSense").getAttribute("src")).toBe("/projects/tablesense.jpg");
-    expect(screen.getByAltText("Article to Markdown").getAttribute("src")).toBe("/projects/article-to-markdown.jpg");
+  it("reuses project images as decorative media", () => {
+    const { container } = render(<TryItNow />);
+    const imgs = Array.from(container.querySelectorAll("img"));
+    expect(imgs.map((img) => img.getAttribute("src"))).toEqual([
+      "/projects/article-to-markdown.jpg",
+      "/projects/tablesense.jpg",
+      "/projects/alcubemy.png",
+    ]);
+    for (const img of imgs) expect(img.getAttribute("alt")).toBe("");
+    expect(screen.queryAllByRole("img")).toHaveLength(0);
   });
 
-  it("keeps numbers off the strip", () => {
-    const { container } = render(<TryItNow />);
-    expect(container.textContent).not.toMatch(/\d/);
-    expect(container.textContent).not.toMatch(/real money|stakes|finished/i);
+  it("keeps numbers and money language off the strip", () => {
+    render(<TryItNow />);
+    const text = screen.getByRole("region", { name: "Open something and use it" }).textContent ?? "";
+    expect(text).not.toMatch(/\d/);
+    expect(text).not.toMatch(/real money|stakes|finished/i);
   });
 });

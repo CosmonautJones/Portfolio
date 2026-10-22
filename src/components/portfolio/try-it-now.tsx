@@ -6,11 +6,9 @@ import { PROJECTS, TRY_IT_NOW } from "@/lib/constants";
 const ctaClass =
   "inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--rule-strong)] px-5 text-sm font-semibold text-foreground transition-colors hover:border-[var(--signal)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--signal)]";
 
-/** Reuse the project card's media: its image, with the card caption (or title) as alt text. */
-function mediaFor(title: string) {
-  const project = PROJECTS.find((p) => p.title === title);
-  if (!project?.image) return null;
-  return { src: project.image, alt: project.preview?.caption ?? project.title };
+/** Reuse the project card's image. It's decorative here: the tile heading already names the project. */
+function imageFor(slug: string) {
+  return PROJECTS.find((p) => p.slug === slug)?.image ?? null;
 }
 
 export function TryItNow() {
@@ -28,19 +26,19 @@ export function TryItNow() {
 
       <ul className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {TRY_IT_NOW.map((tile) => {
-          const media = mediaFor(tile.project);
-          const titleId = `try-${tile.project.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+          const image = imageFor(tile.slug);
+          const titleId = `try-${tile.slug}`;
           return (
-            <li key={tile.project} className="min-w-0">
+            <li key={tile.slug} className="min-w-0">
               <article
                 aria-labelledby={titleId}
                 className="glass-card flex h-full flex-col overflow-hidden rounded-lg"
               >
-                {media && (
+                {image && (
                   <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-border bg-muted">
                     <Image
-                      src={media.src}
-                      alt={media.alt}
+                      src={image}
+                      alt=""
                       fill
                       sizes="(max-width: 1024px) 100vw, 33vw"
                       className="object-cover"

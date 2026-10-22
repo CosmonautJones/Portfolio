@@ -23,6 +23,8 @@ export interface Note {
 }
 
 export interface Project {
+  /** Stable key for cross-references (e.g. the home Try it now strip). */
+  slug?: string;
   title: string;
   description: string;
   image: string;
