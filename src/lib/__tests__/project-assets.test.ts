@@ -46,8 +46,22 @@ describe("portfolio artwork", () => {
     expect(existsSync(path.join(process.cwd(), "public", "pad-7", "desk.js"))).toBe(true);
     expect(existsSync(path.join(process.cwd(), "public", "pad-7", "physics.js"))).toBe(true);
 
+    const quantumForge = PROJECTS.find((project) => project.title === "Quantum Forge");
+    expect(quantumForge).toMatchObject({
+      image: "/projects/quantum-forge.jpg",
+      liveUrl: "/quantum-forge/index.html",
+      caseStudyUrl: "/work/quantum-forge",
+      playground: true,
+      featured: false,
+      actionLabel: "Play Quantum Forge",
+    });
+    expect(existsSync(path.join(process.cwd(), "public", "quantum-forge", "index.html"))).toBe(true);
+    for (const shot of ["foam", "confinement", "first-light", "star", "web"]) {
+      expect(existsSync(path.join(process.cwd(), "public", "projects", `quantum-forge-${shot}.jpg`))).toBe(true);
+    }
+
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(19);
+    expect(imagePaths).toHaveLength(20);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);

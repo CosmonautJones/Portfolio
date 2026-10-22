@@ -1,0 +1,1831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A slow, musical journey through the quantum realm: make particles real in the vacuum foam, bind quarks, fuse the first helium, paint hydrogen's spectral lines and keep time with a star's heart.">
+<meta name="theme-color" content="#05040f">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Quantum Forge">
+<meta property="og:description" content="A slow, musical journey through the quantum realm: make particles real in the vacuum foam, bind quarks, fuse the first helium, paint hydrogen's spectral lines and keep time with a star's heart.">
+<meta property="og:image" content="https://travisjohnjones.com/projects/quantum-forge.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20rx%3D'14'%20fill%3D'%2305040f'%2F%3E%3Cg%20fill%3D'none'%20stroke%3D'%23ffd38a'%20stroke-width%3D'2.5'%3E%3Cellipse%20cx%3D'32'%20cy%3D'32'%20rx%3D'24'%20ry%3D'9'%2F%3E%3Cellipse%20cx%3D'32'%20cy%3D'32'%20rx%3D'24'%20ry%3D'9'%20transform%3D'rotate(60%2032%2032)'%2F%3E%3Cellipse%20cx%3D'32'%20cy%3D'32'%20rx%3D'24'%20ry%3D'9'%20transform%3D'rotate(120%2032%2032)'%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D'32'%20cy%3D'32'%20r%3D'5'%20fill%3D'%238af3ff'%2F%3E%3C%2Fsvg%3E">
+<title>Quantum Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: a full-bleed shader world. Text floats over it like subtitles in a planetarium: narration low and centred, instruments in the corners, explanations in a glass panel when time slows. Single committed dark world. */
+:root{
+  color-scheme: dark;
+  --void:#05040f; --glass:rgba(12,10,32,.62); --glass-strong:rgba(14,12,38,.86);
+  --line:rgba(190,180,255,.18); --line-strong:rgba(190,180,255,.34);
+  --text:#efeaff; --dim:#aaa3d6; --faint:#6f69a0;
+  --accent:#ffd38a;            /* starlight gold */
+  --cyan:#8af3ff; --rose:#ff7eb6;
+  --f-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-ui:"IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--void);color:var(--text);font-family:var(--f-ui);font-size:15px;overflow:hidden;margin:0;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));
+  -webkit-user-select:none;user-select:none;touch-action:none}
+canvas.layer{position:fixed;inset:0;width:100%;height:100%;display:block}
+#gl{background:var(--void)}
+#ov{pointer-events:none}
+button{font-family:var(--f-ui);color:var(--text);cursor:pointer;background:none;border:none}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* ---------- title ---------- */
+.screen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;overflow-y:auto;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:calc(32px + env(safe-area-inset-top,0px)) calc(32px + env(safe-area-inset-bottom,0px));touch-action:pan-y}
+#title{pointer-events:none;align-items:center}
+#title .btn,#title .ruler{pointer-events:auto}
+.title-wrap{max-width:1180px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.title-col{max-width:560px;display:flex;flex-direction:column;gap:22px}
+#title.play .rise{animation:rise 1.6s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--void),0 0 6px 1px var(--accent)}50%{box-shadow:0 0 0 4px var(--void),0 0 20px 5px var(--accent)}}
+@keyframes wIn{from{opacity:0;transform:translateY(6px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.ruler{position:relative;display:grid;grid-template-columns:repeat(6,minmax(118px,1fr));max-width:1000px;overflow-x:auto;padding:24px 6px 6px;margin-top:10px;scrollbar-width:thin}
+.ruler::before{content:"";position:absolute;left:12px;right:12px;top:30px;height:1px;background:linear-gradient(90deg,rgba(138,243,255,.55),rgba(255,126,182,.4),rgba(255,211,138,.55))}
+.tick{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:0 12px 2px 0;text-align:left;min-width:0}
+.tick .dot{width:13px;height:13px;border-radius:50%;background:var(--sw);border:1px solid var(--line-strong);box-shadow:0 0 0 4px var(--void);transition:transform .3s}
+.tick.here .dot{animation:pulse 2.6s ease-in-out infinite}
+.tick .ex{font-family:var(--f-mono);font-size:12px;color:var(--text)}
+.tick .ex sup{font-size:.72em;line-height:0}
+.tick .nm{font-family:var(--f-display);font-size:17px;line-height:1.1;color:var(--dim);transition:color .3s}
+.tick.open:hover .nm{color:var(--accent)}
+.tick.open:hover .dot{transform:scale(1.35)}
+.tick:disabled{opacity:.34;cursor:default}
+.lb{position:fixed;left:0;right:0;height:0;background:#000;z-index:9;pointer-events:none;transition:height 1.3s cubic-bezier(.2,.7,.2,1)}
+.lb.top{top:0}.lb.bot{bottom:0}
+body.cinema .lb{height:8.5vh}
+body.cinema #hud{opacity:0!important}
+#narr .w{display:inline-block;opacity:0;animation:wIn 1s ease forwards;white-space:pre}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0}
+h1.title{font-family:var(--f-display);font-weight:400;font-size:clamp(64px,13vw,168px);line-height:.86;margin:0;letter-spacing:-.015em;text-shadow:0 0 60px rgba(138,243,255,.25)}
+h1.title em{font-style:italic;color:transparent;background:linear-gradient(100deg,#ffc76e 25%,#fff4dc 45%,#ffd38a 55%,#ffb35c 75%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;animation:sheen 9s linear infinite;text-shadow:none;filter:drop-shadow(0 0 28px rgba(255,200,120,.35))}
+.lede{font-family:var(--f-display);font-size:clamp(20px,2.4vw,26px);line-height:1.35;color:var(--dim);max-width:34ch;margin:0}
+.lede i{color:var(--text)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{padding:13px 24px;border-radius:999px;border:1px solid var(--line-strong);font-size:15px;letter-spacing:.06em;background:rgba(12,10,32,.4);transition:border-color .25s, background .25s, transform .25s}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:500}
+.btn.primary:hover{background:#ffe2ae}
+.hint{font-family:var(--f-mono);font-size:12px;color:var(--faint);letter-spacing:.04em}
+.chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;max-width:1100px}
+.chap{text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--glass);display:flex;flex-direction:column;gap:4px;min-width:0}
+.chap:hover:not(:disabled){border-color:var(--accent)}
+.chap:disabled{opacity:.35;cursor:default}
+.chap .n{font-family:var(--f-mono);font-size:11px;color:var(--dim);letter-spacing:.1em}
+.chap .t{font-family:var(--f-display);font-size:23px;line-height:1.05}
+.chap .s{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+
+/* ---------- chapter card ---------- */
+#card{position:fixed;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.4s ease;gap:10px;padding-inline:16px}
+#card.on{opacity:1}
+#card .num{font-family:var(--f-mono);font-size:13px;letter-spacing:.4em;color:var(--accent)}
+#card .name{font-family:var(--f-display);font-size:clamp(46px,8vw,104px);line-height:.95;text-wrap:balance;text-shadow:0 0 40px rgba(0,0,0,.6)}
+#card .meta{font-family:var(--f-mono);font-size:13px;color:var(--dim);letter-spacing:.06em}
+#card .line{font-family:var(--f-display);font-style:italic;font-size:clamp(18px,2.2vw,24px);color:var(--dim);max-width:32ch;margin-top:8px}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;transition:opacity 1s}
+#hud.on{opacity:1}
+.h-ch{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));left:max(18px, env(safe-area-inset-left,0px));font-family:var(--f-display);font-size:22px;line-height:1.1}
+.h-ch small{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.h-obj{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);text-align:center;width:min(560px, calc(100% - 340px));display:flex;flex-direction:column;align-items:center;gap:7px}
+.h-obj .txt{font-size:15px;line-height:1.35;color:var(--text);text-shadow:0 1px 12px rgba(0,0,0,.8);text-wrap:balance}
+.pips{display:flex;gap:7px}
+.pips i{width:9px;height:9px;border-radius:50%;border:1px solid var(--line-strong);transition:background .5s, box-shadow .5s}
+.pips i.on{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--accent)}
+.h-scale{position:absolute;left:max(18px, env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));font-family:var(--f-mono);font-size:12px;color:var(--dim);display:flex;flex-direction:column;gap:3px}
+.h-scale b{font-weight:500;color:var(--text);font-size:15px}
+.h-scale .bar{width:90px;height:1px;background:var(--dim);position:relative;margin-top:4px}
+.h-scale .bar::before,.h-scale .bar::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:var(--dim)}
+.h-scale .bar::after{right:0}
+.h-btns{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:max(16px, env(safe-area-inset-right,0px));display:flex;gap:8px;pointer-events:auto}
+.ib{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--glass);font-family:var(--f-mono);font-size:13px;display:grid;place-items:center}
+.ib:hover{border-color:var(--accent)}
+.ib.off{opacity:.45}
+
+#narr{position:fixed;left:50%;bottom:calc(46px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px, calc(100% - 32px));text-align:center;z-index:11;pointer-events:none;
+  font-family:var(--f-display);font-size:clamp(20px,2.3vw,27px);line-height:1.3;color:var(--text);text-shadow:0 2px 18px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.8);text-wrap:balance;opacity:0;transition:opacity .9s ease, transform .9s ease}
+#narr.on{opacity:1;transform:translate(-50%,-6px)}
+
+#moment{position:fixed;inset:0;z-index:12;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;opacity:0;transition:opacity .9s ease;padding-inline:16px;padding-bottom:calc(11vh + env(safe-area-inset-bottom,0px))}
+#moment .panel{transform:translateY(14px) scale(.985);transition:transform 1.1s cubic-bezier(.2,.7,.2,1)}
+#moment.on .panel{transform:none}
+#moment.on{opacity:1;pointer-events:auto}
+#moment .panel{max-width:600px;background:var(--glass-strong);border:1px solid var(--line-strong);border-radius:18px;padding:26px clamp(20px,4vw,34px) 20px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+#moment .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+#moment .b{font-family:var(--f-display);font-size:clamp(20px,2.4vw,26px);line-height:1.38;margin:0}
+#moment .c{font-family:var(--f-mono);font-size:12px;color:var(--faint);align-self:flex-end}
+
+#focusBtn{position:fixed;right:max(20px, env(safe-area-inset-right,0px));bottom:calc(28px + env(safe-area-inset-bottom,0px));z-index:13;width:92px;height:92px;border-radius:50%;border:1.5px solid var(--line-strong);background:rgba(12,10,32,.45);font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;touch-action:none}
+#focusBtn.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 30px rgba(138,243,255,.35)}
+
+.overlay{position:fixed;inset:0;z-index:25;background:rgba(5,4,15,.72);display:flex;align-items:center;justify-content:center;padding-inline:16px;overflow-y:auto;padding-block:calc(24px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
+.overlay .panel{width:min(760px,100%);background:var(--glass-strong);border:1px solid var(--line-strong);border-radius:18px;padding:24px clamp(18px,4vw,32px);display:flex;flex-direction:column;gap:16px}
+.overlay h2{font-family:var(--f-display);font-weight:400;font-size:clamp(36px,6vw,56px);margin:0;line-height:1}
+.overlay p{margin:0;color:var(--dim);line-height:1.5;font-size:16px;max-width:60ch}
+.coda-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.coda-list div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.coda-list b{display:block;font-family:var(--f-display);font-weight:400;font-size:22px}
+.coda-list span{font-family:var(--f-mono);font-size:11px;color:var(--dim)}
+
+#prologue{position:fixed;inset:0;z-index:16;display:flex;align-items:center;justify-content:center;padding-inline:24px;pointer-events:none}
+#proLine{font-family:var(--f-display);font-style:italic;font-size:clamp(24px,3.4vw,40px);line-height:1.25;text-align:center;max-width:24ch;text-wrap:balance;margin:0;margin-top:34vh;opacity:0;transform:translateY(8px);filter:blur(6px);transition:opacity 1.6s ease,transform 1.6s ease,filter 1.6s ease;text-shadow:0 0 30px rgba(138,243,255,.25)}
+#proLine.on{opacity:1;transform:none;filter:none}
+#proSkip{position:fixed;right:max(20px, env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));pointer-events:auto;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--dim);padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--glass)}
+#proSkip:hover{color:var(--text);border-color:var(--accent)}
+.notes-list{display:flex;flex-direction:column;gap:12px;max-height:56vh;overflow-y:auto;padding-right:6px}
+.note{border-left:2px solid var(--line-strong);padding:4px 0 4px 14px}
+.note.echo{border-left-color:var(--accent)}
+.note .nk{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.note .nb{font-family:var(--f-display);font-size:19px;line-height:1.4;color:var(--text);margin:0;max-width:62ch}
+.notes-list .empty{font-family:var(--f-display);font-size:19px}
+.stats-row{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--f-mono);font-size:12px;color:var(--dim)}
+.stats-row b{color:var(--text);font-weight:500}
+.credit{font-family:var(--f-mono);font-size:12px;color:var(--faint);letter-spacing:.04em}
+.credit a{color:var(--dim)}
+#nogl{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:var(--f-display);font-size:24px;color:var(--dim)}
+
+@media (max-width:820px){
+  #title{align-items:flex-start}
+  .title-col{gap:16px}
+  h1.title{font-size:clamp(56px,15vw,90px)}
+  .lede{font-size:18px}
+  .ruler{margin-top:auto}
+}
+@media (max-width:760px){
+  .h-obj{top:auto;bottom:calc(140px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px)}
+  .h-obj .txt{font-size:13.5px}
+  .h-ch{font-size:18px}
+  #narr{bottom:calc(200px + env(safe-area-inset-bottom,0px));font-size:19px}
+  .h-scale{bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion: reduce){ #card,#narr,#moment,#hud{transition:none} }
+</style>
+</head>
+<body>
+<canvas id="gl" class="layer" aria-label="The quantum realm"></canvas>
+<canvas id="ov" class="layer"></canvas>
+
+<section class="screen" id="title">
+  <div class="title-wrap">
+    <div class="title-col">
+      <p class="eyebrow rise" style="--d:.2s">A journey through the quantum realm</p>
+      <h1 class="title rise" style="--d:.45s">Quantum <em>Forge</em></h1>
+      <p class="lede rise" style="--d:.9s">Begin in the foam at the bottom of reality, where empty space <i>flickers</i>. Rise through quarks, the first nuclei, the first light and the heart of a star, out to the largest structure in the universe.</p>
+      <div class="row rise" style="--d:1.3s">
+        <button class="btn primary" id="begin">Begin the journey</button>
+        <button class="btn" id="tNotes" hidden>Field notes</button>
+        <span class="hint">Sound on, headphones if you have them<br>Touch the void anywhere · about twenty minutes</span>
+      </div>
+    </div>
+    <div class="ruler rise" id="ruler" style="--d:1.7s" aria-label="Journey map, from 10⁻³⁵ to 10²⁵ metres"></div>
+  </div>
+</section>
+
+<div class="lb top"></div><div class="lb bot"></div>
+<div id="card"><div class="num" id="cNum">I</div><div class="name" id="cName">The Foam</div><div class="meta" id="cMeta"></div><div class="line" id="cLine"></div></div>
+
+<div id="hud">
+  <div class="h-ch"><small id="hNum">Chapter I</small><span id="hName">The Foam</span></div>
+  <div class="h-obj"><div class="txt" id="hObj"></div><div class="pips" id="hPips"></div></div>
+  <div class="h-scale"><b id="hScale">10⁻³⁵ m</b><span id="hEra">t ≈ 10⁻⁴³ s</span><div class="bar"></div></div>
+  <div class="h-btns"><button class="ib" id="bSound" aria-label="Toggle sound" title="Sound (M)">♪</button><button class="ib" id="bPause" aria-label="Pause" title="Pause (Esc)">II</button></div>
+</div>
+<div id="narr" aria-live="polite"></div>
+<div id="moment" role="dialog" aria-live="polite"><div class="panel"><div class="k" id="mK">Time slows</div><p class="b" id="mB"></p><div class="c" id="mC">click or press space to continue</div></div></div>
+<button id="focusBtn" hidden aria-label="Hold to focus">FOCUS</button>
+
+<div class="overlay" id="pause" hidden><div class="panel">
+  <p class="eyebrow">Paused</p><h2>Suspended in the foam</h2>
+  <div class="stats-row" id="pStats"></div>
+  <div class="chapters" id="pChapters"></div>
+  <div class="row"><button class="btn primary" id="pResume">Resume</button><button class="btn" id="pNotes">Field notes</button><button class="btn" id="pTitle">Title screen</button></div>
+</div></div>
+
+<div class="overlay" id="coda" hidden><div class="panel">
+  <p class="eyebrow">Coda</p><h2>Everything began as a flicker</h2>
+  <p id="codaText">You crossed sixty orders of magnitude, from 10⁻³⁵ metres to 10²⁵, and nearly fourteen billion years.</p>
+  <div class="stats-row" id="codaStats"></div>
+  <div class="coda-list" id="codaList"></div>
+  <div class="row"><button class="btn primary" id="cAgain">Return to the foam</button><button class="btn" id="cNotes">Field notes</button><button class="btn" id="cTitle">Title screen</button></div>
+  <p class="credit">Quantum Forge · a game by Travis Jones · <a href="https://github.com/CosmonautJones/quantum-forge" target="_blank" rel="noopener">source on GitHub</a></p>
+</div></div>
+<div id="prologue" hidden><p id="proLine"></p><button id="proSkip">SKIP</button></div>
+<div class="overlay" id="notes" hidden><div class="panel">
+  <p class="eyebrow">Field notes</p><h2>What you've learned</h2>
+  <p class="stats-row" id="notesMeta"></p>
+  <div class="notes-list" id="notesList"></div>
+  <div class="row"><button class="btn primary" id="notesClose">Close</button></div>
+</div></div>
+<div id="nogl" hidden>This journey needs WebGL 2, which this browser doesn't provide.</div>
+<script>
+"use strict";
+// ---- 01-renderer.js ----
+const $ = s => document.getElementById(s);
+const TAU = Math.PI * 2;
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+const mix3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// =================== WebGL renderer: shader background + additive glow points ===================
+const glc = $("gl"), ovc = $("ov"), oc = ovc.getContext("2d");
+const gl = glc.getContext("webgl2", { antialias: false, alpha: false, preserveDrawingBuffer: false });
+let W = 1, H = 1, DPR = 1, QUALITY = 1;
+const cam = { x: 0, y: 0, zoom: 1, shake: 0 };
+
+const BG_VS = `#version 300 es
+void main(){ vec2 p = vec2(float((gl_VertexID<<1)&2), float(gl_VertexID&2)); gl_Position = vec4(p*2.-1., 0., 1.); }`;
+const BG_FS = `#version 300 es
+precision highp float;
+uniform vec2 uRes; uniform float uTime; uniform vec2 uCam;
+uniform vec3 uC0, uC1, uC2, uFogCol;
+uniform float uFoam, uFog, uPulse, uFlash, uCMB, uWarp, uStar;
+uniform vec4 uLines[3]; uniform vec4 uRip[4]; uniform vec3 uLens;
+out vec4 o;
+float h21(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+vec2 h22(vec2 p){ float n = h21(p); return vec2(n, h21(p+n+17.1)); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.-2.*f);
+  return mix(mix(h21(i), h21(i+vec2(1,0)), u.x), mix(h21(i+vec2(0,1)), h21(i+vec2(1,1)), u.x), u.y); }
+float fbm(vec2 p){ float a = .5, s = 0.; for(int i=0;i<5;i++){ s += a*noise(p); p = p*2.03 + vec2(1.7,9.2); a *= .5; } return s; }
+vec3 voro(vec2 p, float t){ vec2 i = floor(p), f = fract(p); float d1 = 8., d2 = 8., id = 0.;
+  for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){ vec2 g = vec2(x,y); vec2 r = h22(i+g); r = .5+.42*sin(t*.5 + 6.2831*r);
+    vec2 d = g + r - f; float dd = dot(d,d); if(dd < d1){ d2 = d1; d1 = dd; id = h21(i+g); } else if(dd < d2) d2 = dd; }
+  return vec3(sqrt(d1), sqrt(d2)-sqrt(d1), id); }
+void main(){
+  vec2 uv = (gl_FragCoord.xy - .5*uRes)/uRes.y;
+  vec2 uvw = uv;
+  for(int k=0;k<4;k++){ vec4 r = uRip[k]; if(r.w > .001){ vec2 dv = uv - r.xy; float d = length(dv);
+    float wave = sin(d*36. - r.z*10.)*exp(-abs(d - r.z*.5)*8.)*exp(-r.z*1.1)*r.w; uvw += dv/(d+.001)*wave*.04; } }
+  vec2 dl = uv - uLens.xy; float dd = length(dl); uvw -= dl/(dd+.03)*uLens.z*exp(-dd*7.)*.025;
+  vec2 w = uvw*1.5 + uCam*.00055;
+  float t = uTime*.045;
+  vec2 q = vec2(fbm(w*1.2 + t), fbm(w*1.2 - t + 5.2));
+  vec2 r2 = vec2(fbm(w*1.6 + q*1.8 + vec2(1.7,9.2) + t*.6), fbm(w*1.6 + q*1.8 + vec2(8.3,2.8) - t*.4));
+  float n = fbm(w*1.4 + r2*uWarp);
+  vec3 col = mix(uC0, uC1, smoothstep(.2, .9, n));
+  col += uC2 * pow(max(0., n - .5)*2.1, 3.) * 1.1;
+  col += uC1 * .35 * pow(length(q - .5), 2.);
+  // planck-scale foam: shimmering cell walls that pop in and out
+  vec3 v = voro(w*6.5 + q*1.4, uTime);
+  float edge = smoothstep(.07, 0., v.y);
+  float flick = pow(.5 + .5*sin(uTime*(1.3 + v.z*4.) + v.z*40.), 3.);
+  vec3 irid = .5 + .5*cos(6.2831*(v.z + uTime*.03 + vec3(0., .33, .67)));
+  col += uFoam * edge * flick * mix(uC2, irid, .55) * .34;
+  col += uFoam * smoothstep(.5, .0, v.x) * flick * irid * .035;
+  vec3 v2 = voro(w*19. + r2*2. + t*2., uTime*1.7);
+  col += uFoam * smoothstep(.05, 0., v2.x) * step(.9, fract(v2.z*13. + uTime*.35)) * mix(uC2, vec3(1.), .6) * .9;
+  // star field (cosmic chapters)
+  vec3 v3 = voro(uv*42. + uCam*.0002, 0.);
+  col += uStar * smoothstep(.06, 0., v3.x) * step(.82, v3.z) * (.5 + .5*sin(uTime*2. + v3.z*90.)) * vec3(.9,.92,1.);
+  // emission lines painted across the sky
+  for(int k=0;k<3;k++){ if(uLines[k].a > 0.001){
+    float y = uv.y - (.30 - float(k)*.075) - .045*sin(uv.x*2.6 + uTime*.25 + float(k)*1.7);
+    float band = exp(-y*y*700.) * (.55 + .45*fbm(vec2(uv.x*5. + uTime*.15, float(k)*3.)));
+    float curtain = exp(-max(0., -y)*14.) * step(y, 0.) * .25;
+    col += uLines[k].rgb * (band + curtain) * uLines[k].a; } }
+  col += uCMB * mix(vec3(1.,.5,.25), vec3(.4,.6,1.), fbm(uv*2.2 + 3.)) * (fbm(uv*3.5 + uTime*.01) - .35) * .5;
+  float fogn = fbm(uv*2.4 + vec2(uTime*.04, uTime*.01));
+  col = mix(col, uFogCol*(.55 + .8*fogn), uFog*.9);
+  col += uPulse * uC2 * .16 * (1. - length(uv)*.9);
+  col *= 1. - .6*dot(uv*.85, uv*.85);
+  col += uFlash;
+  col += (h21(gl_FragCoord.xy + uTime) - .5) * .012;
+  o = vec4(col, 1.);
+}`;
+const PT_VS = `#version 300 es
+layout(location=0) in vec2 aPos; layout(location=1) in float aSize; layout(location=2) in vec4 aCol;
+uniform vec2 uRes; uniform vec2 uCam; uniform float uZoom; uniform float uDpr;
+out vec4 vCol;
+void main(){ vec2 s = (aPos - uCam)*uZoom; gl_Position = vec4(s.x*2./uRes.x, -s.y*2./uRes.y, 0., 1.);
+  gl_PointSize = clamp(aSize*uZoom*uDpr*3., 1.5, 900.); vCol = aCol; }`;
+const PT_FS = `#version 300 es
+precision mediump float;
+in vec4 vCol; out vec4 o;
+void main(){ vec2 c = gl_PointCoord*2. - 1.; float d = dot(c,c); if(d > 1.) discard;
+  float core = exp(-d*9.); float halo = exp(-d*2.4)*.38; float a = (core*1.15 + halo)*vCol.a*(1. - d);
+  o = vec4(vCol.rgb*a, a); }`;
+
+const BLUR_FS = `#version 300 es
+precision mediump float; uniform sampler2D uTex; uniform vec2 uDir; uniform vec2 uRes; out vec4 o;
+void main(){ vec2 uv = gl_FragCoord.xy/uRes; vec4 s = texture(uTex, uv)*.227027;
+  s += (texture(uTex, uv + uDir*1.3846) + texture(uTex, uv - uDir*1.3846))*.3162162;
+  s += (texture(uTex, uv + uDir*3.2308) + texture(uTex, uv - uDir*3.2308))*.0702703; o = s; }`;
+const COMP_FS = `#version 300 es
+precision mediump float; uniform sampler2D uTex; uniform vec2 uRes; uniform float uAmt; out vec4 o;
+void main(){ o = texture(uTex, gl_FragCoord.xy/uRes)*uAmt; }`;
+function mkProg(vs, fs) {
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+let bgP, ptP, ptVao, ptBuf, BGU = {}, PTU = {}, blurP, compP, BLU = {}, CMU = {}, bloom = null;
+const MAXP = 24000, PTS = new Float32Array(MAXP * 7);
+let np = 0;
+function initGL() {
+  if (!gl) return false;
+  try { bgP = mkProg(BG_VS, BG_FS); ptP = mkProg(PT_VS, PT_FS); blurP = mkProg(BG_VS, BLUR_FS); compP = mkProg(BG_VS, COMP_FS); } catch (e) { console.error(e); return false; }
+  for (const k of ["uTex","uDir","uRes"]) BLU[k] = gl.getUniformLocation(blurP, k);
+  for (const k of ["uTex","uRes","uAmt"]) CMU[k] = gl.getUniformLocation(compP, k);
+  for (const k of ["uRes","uTime","uCam","uC0","uC1","uC2","uFogCol","uFoam","uFog","uPulse","uFlash","uCMB","uWarp","uStar","uLines","uRip","uLens"]) BGU[k] = gl.getUniformLocation(bgP, k);
+  for (const k of ["uRes","uCam","uZoom","uDpr"]) PTU[k] = gl.getUniformLocation(ptP, k);
+  ptVao = gl.createVertexArray(); gl.bindVertexArray(ptVao);
+  ptBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ptBuf); gl.bufferData(gl.ARRAY_BUFFER, PTS.byteLength, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 28, 0);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 28, 8);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 28, 12);
+  gl.bindVertexArray(null);
+  return true;
+}
+function resize() {
+  DPR = Math.max(.5, Math.min(window.devicePixelRatio || 1, 1.6) * QUALITY);
+  W = window.innerWidth; H = window.innerHeight;
+  glc.width = Math.round(W * DPR); glc.height = Math.round(H * DPR);
+  ovc.width = Math.round(W * DPR); ovc.height = Math.round(H * DPR);
+  oc.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (gl && blurP) makeBloom();
+}
+// bloom: points are also drawn into a half-resolution buffer, blurred, and added back on top
+function makeBloom() {
+  if (bloom) { gl.deleteTexture(bloom.t1); gl.deleteTexture(bloom.t2); gl.deleteFramebuffer(bloom.f1); gl.deleteFramebuffer(bloom.f2); }
+  const bw = Math.max(1, glc.width >> 1), bh = Math.max(1, glc.height >> 1);
+  const mk = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bw, bh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    return [t, f]; };
+  const [t1, f1] = mk(), [t2, f2] = mk(); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  bloom = { t1, f1, t2, f2, bw, bh };
+}
+window.addEventListener("resize", resize);
+
+// point emitter: world coords, radius in world units, colour [r,g,b] 0..1
+function P(x, y, r, c, a = 1) {
+  if (np >= MAXP) return;
+  const i = np * 7; PTS[i] = x; PTS[i + 1] = y; PTS[i + 2] = r; PTS[i + 3] = c[0]; PTS[i + 4] = c[1]; PTS[i + 5] = c[2]; PTS[i + 6] = a; np++;
+}
+// a line of glowing points between two world positions
+function PLine(x0, y0, x1, y1, r, c, a, step = 6, wob = 0, t = 0) {
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), n = Math.max(2, Math.floor(L / step)), nx = -dy / (L || 1), ny = dx / (L || 1);
+  for (let i = 0; i <= n; i++) { const s = i / n, w = wob ? Math.sin(s * Math.PI) * Math.sin(s * 9 + t) * wob : 0; P(x0 + dx * s + nx * w, y0 + dy * s + ny * w, r, c, a); }
+}
+
+// shared visual state, eased toward chapter targets each frame
+const FX = { c0: hex("#05040f"), c1: hex("#1d1645"), c2: hex("#8af3ff"), fogCol: hex("#ff9a55"), foam: 1, fog: 0, pulse: 0, flash: 0, cmb: 0, warp: 1.6, star: 0, lines: [[0,0,0,0],[0,0,0,0],[0,0,0,0]], rips: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], lens: [0, 0, 0] };
+const FXT = { c0: FX.c0, c1: FX.c1, c2: FX.c2, foam: 1, fog: 0, cmb: 0, warp: 1.6, star: 0 };
+function setLook(o) { for (const k in o) FXT[k] = typeof o[k] === "string" ? hex(o[k]) : o[k]; }
+function stepFX(dt) {
+  const k = 1 - Math.exp(-dt * .9);
+  for (const c of ["c0", "c1", "c2"]) FX[c] = mix3(FX[c], FXT[c], k);
+  for (const s of ["foam", "fog", "cmb", "warp", "star"]) FX[s] = lerp(FX[s], FXT[s], k);
+  FX.pulse *= Math.exp(-dt * 5); FX.flash *= Math.exp(-dt * 2.6);
+  for (const r of FX.rips) if (r[3] > 0) { r[2] += dt; if (r[2] > 3.5) r[3] = 0; }
+}
+// a shockwave that bends the foam itself
+function addRipple(x, y, s = 1) {
+  let slot = FX.rips.findIndex(r => r[3] === 0);
+  if (slot < 0) slot = FX.rips.reduce((b, r, i) => r[2] > FX.rips[b][2] ? i : b, 0);
+  FX.rips[slot] = [(scrX(x) - W / 2) / H, -(scrY(y) - H / 2) / H, 0, clamp(s, .15, 1.4) * (REDUCED ? .3 : 1)];
+}
+function renderGL(time) {
+  gl.viewport(0, 0, glc.width, glc.height);
+  gl.disable(gl.BLEND);
+  gl.useProgram(bgP);
+  gl.uniform2f(BGU.uRes, glc.width, glc.height); gl.uniform1f(BGU.uTime, time); gl.uniform2f(BGU.uCam, cam.x, cam.y);
+  gl.uniform3fv(BGU.uC0, FX.c0); gl.uniform3fv(BGU.uC1, FX.c1); gl.uniform3fv(BGU.uC2, FX.c2); gl.uniform3fv(BGU.uFogCol, FX.fogCol);
+  gl.uniform1f(BGU.uFoam, FX.foam); gl.uniform1f(BGU.uFog, FX.fog); gl.uniform1f(BGU.uPulse, FX.pulse); gl.uniform1f(BGU.uFlash, FX.flash);
+  gl.uniform1f(BGU.uCMB, FX.cmb); gl.uniform1f(BGU.uWarp, FX.warp); gl.uniform1f(BGU.uStar, FX.star);
+  gl.uniform4fv(BGU.uLines, FX.lines.flat()); gl.uniform4fv(BGU.uRip, FX.rips.flat()); gl.uniform3fv(BGU.uLens, FX.lens);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  if (np) {
+    const sx = cam.shake ? rand(-cam.shake, cam.shake) : 0, sy = cam.shake ? rand(-cam.shake, cam.shake) : 0;
+    gl.bindVertexArray(ptVao); gl.bindBuffer(gl.ARRAY_BUFFER, ptBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, PTS, 0, np * 7);
+    gl.useProgram(ptP);
+    gl.uniform2f(PTU.uRes, W, H); gl.uniform2f(PTU.uCam, cam.x + sx, cam.y + sy); gl.uniform1f(PTU.uZoom, cam.zoom);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+    if (bloom) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bloom.f1); gl.viewport(0, 0, bloom.bw, bloom.bh); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform1f(PTU.uDpr, DPR * .5); gl.drawArrays(gl.POINTS, 0, np);
+      gl.bindVertexArray(null); gl.disable(gl.BLEND); gl.useProgram(blurP); gl.uniform2f(BLU.uRes, bloom.bw, bloom.bh); gl.uniform1i(BLU.uTex, 0); gl.activeTexture(gl.TEXTURE0);
+      const pass = (src, dst, dx, dy) => { gl.bindFramebuffer(gl.FRAMEBUFFER, dst); gl.bindTexture(gl.TEXTURE_2D, src); gl.uniform2f(BLU.uDir, dx / bloom.bw, dy / bloom.bh); gl.drawArrays(gl.TRIANGLES, 0, 3); };
+      pass(bloom.t1, bloom.f2, 1.2, 0); pass(bloom.t2, bloom.f1, 0, 1.2); pass(bloom.t1, bloom.f2, 3, 0); pass(bloom.t2, bloom.f1, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, glc.width, glc.height);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      gl.useProgram(compP); gl.bindTexture(gl.TEXTURE_2D, bloom.t1); gl.uniform1i(CMU.uTex, 0); gl.uniform2f(CMU.uRes, glc.width, glc.height); gl.uniform1f(CMU.uAmt, 1.5);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.useProgram(ptP); gl.bindVertexArray(ptVao);
+    }
+    gl.uniform1f(PTU.uDpr, DPR); gl.drawArrays(gl.POINTS, 0, np);
+    gl.bindVertexArray(null);
+  }
+  np = 0;
+}
+// world -> screen (CSS px) for the 2D overlay
+const scrX = x => (x - cam.x) * cam.zoom + W / 2, scrY = y => (y - cam.y) * cam.zoom + H / 2;
+const worldX = sx => (sx - W / 2) / cam.zoom + cam.x, worldY = sy => (sy - H / 2) / cam.zoom + cam.y;
+function label(x, y, text, o = {}) {
+  const X = scrX(x) + (o.dx || 0), Y = scrY(y) + (o.dy || 0);
+  if (X < -100 || X > W + 100 || Y < -60 || Y > H + 60) return;
+  oc.globalAlpha = o.a ?? 1; oc.fillStyle = o.color || "#efeaff";
+  oc.font = o.font || "12px 'IBM Plex Mono', monospace"; oc.textAlign = o.align || "center"; oc.textBaseline = "middle";
+  if (o.shadow !== false) { oc.shadowColor = "rgba(0,0,0,.85)"; oc.shadowBlur = 6; }
+  oc.fillText(text, X, Y); oc.shadowBlur = 0; oc.globalAlpha = 1;
+}
+
+// ---- 02-music.js ----
+// =================== Generative score ===================
+// A slow pad that changes chord with each chapter, bell tones on every interaction (always in key),
+// a quiet shimmer of foam notes, and a heartbeat pulse for the star chapter.
+const Music = (() => {
+  let ctx = null, master, verb, dry, padBus, padFilter, voices = [], muted = false, started = false;
+  const midi = m => 440 * Math.pow(2, (m - 69) / 12);
+  // D major pentatonic, three octaves from D4
+  const SCALE = []; for (const o of [62, 74, 86]) for (const s of [0, 2, 4, 7, 9]) SCALE.push(o + s);
+  const CHORDS = {
+    foam:   [38, 50, 57, 64, 66, 69],     // Dmaj9-ish
+    quark:  [35, 47, 54, 61, 62, 66],     // Bm9
+    nuclei: [31, 43, 50, 57, 61, 66],     // Gmaj7#11
+    light:  [33, 45, 52, 59, 61, 64],     // Aadd9
+    star:   [30, 42, 49, 54, 57, 61],     // F#m7
+    web:    [26, 38, 50, 57, 64, 69, 76], // wide D
+  };
+  let beat = null;
+  function impulse(sec, decay) {
+    const len = ctx.sampleRate * sec, b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return b;
+  }
+  function start() {
+    if (started) { if (ctx && ctx.state === "suspended") ctx.resume(); return; }
+    try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    started = true;
+    master = ctx.createGain(); master.gain.value = muted ? 0 : .9;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+    master.connect(comp).connect(ctx.destination);
+    verb = ctx.createConvolver(); verb.buffer = impulse(4.5, 2.6);
+    const wet = ctx.createGain(); wet.gain.value = .55; verb.connect(wet).connect(master);
+    dry = ctx.createGain(); dry.gain.value = .6; dry.connect(master);
+    padBus = ctx.createGain(); padBus.gain.value = 0;
+    padFilter = ctx.createBiquadFilter(); padFilter.type = "lowpass"; padFilter.frequency.value = 900; padFilter.Q.value = .6;
+    padBus.connect(padFilter); padFilter.connect(verb); padFilter.connect(dry);
+    const lfo = ctx.createOscillator(), lfoG = ctx.createGain(); lfo.frequency.value = .07; lfoG.gain.value = 380;
+    lfo.connect(lfoG).connect(padFilter.frequency); lfo.start();
+    padBus.gain.setTargetAtTime(.16, ctx.currentTime, 3);
+    if (ctx.state === "suspended") ctx.resume();
+  }
+  function chord(name, bright = 900) {
+    if (!ctx) return;
+    const notes = CHORDS[name] || CHORDS.foam, t = ctx.currentTime;
+    for (const v of voices) { v.g.gain.setTargetAtTime(0, t, 1.6); v.o.forEach(o => o.stop(t + 8)); }
+    voices = notes.map((m, i) => {
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(padBus);
+      const o = [-6, 6].map(det => { const o = ctx.createOscillator(); o.type = i < 2 ? "sine" : "sawtooth"; o.frequency.value = midi(m); o.detune.value = det + rand(-3, 3); o.connect(g); o.start(t); return o; });
+      g.gain.setTargetAtTime((i < 2 ? .22 : .05) / Math.sqrt(notes.length / 6), t + .2, 2.2);
+      return { g, o };
+    });
+    padFilter.frequency.setTargetAtTime(bright, t, 3);
+  }
+  function bell(freq, vol = .14, dur = 2.6, when = 0) {
+    if (!ctx || muted) return;
+    const t = ctx.currentTime + when, g = ctx.createGain();
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    g.connect(verb); g.connect(dry);
+    for (const [mult, lv] of [[1, 1], [2.01, .32], [3.99, .12], [5.43, .05]]) {
+      const o = ctx.createOscillator(), og = ctx.createGain(); o.frequency.value = freq * mult; og.gain.value = lv;
+      o.connect(og).connect(g); o.start(t); o.stop(t + dur + .05);
+    }
+  }
+  const note = (deg, vol, dur, when) => bell(midi(SCALE[clamp(deg | 0, 0, SCALE.length - 1)]), vol, dur, when);
+  function arp(degs, gap = .12, vol = .1) { degs.forEach((d, i) => note(d, vol, 3, i * gap)); }
+  function whoosh(dur = 3, up = true) {
+    if (!ctx || muted) return;
+    const t = ctx.currentTime, len = ctx.sampleRate * dur, b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(); s.buffer = b;
+    const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 2.5;
+    f.frequency.setValueAtTime(up ? 200 : 3000, t); f.frequency.exponentialRampToValueAtTime(up ? 4200 : 160, t + dur);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.18, t + dur * .6); g.gain.linearRampToValueAtTime(0, t + dur);
+    s.connect(f).connect(g); g.connect(verb); g.connect(dry); s.start(t);
+  }
+  function thump(when, vol = .5) {
+    if (!ctx || muted) return;
+    const t = when, o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(38, t + .25);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + .45);
+    o.connect(g); g.connect(dry); g.connect(verb); o.start(t); o.stop(t + .5);
+  }
+  function low(freq, vol = .2, dur = 4) { // deep swell for big moments
+    if (!ctx || muted) return;
+    const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .4); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(verb); g.connect(dry); o.start(t); o.stop(t + dur + .1);
+  }
+  // beat clock: shared by the visuals and the scheduler so they never drift
+  const now = () => ctx ? ctx.currentTime : performance.now() / 1000;
+  function startBeat(bpm) { beat = { bpm, t0: now() + .3, next: 0 }; }
+  function stopBeat() { beat = null; }
+  function beatInfo() {
+    if (!beat) return null;
+    const per = 60 / beat.bpm, x = (now() - beat.t0) / per, k = Math.round(x);
+    return { phase: ((x % 1) + 1) % 1, nearestOff: (x - k) * per, index: Math.floor(x), per };
+  }
+  function tick() {
+    if (!beat || !ctx) return;
+    const per = 60 / beat.bpm;
+    while (beat.t0 + beat.next * per < ctx.currentTime + .15) {
+      const when = beat.t0 + beat.next * per;
+      if (when >= ctx.currentTime - .01) thump(when, beat.next % 4 === 0 ? .55 : .35);
+      beat.next++;
+    }
+  }
+  function setMuted(m) { muted = m; if (master) master.gain.setTargetAtTime(m ? 0 : .9, ctx.currentTime, .2); }
+  return { start, chord, note, arp, bell, whoosh, low, startBeat, stopBeat, beatInfo, tick, setMuted, get muted() { return muted; }, SCALE };
+})();
+
+// ---- 03-world.js ----
+// =================== Core journey systems ===================
+const G = { state: "title", ch: null, idx: 0, ts: 1, tsT: 1, time: 0, focus: false, made: [], chT: 0 };
+const COARSE = window.matchMedia("(pointer: coarse)").matches;
+const input = { px: null, py: null, follow: false, down: false, space: false, touchFocus: false, keys: {} };
+const pl = { x: 0, y: 0, vx: 0, vy: 0, trail: [], focusAmt: 0, maxV: 230, col: hex("#bff8ff"), hidden: false };
+
+// ---------- input ----------
+const KEYMAP = { KeyW: [0, -1], ArrowUp: [0, -1], KeyS: [0, 1], ArrowDown: [0, 1], KeyA: [-1, 0], ArrowLeft: [-1, 0], KeyD: [1, 0], ArrowRight: [1, 0] };
+window.addEventListener("keydown", e => {
+  if (KEYMAP[e.code]) { input.keys[e.code] = 1; input.follow = false; if (G.state === "play") e.preventDefault(); }
+  if (e.code === "Space") { if (Moment.cur) Moment.next(); else input.space = true; if (G.state === "play") e.preventDefault(); }
+  if (e.code === "Escape" || e.code === "KeyP") togglePause();
+  if (e.code === "KeyM") toggleSound();
+});
+window.addEventListener("keyup", e => { if (KEYMAP[e.code]) input.keys[e.code] = 0; if (e.code === "Space") input.space = false; });
+glc.addEventListener("pointermove", e => { input.px = e.clientX; input.py = e.clientY; if (e.pointerType === "mouse" || input.dragging) input.follow = true; });
+glc.addEventListener("pointerdown", e => {
+  Music.start();
+  if (Moment.cur) { Moment.next(); return; }
+  input.px = e.clientX; input.py = e.clientY; input.follow = true;
+  if (e.pointerType === "mouse") input.down = true; else input.dragging = true;
+  try { glc.setPointerCapture(e.pointerId); } catch (_) {}
+});
+const endPtr = e => { if (e.pointerType === "mouse") input.down = false; else { input.dragging = false; input.follow = false; } };
+glc.addEventListener("pointerup", endPtr); glc.addEventListener("pointercancel", endPtr);
+glc.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") input.follow = false; });
+glc.addEventListener("contextmenu", e => e.preventDefault());
+$("moment").addEventListener("pointerdown", () => Moment.next());
+const fb = $("focusBtn");
+fb.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); Music.start(); if (Moment.cur) { Moment.next(); return; } input.touchFocus = true; fb.classList.add("on"); });
+const fbOff = () => { input.touchFocus = false; fb.classList.remove("on"); };
+fb.addEventListener("pointerup", fbOff); fb.addEventListener("pointercancel", fbOff); fb.addEventListener("pointerleave", fbOff);
+
+// ---------- the observer (player) ----------
+function updatePlayer(dt) {
+  G.focus = (input.down || input.space || input.touchFocus) && G.state === "play" && !Moment.cur;
+  let kx = 0, ky = 0; for (const c in input.keys) if (input.keys[c]) { kx += KEYMAP[c][0]; ky += KEYMAP[c][1]; }
+  let ax = 0, ay = 0;
+  const maxV = pl.maxV * (G.focus ? .55 : 1);
+  if (kx || ky) { const l = Math.hypot(kx, ky); ax = (kx / l * maxV - pl.vx) * 3.2; ay = (ky / l * maxV - pl.vy) * 3.2; }
+  else if (input.follow && input.px != null && G.state === "play") {
+    const dx = worldX(input.px) - pl.x, dy = worldY(input.py) - pl.y, d = Math.hypot(dx, dy);
+    if (d > 8) { const s = Math.min(maxV, d * 1.6); ax = (dx / d * s - pl.vx) * 2.6; ay = (dy / d * s - pl.vy) * 2.6; }
+    else { ax = -pl.vx * 3; ay = -pl.vy * 3; }
+  } else { ax = -pl.vx * 1.4; ay = -pl.vy * 1.4; }
+  pl.vx += ax * dt; pl.vy += ay * dt;
+  pl.x += pl.vx * dt; pl.y += pl.vy * dt;
+  pl.trail.unshift([pl.x, pl.y]); if (pl.trail.length > 46) pl.trail.pop();
+  pl.focusAmt = lerp(pl.focusAmt, G.focus ? 1 : 0, 1 - Math.exp(-dt * 7));
+}
+function drawPlayer(t) {
+  if (pl.hidden) return;
+  const c = pl.col, f = pl.focusAmt;
+  for (let i = 2; i < pl.trail.length; i += 2) { const k = 1 - i / pl.trail.length; P(pl.trail[i][0], pl.trail[i][1], 2 + 6 * k, c, .22 * k); }
+  if (!G.ch || !G.ch.skin) { P(pl.x, pl.y, 30, c, .22); P(pl.x, pl.y, 7, [1, 1, 1], .95); }
+  else G.ch.skin(t);
+  // the wave packet: a breathing ring of probability
+  const n = 26, R = 15 + 3 * Math.sin(t * 2.1) + f * 10;
+  for (let i = 0; i < n; i++) { const a = i / n * TAU + t * .4, w = Math.sin(a * 3 + t * 3) * 3; P(pl.x + Math.cos(a) * (R + w), pl.y + Math.sin(a) * (R + w), 1.8, c, .35 + .3 * f); }
+  if (f > .02) for (let k = 0; k < 3; k++) {
+    const rr = ((t * 60 + k * 40) % 120) + 20, al = f * .5 * (1 - rr / 140);
+    for (let i = 0; i < 40; i++) { const a = i / 40 * TAU; P(pl.x + Math.cos(a) * rr, pl.y + Math.sin(a) * rr, 1.6, [.8, .95, 1], al); }
+  }
+}
+
+// ---------- effects ----------
+const FXL = { sparks: [], rings: [], floats: [], comps: [] };
+function burst(x, y, c, n = 24, sp = 140, life = 1.2, size = 3) {
+  for (let i = 0; i < n; i++) { const a = Math.random() * TAU, s = sp * (.3 + Math.random()); FXL.sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, t: 0, life: life * rand(.6, 1.2), c, size }); }
+}
+function ring(x, y, c, R = 160, life = 1.2, w = 2) { FXL.rings.push({ x, y, c, R, life, t: 0, w }); addRipple(x, y, R / 260); }
+function floatText(x, y, text, color = "#ffd38a", big = false) { FXL.floats.push({ x, y, text, color, t: 0, life: 3.2, big }); }
+function companion(c, size = 4, rad = rand(38, 70)) { FXL.comps.push({ c, size, rad, ph: Math.random() * TAU, sp: rand(.5, 1.1) * (Math.random() < .5 ? -1 : 1) }); }
+function stepFXL(dt) {
+  for (let i = FXL.sparks.length - 1; i >= 0; i--) { const s = FXL.sparks[i]; s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vx *= Math.exp(-dt * 1.8); s.vy *= Math.exp(-dt * 1.8); if (s.t > s.life) FXL.sparks.splice(i, 1); }
+  for (let i = FXL.rings.length - 1; i >= 0; i--) { const r = FXL.rings[i]; r.t += dt; if (r.t > r.life) FXL.rings.splice(i, 1); }
+  for (let i = FXL.floats.length - 1; i >= 0; i--) { const f = FXL.floats[i]; f.t += dt; f.y -= dt * 16; if (f.t > f.life) FXL.floats.splice(i, 1); }
+  for (const c of FXL.comps) c.ph += c.sp * dt;
+}
+function drawFXL(t) {
+  for (const s of FXL.sparks) { const k = 1 - s.t / s.life; P(s.x, s.y, s.size * (.5 + k), s.c, k); }
+  for (const r of FXL.rings) { const k = r.t / r.life, R = r.R * ease(k), n = Math.max(24, R * .35 | 0); for (let i = 0; i < n; i++) { const a = i / n * TAU; P(r.x + Math.cos(a) * R, r.y + Math.sin(a) * R, r.w, r.c, (1 - k) * .8); } }
+  for (const c of FXL.comps) { const x = pl.x + Math.cos(c.ph) * c.rad, y = pl.y + Math.sin(c.ph) * c.rad * .8; P(x, y, c.size * 2.6, c.c, .25); P(x, y, c.size, c.c, .95); }
+}
+function drawFloats() {
+  for (const f of FXL.floats) { const k = f.t / f.life, a = k < .15 ? k / .15 : 1 - Math.max(0, (k - .6) / .4); label(f.x, f.y, f.text, { color: f.color, a, font: f.big ? "italic 26px 'Instrument Serif', Georgia, serif" : "13px 'IBM Plex Mono', monospace" }); }
+}
+
+// ---------- narration ----------
+const Narr = { q: [], cur: null, t: 0, dur: 0, el: $("narr") };
+function say(...lines) { Narr.q.push(...lines); }
+function stepNarr(dt) {
+  if (Moment.cur) { if (Narr.cur) { Narr.el.classList.remove("on"); } return; }
+  if (Narr.cur) {
+    Narr.t += dt;
+    if (Narr.t > Narr.dur) { Narr.el.classList.remove("on"); if (Narr.t > Narr.dur + 1) Narr.cur = null; }
+    else Narr.el.classList.add("on");
+  } else if (Narr.q.length && G.state === "play") {
+    Narr.cur = Narr.q.shift(); Narr.t = 0; Narr.dur = 3 + Narr.cur.length * .052;
+    Narr.el.textContent = "";
+    Narr.cur.split(" ").forEach((w, i) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w + " "; s.style.animationDelay = (i * 55) + "ms"; Narr.el.appendChild(s); });
+    Narr.el.classList.add("on");
+  }
+}
+const narrBusy = () => !!Narr.cur || Narr.q.length > 0;
+
+// ---------- moments: time slows, the physics is explained ----------
+const Moment = {
+  q: [], cur: null, t: 0,
+  add(text, kicker = "Time slows", sound = true, focus = null) { this.q.push({ text, kicker, sound, focus: focus || { x: pl.x, y: pl.y } }); },
+  step(dt) {
+    if (!this.cur && this.q.length && G.state === "play") {
+      this.cur = this.q.shift(); this.t = 0;
+      $("mK").textContent = this.cur.kicker; $("mB").textContent = this.cur.text; $("mC").style.opacity = 0;
+      $("moment").classList.add("on"); G.tsT = .08; if (this.cur.sound) Music.low(73.4, .16, 5); recordNote(this.cur.kicker, this.cur.text);
+      // cinematic close-up: letterbox, push in on the event
+      document.body.classList.add("cinema"); cam.focus = this.cur.focus; this.zoomSaved = cam.zoomT ?? 1; cam.zoomT = this.zoomSaved * 1.85;
+    }
+    if (this.cur) { this.t += dt; if (this.t > 2.2) $("mC").style.opacity = 1; if (this.t > 6 + this.cur.text.length * .05) this.next(true); }
+  },
+  next(force) { if (!this.cur || (!force && this.t < 2.2)) return; this.cur = null; $("moment").classList.remove("on"); G.tsT = 1; document.body.classList.remove("cinema"); cam.focus = null; cam.zoomT = this.zoomSaved ?? 1; },
+};
+
+// ---------- objectives & HUD ----------
+function objective(text, total = 0, done = 0) {
+  $("hObj").textContent = text;
+  const p = $("hPips"); p.innerHTML = "";
+  for (let i = 0; i < total; i++) { const e = document.createElement("i"); if (i < done) e.className = "on"; p.appendChild(e); }
+}
+function hudChapter(ch) { $("hNum").textContent = "Chapter " + ch.num; $("hName").textContent = ch.title; $("hScale").textContent = ch.scale; $("hEra").textContent = ch.era; }
+
+// ---------- chapters ----------
+const CH = [];
+const SAVE_KEY = "quantum-forge-journey-v1";
+let save = { reached: 0, finished: false, muted: false };
+try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); if (s) save = Object.assign(save, s); } catch (e) {}
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+
+let cardTimer = 0;
+function startChapter(i) {
+  const ch = CH[i]; G.idx = i; G.ch = ch; G.chT = 0; G.state = "play"; ch.done = false;
+  FXL.sparks.length = FXL.rings.length = FXL.floats.length = FXL.comps.length = 0;
+  Narr.q.length = 0; Narr.cur = null; Narr.el.classList.remove("on");
+  Moment.q.length = 0; Moment.next(true); transition = null; document.body.classList.remove("cinema"); cam.focus = null;
+  pl.x = pl.y = pl.vx = pl.vy = 0; pl.trail.length = 0; pl.hidden = false; pl.maxV = 230; pl.col = hex("#bff8ff");
+  cam.x = cam.y = 0; cam.zoom = 2.6; cam.zoomT = 1;
+  FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  setLook(Object.assign({ foam: 0, fog: 0, cmb: 0, warp: 1.6, star: 0 }, ch.look));
+  Music.chord(ch.chord, ch.bright || 900); Music.stopBeat();
+  $("cNum").textContent = "Chapter " + ch.num; $("cName").textContent = ch.title; $("cMeta").textContent = ch.scale + "  ·  " + ch.era; $("cLine").textContent = ch.line;
+  $("card").classList.add("on"); cardTimer = 5.2; G.cardT = 0; G.expFrom = i > 0 ? CH[i - 1].expN : ch.expN - 8;
+  (ch.motif || [5, 7, 9]).forEach((d, k) => Music.note(d, .07, 4, 1.2 + k * .42));
+  $("hud").classList.remove("on"); hudChapter(ch); objective("");
+  $("focusBtn").hidden = !COARSE;
+  save.reached = Math.max(save.reached, i); persist();
+  ch.enter(); placeEcho(ch);
+}
+const supNum = n => (n < 0 ? "⁻" : "") + String(Math.abs(Math.round(n))).split("").map(d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
+function stepCard(dt) {
+  if (cardTimer > 0 && G.ch) { G.cardT += dt; const k = ease(clamp((G.cardT - .6) / 2.2, 0, 1)); $("cMeta").textContent = "10" + supNum(lerp(G.expFrom, G.ch.expN, k)) + " m  ·  " + G.ch.era; }
+  if (cardTimer > 0) { cardTimer -= dt; if (cardTimer <= 0) { $("card").classList.remove("on"); $("hud").classList.add("on"); if (G.ch && G.ch.afterCard) G.ch.afterCard(); } }
+}
+let transition = null;
+function completeChapter(delay = 4) {
+  if (!G.ch || G.ch.done) return; G.ch.done = true;
+  transition = { t: -delay, dur: 3.4 };
+  Warp.parts = []; for (let i = 0; i < 180; i++) Warp.parts.push({ a: Math.random() * TAU, r: rand(20, 500), sp: rand(.6, 1.6), c: Math.random() });
+}
+const Warp = { parts: [] };
+function drawWarp() {
+  if (!transition || transition.t <= 0) return;
+  const w = clamp(transition.t / transition.dur, 0, 1), nxt = CH[G.idx + 1], c2 = nxt ? hex(nxt.look.c2) : C.matter, z = cam.zoom;
+  for (const p of Warp.parts) {
+    const r = p.r + Math.pow(w, 2) * 2600 * p.sp, len = 8 + w * w * 340 * p.sp, n = Math.max(3, len / 10 | 0), col = mix3(c2, C.white, p.c);
+    for (let k = 0; k < n; k++) { const rr = r + len * k / n; P(cam.x + Math.cos(p.a) * rr / z, cam.y + Math.sin(p.a) * rr / z, 1.5 / z, col, w * (1 - k / n) * .9); }
+  }
+}
+function stepTransition(dt) {
+  if (!transition) return;
+  if (narrBusy() || Moment.cur) { if (transition.t < 0) return; }
+  transition.t += dt;
+  if (transition.t < 0 && !Moment.cur) { document.body.classList.add("cinema"); if (!transition.hero) { transition.hero = true; cam.zoomT = (cam.zoomT ?? 1) * 1.35; } }
+  if (transition.t > 0 && !transition.started) { transition.started = true; document.body.classList.remove("cinema"); Music.whoosh(3.4, true); $("hud").classList.remove("on"); cam.zoomT = .12; }
+  if (transition.t > 0) FX.flash = Math.max(FX.flash, clamp(transition.t / transition.dur, 0, 1) * .5);
+  if (transition.t >= transition.dur) {
+    transition = null;
+    if (G.idx + 1 < CH.length) startChapter(G.idx + 1); else showCoda();
+  }
+}
+function showCoda() {
+  G.state = "coda"; save.finished = true; persist();
+  $("hud").classList.remove("on"); $("focusBtn").hidden = true;
+  $("codaList").innerHTML = G.made.map(m => `<div><b>${m.what}</b><span>${m.where}</span></div>`).join("");
+  $("codaStats").innerHTML = `<span>Echoes found <b>${echoCount()} / 6</b></span><span>Field notes <b>${save.notes.length}</b></span>`;
+  $("coda").hidden = false;
+  Music.arp([5, 7, 9, 10, 12, 14], .22, .09);
+}
+function made(what, where) { if (!G.made.find(m => m.what === what)) G.made.push({ what, where }); }
+
+// ---------- pause / sound / title ----------
+function togglePause() {
+  if (G.state === "play") { G.state = "paused"; $("pause").hidden = false; buildChapterList($("pChapters")); $("pStats").innerHTML = `<span>Echoes <b>${echoCount()} / 6</b></span><span>Field notes <b>${save.notes.length}</b></span>`; $("pResume").focus(); }
+  else if (G.state === "paused") { G.state = "play"; $("pause").hidden = true; }
+}
+function toggleSound() { Music.setMuted(!Music.muted); save.muted = Music.muted; persist(); $("bSound").classList.toggle("off", Music.muted); }
+function buildChapterList(box) {
+  box.innerHTML = "";
+  CH.forEach((ch, i) => {
+    const b = document.createElement("button"); b.className = "chap"; b.disabled = i > save.reached;
+    b.innerHTML = `<span class="n">CHAPTER ${ch.num}</span><span class="t">${ch.title}</span><span class="s">${ch.scale}</span>`;
+    b.onclick = () => { Music.start(); $("pause").hidden = true; $("title").hidden = true; $("coda").hidden = true; G.made = G.made.slice(0, 0); startChapter(i); };
+    box.appendChild(b);
+  });
+}
+
+// ---- 04-ch1-2-foam-confinement.js ----
+const focusWord = () => COARSE ? "the Focus button" : "Focus (hold the mouse button or Space)";
+const C = { white: [1, 1, 1], matter: hex("#8af3ff"), anti: hex("#ff7eb6"), gold: hex("#ffd38a"),
+  qr: hex("#ff4f6a"), qg: hex("#4dff9a"), qb: hex("#5a8bff"), p: hex("#ff8a72"), n: hex("#b7c3ff"), photon: hex("#ffe08a") };
+
+// =================== Chapter I: The Foam ===================
+CH.push({
+  num: "I", title: "The Foam", scale: "10⁻³⁵ m", era: "t ≈ 10⁻⁴³ s", chord: "foam", bright: 1100,
+  line: "Zoom in far enough and even empty space begins to boil.",
+  look: { c0: "#05030f", c1: "#2a1d6e", c2: "#8af3ff", foam: 1, warp: 1.9 },
+  enter() { this.pairs = []; this.caught = 0; this.goal = 6; this.focusIdle = 0; this.hinted = false; this.labelled = 0; },
+  afterCard() {
+    say("Zoom in far enough and space stops being smooth.",
+        "This is the quantum foam, 10⁻³⁵ metres across: a hundred billion billion times smaller than a proton.",
+        "Here particles and their antiparticles appear out of nothing, then vanish before anything can notice.");
+    objective(`Glide beside a flickering pair and hold ${focusWord()} to lend it energy`, this.goal, 0);
+  },
+  spawn() {
+    const a = Math.random() * TAU, d = rand(80, 420);
+    this.pairs.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, ax: Math.random() * TAU, t: 0, life: rand(3.4, 5), charge: 0, vx: rand(-8, 8), vy: rand(-8, 8) });
+  },
+  update(dt) {
+    while (this.pairs.length < 13) this.spawn();
+    let target = null, td = 120;
+    if (G.focus) for (const p of this.pairs) { const d = Math.hypot(p.x - pl.x, p.y - pl.y); if (d < td) { td = d; target = p; } }
+    this.target = target;
+    if (G.focus && !target) { this.focusIdle += dt; if (this.focusIdle > 2.2 && !this.hinted) { this.hinted = true; say("Move closer to a flickering pair, then hold."); } } else this.focusIdle = 0;
+    for (let i = this.pairs.length - 1; i >= 0; i--) {
+      const p = this.pairs[i]; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p === target) {
+        p.charge += dt / 1.3;
+        if (p.charge >= 1) { this.pairs.splice(i, 1); this.makeReal(p); continue; }
+      } else { p.charge = Math.max(0, p.charge - dt * .8); p.t += dt; }
+      if (p.t >= p.life) { // annihilate: the foam's own quiet music
+        this.pairs.splice(i, 1); burst(p.x, p.y, C.white, 6, 40, .5, 2);
+        if (Math.hypot(p.x - pl.x, p.y - pl.y) < 500 && Math.random() < .5) Music.note(rand(8, 14), .02, 2.5);
+      } else if (Math.hypot(p.x - pl.x, p.y - pl.y) > 700) this.pairs.splice(i, 1);
+    }
+  },
+  makeReal(p) {
+    this.caught++;
+    const s = 26;
+    burst(p.x + Math.cos(p.ax) * s, p.y + Math.sin(p.ax) * s, C.matter, 22, 120, 1.4);
+    burst(p.x - Math.cos(p.ax) * s, p.y - Math.sin(p.ax) * s, C.anti, 22, 120, 1.4);
+    ring(p.x, p.y, C.white, 140, 1.3); FX.flash = .06;
+    companion(C.matter, 3.5); companion(C.anti, 3.5);
+    Music.arp([3 + this.caught, 5 + this.caught, 7 + this.caught], .14, .12);
+    floatText(p.x, p.y - 30, "e⁻ + e⁺ made real");
+    objective(`Glide beside a flickering pair and hold ${focusWord()} to lend it energy`, this.goal, this.caught);
+    if (this.caught === 1) Moment.add("The vacuum may borrow energy E for a time t, as long as E × t stays below about ħ/2. This electron and positron were due to vanish within 10⁻²² s. You paid their debt, so now they're real.", "The uncertainty principle");
+    if (this.caught === 3) say("Blue is matter, rose is antimatter. They always arrive together.", "Yet our universe is made almost entirely of matter. Where the antimatter went is still unsolved.");
+    if (this.caught === this.goal) {
+      made("Six real particle pairs", "pulled from the quantum foam");
+      say("Real particles, pulled from empty space.", "The universe expands and cools. Look closer at what the matter in it is made of.");
+      completeChapter(1);
+    }
+  },
+  draw(t) {
+    for (const p of this.pairs) {
+      const ph = p.t / p.life, sep = Math.pow(Math.sin(Math.PI * ph), .7) * 26 + p.charge * 6;
+      const cx = Math.cos(p.ax), cy = Math.sin(p.ax), a = Math.min(1, Math.sin(Math.PI * ph) * 2.2) * (.7 + .3 * p.charge) + p.charge * .3;
+      const mx = p.x + cx * sep, my = p.y + cy * sep, ax = p.x - cx * sep, ay = p.y - cy * sep;
+      P(mx, my, 16 + p.charge * 8, C.matter, .2 * a); P(mx, my, 4.5 + p.charge * 1.5, C.matter, a);
+      P(ax, ay, 16 + p.charge * 8, C.anti, .2 * a); P(ax, ay, 4.5 + p.charge * 1.5, C.anti, a);
+      if (ph < .05 || ph > .95) P(p.x, p.y, 14, C.white, .5);
+      if (p.charge > 0) {
+        PLine(ax, ay, mx, my, 1.4, C.white, .35 * p.charge, 4, 6, t * 8);
+        PLine(pl.x, pl.y, p.x, p.y, 2.2, mix3(C.matter, C.gold, .5 + .5 * Math.sin(t * 6)), .55 * p.charge + .2, 7, 5, t * 10);
+        for (let k = 0; k < 18; k++) { const a2 = k / 18 * TAU; P(p.x + Math.cos(a2) * (30 - p.charge * 16), p.y + Math.sin(a2) * (30 - p.charge * 16), 1.6, C.gold, .7 * p.charge); }
+      }
+    }
+  },
+  overlay() {
+    const tp = this.target;
+    if (tp) { label(tp.x, tp.y + 44, "electron  ·  positron", { color: "#efeaff", a: .85 }); label(tp.x, tp.y + 60, Math.round(tp.charge * 100) + "%", { color: "#ffd38a", a: .85 }); }
+  },
+});
+
+// =================== Chapter II: Confinement ===================
+const QCOL = { r: C.qr, g: C.qg, b: C.qb }, QNAME = { r: "red", g: "green", b: "blue" };
+CH.push({
+  num: "II", title: "Confinement", scale: "10⁻¹⁸ m", era: "t ≈ 10⁻⁶ s · 10¹² K", chord: "quark", bright: 1000,
+  line: "A millionth of a second old, and too hot for protons.",
+  look: { c0: "#0b0412", c1: "#3a0f3c", c2: "#ffb36b", foam: .28, warp: 2.4 },
+  enter() { this.qs = []; this.held = []; this.mesons = []; this.np = 0; this.nn = 0; this.binding = null; this.snaps = 0; this.warned = false; this.first = true; this.doneSaid = false; },
+  afterCard() {
+    say("A millionth of a second after the beginning, the universe is a trillion degrees. Too hot for protons to exist.",
+        "Quarks swim free in a plasma of gluons. Each carries a colour charge: red, green or blue. It's only a name; quarks have no actual colour.",
+        "As the plasma cools, nature allows only colourless combinations: one of each colour.");
+    this.obj();
+  },
+  obj() { objective(`Gather a red, a green and a blue quark. u u d makes a proton, u d d a neutron · protons ${Math.min(this.np, 2)}/2 · neutrons ${Math.min(this.nn, 2)}/2`, 4, Math.min(this.np, 2) + Math.min(this.nn, 2)); },
+  spawn() {
+    const a = Math.random() * TAU, d = rand(140, 520);
+    const col = "rgb"[Math.random() * 3 | 0], need = this.nn < this.np ? .45 : .6;
+    this.qs.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: rand(-14, 14), vy: rand(-14, 14), col, fl: Math.random() < need ? "u" : "d", ph: Math.random() * TAU });
+  },
+  update(dt) {
+    while (this.qs.length < 16) this.spawn();
+    for (let i = this.qs.length - 1; i >= 0; i--) {
+      const q = this.qs[i]; q.vx += rand(-20, 20) * dt; q.vy += rand(-20, 20) * dt; q.vx *= Math.exp(-dt * .3); q.vy *= Math.exp(-dt * .3);
+      q.x += q.vx * dt; q.y += q.vy * dt; q.ph += dt;
+      const d = Math.hypot(q.x - pl.x, q.y - pl.y);
+      if (d > 760) { this.qs.splice(i, 1); continue; }
+      if (d < 34 && !this.binding && this.held.length < 3) {
+        if (this.held.some(h => h.col === q.col)) {
+          q.vx = (q.x - pl.x) / d * 120; q.vy = (q.y - pl.y) / d * 120;
+          if (!this.warned) { this.warned = true; say(`You already hold a ${QNAME[q.col]} quark. A colourless trio needs exactly one of each colour.`); }
+        } else {
+          this.qs.splice(i, 1); this.held.push(q); Music.note(this.held.length * 2 + (q.fl === "u" ? 6 : 4), .1, 2.5);
+          burst(q.x, q.y, QCOL[q.col], 10, 60, .8);
+          if (this.held.length === 3) this.binding = { t: 0 };
+        }
+      }
+    }
+    // gluon strings: springs that never weaken
+    this.held.forEach((q, i) => {
+      const ang = i / Math.max(1, this.held.length) * TAU + G.time * .8, rest = this.binding ? 34 * (1 - ease(Math.min(1, this.binding.t))) + 8 : 50;
+      const tx = pl.x + Math.cos(ang) * rest, ty = pl.y + Math.sin(ang) * rest;
+      q.vx += (tx - q.x) * 6 * dt; q.vy += (ty - q.y) * 6 * dt; q.vx *= Math.exp(-dt * 3); q.vy *= Math.exp(-dt * 3);
+      q.x += q.vx * dt; q.y += q.vy * dt;
+      const d = Math.hypot(q.x - pl.x, q.y - pl.y);
+      if (d > 160 && !this.binding) this.snap(q, i);
+    });
+    if (this.binding) { this.binding.t += dt; if (this.binding.t > 1.1) this.bind(); }
+    for (let i = this.mesons.length - 1; i >= 0; i--) { const m = this.mesons[i]; m.t += dt; m.x += m.vx * dt; m.y += m.vy * dt; if (m.t > 4) this.mesons.splice(i, 1); }
+  },
+  snap(q, i) {
+    // the string breaks: its energy becomes a new quark–antiquark pair
+    const mx = (q.x + pl.x) / 2, my = (q.y + pl.y) / 2, dx = q.x - pl.x, dy = q.y - pl.y, d = Math.hypot(dx, dy);
+    this.mesons.push({ x: q.x, y: q.y, vx: dx / d * 90 + q.vx * .3, vy: dy / d * 90 + q.vy * .3, col: q.col, t: 0 });
+    const nq = { x: mx, y: my, vx: 0, vy: 0, col: q.col, fl: q.fl, ph: 0 };
+    this.held[i] = nq;
+    burst(mx, my, C.white, 30, 160, 1.2); ring(mx, my, QCOL[q.col], 120, 1); FX.flash = .05; cam.shake = REDUCED ? 0 : 3;
+    Music.note(1, .14, 3); Music.note(6, .08, 3, .1);
+    floatText(mx, my - 24, "string breaks → q + q̄");
+    this.snaps++;
+    if (this.snaps === 1) Moment.add("Stretch a gluon string and it doesn't weaken; the energy stored in it keeps growing. Pull hard enough and that energy becomes a new quark–antiquark pair. The far end flies off as a meson. You can never pull out a single quark.", "Why quarks are never alone", true, { x: mx, y: my });
+  },
+  bind() {
+    const ups = this.held.filter(q => q.fl === "u").length;
+    let kind = ups === 2 ? "p" : ups === 1 ? "n" : ups === 3 ? "p" : "n";
+    const delta = ups === 3 || ups === 0;
+    this.held = []; this.binding = null;
+    if (kind === "p") this.np++; else this.nn++;
+    burst(pl.x, pl.y, C.gold, 50, 200, 1.8, 3.5); ring(pl.x, pl.y, C.white, 220, 1.6, 2.5); FX.flash = .12;
+    companion(kind === "p" ? C.p : C.n, 5.5, rand(46, 74));
+    Music.arp(kind === "p" ? [5, 7, 9, 12] : [4, 7, 9, 11], .11, .12);
+    floatText(pl.x, pl.y - 40, delta ? (ups === 3 ? "Δ⁺⁺ → p + π⁺" : "Δ⁻ → n + π⁻") : (kind === "p" ? "proton  (u u d)" : "neutron  (u d d)"), "#ffd38a", true);
+    if (delta) say(ups === 3 ? "Three up quarks make a Δ⁺⁺, which decays in about 10⁻²³ s into a proton and a pion." : "Three down quarks make a Δ⁻, which decays almost instantly into a neutron and a pion.");
+    if (this.first) { this.first = false; Moment.add("Red, green and blue together are colourless, so the three lock together. The quarks themselves make up only about 1% of the mass. The rest is the energy of the gluon field holding them in.", "Confinement"); }
+    this.obj();
+    if (this.np >= 2 && this.nn >= 2 && !this.doneSaid) {
+      this.doneSaid = true; made("Protons and neutrons", "built from coloured quarks");
+      say("Two protons and two neutrons: everything helium will need.", "Within microseconds every free quark in the universe was locked away like this. None has roamed free since.");
+      completeChapter(1);
+    }
+  },
+  draw(t) {
+    for (const q of this.qs) {
+      const c = QCOL[q.col], r = q.fl === "u" ? 5.5 : 4.2, j = Math.sin(q.ph * 3) * 1.5;
+      P(q.x + j, q.y, r * 3.2, c, .2); P(q.x + j, q.y, r, c, .95);
+    }
+    // Y-shaped flux tube from the junction (you) to each held quark, colour charge flowing along it
+    for (const q of this.held) {
+      const dx = q.x - pl.x, dy = q.y - pl.y, d = Math.hypot(dx, dy), n = Math.max(6, d / 5 | 0), stretch = clamp((d - 50) / 110, 0, 1);
+      for (let i = 0; i <= n; i++) {
+        const s = i / n, w = Math.sin(s * Math.PI) * Math.sin(s * 10 - t * 9) * (4 + stretch * 6);
+        const cc = mix3(QCOL[q.col], C.white, .5 + .5 * Math.sin(t * 5 - s * 8));
+        P(pl.x + dx * s - dy / d * w, pl.y + dy * s + dx / d * w, 2 + stretch * 1.5, cc, .5 + stretch * .4);
+      }
+      const r = q.fl === "u" ? 5.5 : 4.2; P(q.x, q.y, r * 3.4, QCOL[q.col], .3); P(q.x, q.y, r, QCOL[q.col], 1);
+    }
+    for (const m of this.mesons) {
+      const k = 1 - m.t / 4, a = m.t * 7;
+      P(m.x + Math.cos(a) * 7, m.y + Math.sin(a) * 7, 4, QCOL[m.col], k); P(m.x - Math.cos(a) * 7, m.y - Math.sin(a) * 7, 4, C.white, k * .8);
+    }
+    if (this.binding) P(pl.x, pl.y, 30 + this.binding.t * 40, C.gold, .15 + this.binding.t * .3);
+  },
+  overlay() {
+    for (const q of this.qs) { const d = Math.hypot(q.x - pl.x, q.y - pl.y); if (d < 300) label(q.x, q.y - 15, q.fl, { a: clamp(1.4 - d / 300, 0, 1) * .9, font: "13px 'IBM Plex Mono', monospace" }); }
+    for (const q of this.held) label(q.x, q.y - 15, q.fl, { font: "13px 'IBM Plex Mono', monospace" });
+    for (const m of this.mesons) label(m.x, m.y - 18, "meson", { a: (1 - m.t / 4) * .7 });
+  },
+});
+
+// ---- 05-ch3-first-nuclei.js ----
+// =================== Chapter III: The First Nuclei ===================
+const NUCLIDE = { "1,0": "¹H  proton", "1,1": "²H  deuterium", "2,1": "³He  helium-3", "1,2": "³H  tritium", "2,2": "⁴He  helium-4" };
+const RULES = {
+  "1,0+n": ["1,1", 2.22], "1,1+p": ["2,1", 5.49], "1,1+n": ["1,2", 6.26], "2,1+n": ["2,2", 20.58], "1,2+p": ["2,2", 19.81],
+};
+const REJECT = {
+  "1,0+p": "Two protons alone fly apart: ²He isn't bound. Catch a neutron instead.",
+  "2,1+p": "Three protons and one neutron don't hold together. Helium-3 needs a neutron.",
+  "1,2+n": "Hydrogen with three neutrons falls apart at once. Tritium needs a proton.",
+  "2,2+p": "There's no stable nucleus with five nucleons. Big Bang fusion stalls here.",
+  "2,2+n": "There's no stable nucleus with five nucleons. Big Bang fusion stalls here.",
+};
+function clusterOffsets(A) {
+  if (A === 1) return [[0, 0]];
+  if (A === 2) return [[-6, 0], [6, 0]];
+  if (A === 3) return [[0, -7], [-6.5, 4], [6.5, 4]];
+  return [[0, -8], [-8, 0], [8, 0], [0, 8]];
+}
+function drawNucleusAt(x, y, Z, N, t, scale = 1) {
+  const A = Z + N, offs = clusterOffsets(A), rot = t * .6;
+  P(x, y, 30 * scale * (1 + A * .15), C.gold, .18);
+  offs.forEach((o, i) => {
+    const isP = i < Z, ox = (o[0] * Math.cos(rot) - o[1] * Math.sin(rot)) * scale, oy = (o[0] * Math.sin(rot) + o[1] * Math.cos(rot)) * scale;
+    P(x + ox, y + oy, 6.5 * scale, isP ? C.p : C.n, .95); P(x + ox, y + oy, 2.5 * scale, C.white, .5);
+  });
+}
+CH.push({
+  num: "III", title: "The First Nuclei", scale: "10⁻¹⁵ m", era: "t ≈ 3 minutes · 10⁹ K", chord: "nuclei", bright: 1200,
+  line: "For a few minutes, the whole universe is a furnace.",
+  look: { c0: "#0d0504", c1: "#4a1a0c", c2: "#ffcf7a", foam: .12, warp: 1.6 },
+  enter() { this.Z = 1; this.N = 0; this.parts = []; this.photons = []; this.said = {}; this.ptT = 0; this.cool = 0; this.flash = 0; },
+  afterCard() {
+    say("Three minutes old. The quarks are long since locked into protons and neutrons, and the universe is still hot enough to fuse them.",
+        "You are a single proton.");
+    this.obj();
+  },
+  key() { return this.Z + "," + this.N; },
+  obj() {
+    const A = this.Z + this.N, steps = A - 1;
+    const txt = A === 1 ? "Catch a neutron. It has no charge, so nothing pushes it away."
+      : A === 2 ? `Add one more nucleon. Protons repel you; hold ${focusWord()} to become a wave and tunnel through.`
+      : A === 3 ? (this.Z === 2 ? "Helium-3: one more neutron makes helium-4." : `Tritium: one more proton makes helium-4. Hold ${focusWord()} to tunnel.`)
+      : "Helium-4.";
+    objective(txt, 3, steps);
+  },
+  spawn() {
+    const a = Math.random() * TAU, d = rand(260, 560), k = Math.random() < (this.Z + this.N === 1 ? .62 : .5) ? "n" : "p";
+    this.parts.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: rand(-25, 25), vy: rand(-25, 25), k, cool: 0 });
+  },
+  skin(t) { drawNucleusAt(pl.x, pl.y, this.Z, this.N, t); },
+  update(dt) {
+    this.cool += dt;
+    while (this.parts.length < 14) this.spawn();
+    // photons thin out as the universe cools
+    this.ptT -= dt;
+    const rate = Math.max(0, 1 - this.cool / 70);
+    if (this.ptT <= 0 && rate > 0) { this.ptT = 1.3 / rate; const a = Math.random() * TAU, d = 520, aim = Math.atan2(-Math.sin(a), -Math.cos(a)) + rand(-.5, .5);
+      this.photons.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: Math.cos(aim) * 130, vy: Math.sin(aim) * 130, t: 0 }); }
+    const wave = G.focus, A = this.Z + this.N;
+    for (let i = this.parts.length - 1; i >= 0; i--) {
+      const q = this.parts[i];
+      q.vx += rand(-14, 14) * dt; q.vy += rand(-14, 14) * dt; q.cool = Math.max(0, q.cool - dt);
+      const dx = q.x - pl.x, dy = q.y - pl.y, d = Math.hypot(dx, dy) || 1;
+      if (d > 800) { this.parts.splice(i, 1); continue; }
+      if (q.k === "p" && !wave && d < 130 && A < 4) { // Coulomb repulsion
+        const f = 26000 * this.Z / Math.max(d * d, 600); q.vx += dx / d * f * dt; q.vy += dy / d * f * dt;
+        if (d < 70 && !this.said.barrier) { this.said.barrier = true; say("Two positive charges repel. At this temperature they almost never get close enough to fuse.", `Unless you stop being a particle. Hold ${focusWord()}.`); }
+      }
+      if (q.k === "n" && d < 70) { q.vx -= dx / d * 60 * dt; q.vy -= dy / d * 60 * dt; } // short-range strong-force tug
+      const sp = Math.hypot(q.vx, q.vy); if (sp > 160) { q.vx *= 160 / sp; q.vy *= 160 / sp; }
+      q.x += q.vx * dt; q.y += q.vy * dt;
+      if (d < 30 && !q.cool) this.touch(q, i, wave);
+    }
+    for (let i = this.photons.length - 1; i >= 0; i--) {
+      const ph = this.photons[i]; ph.t += dt; ph.x += ph.vx * dt; ph.y += ph.vy * dt;
+      if (ph.t > 9) { this.photons.splice(i, 1); continue; }
+      if (!wave && Math.hypot(ph.x - pl.x, ph.y - pl.y) < 24 && this.Z === 1 && this.N === 1) {
+        this.photons.splice(i, 1); this.N = 0; this.obj();
+        this.parts.push({ x: pl.x + 20, y: pl.y, vx: 150, vy: rand(-60, 60), k: "n", cool: 2 });
+        burst(pl.x, pl.y, C.photon, 26, 160, 1); Music.note(0, .12, 2.5); cam.shake = REDUCED ? 0 : 4;
+        floatText(pl.x, pl.y - 34, "γ + ²H → p + n");
+        if (!this.said.bottleneck) { this.said.bottleneck = true; say("A photon split your deuterium. Early on, light breaks it apart as fast as it forms: the deuterium bottleneck.", "Dodge the golden photons, or slip through them as a wave. They thin out as the universe cools."); }
+      }
+    }
+  },
+  touch(q, i, wave) {
+    const k = this.key() + "+" + q.k;
+    if (q.k === "p" && !wave && this.Z + this.N < 4) { q.vx = (q.x - pl.x) * 3; q.vy = (q.y - pl.y) * 3; q.cool = .6; return; }
+    if (REJECT[k]) {
+      q.vx = (q.x - pl.x) * 4; q.vy = (q.y - pl.y) * 4; q.cool = 1.5;
+      if (!this.said[k]) { this.said[k] = true; say(REJECT[k]); }
+      Music.note(1, .05, 1.5); return;
+    }
+    const r = RULES[k]; if (!r) return;
+    this.parts.splice(i, 1);
+    const [z, n] = r[0].split(",").map(Number); this.Z = z; this.N = n;
+    burst(pl.x, pl.y, q.k === "p" ? C.p : C.n, 36, 170, 1.4); ring(pl.x, pl.y, C.gold, 180 + r[1] * 4, 1.5, 2.5); FX.flash = .05 + r[1] * .006; FX.pulse = 1;
+    const A = z + n; Music.arp(A === 2 ? [4, 6, 9] : A === 3 ? [5, 7, 9, 11] : [5, 7, 9, 12, 14], .13, .12); if (A === 4) Music.low(49, .2, 6);
+    floatText(pl.x, pl.y - 42, `+${r[1].toFixed(2)} MeV`, "#ffd38a");
+    floatText(pl.x, pl.y + 46, NUCLIDE[r[0]], "#efeaff");
+    if (q.k === "p" && wave && !this.said.tunnel) { this.said.tunnel = true; Moment.add("As a particle you could never get close enough. As a wave you're spread out, and part of you is already inside the barrier. Some of the time that part is all it takes, and you fuse.", "Quantum tunnelling"); }
+    if (A === 2 && !this.said.d) { this.said.d = true; Moment.add("A proton and a neutron, held by the strong force. They're barely bound, by only 2.2 MeV, so one energetic photon can split them apart again.", "Deuterium"); }
+    this.obj();
+    if (A === 4) {
+      made("Helium-4", "fused three minutes after the Big Bang");
+      Moment.add("Two protons and two neutrons: one of the most tightly bound nuclei in nature. Within twenty minutes about a quarter of all ordinary matter had become helium. Then the universe grew too cold and thin, and fusion stopped.", "Helium");
+      say("No stable nucleus has five or eight nucleons, so the Big Bang made almost nothing heavier.", "Most protons never found a partner at all. Follow one of them.");
+      completeChapter(1);
+    }
+  },
+  draw(t) {
+    const A = this.Z + this.N, wave = G.focus;
+    if (A < 4) { // the Coulomb barrier
+      let near = 0; for (const q of this.parts) if (q.k === "p") near = Math.max(near, 1 - Math.hypot(q.x - pl.x, q.y - pl.y) / 200);
+      const R = 66, n = 64, a0 = wave ? .08 : .12 + near * .5;
+      for (let i = 0; i < n; i++) { const a = i / n * TAU + t * .1; P(pl.x + Math.cos(a) * R, pl.y + Math.sin(a) * R, 1.6, wave ? C.matter : C.p, a0 * (.6 + .4 * Math.sin(a * 6 + t * 3))); }
+    }
+    for (const q of this.parts) { const c = q.k === "p" ? C.p : C.n; P(q.x, q.y, 18, c, .2); P(q.x, q.y, 6.5, c, .95); P(q.x - 1.5, q.y - 1.5, 2.2, C.white, .5); }
+    for (const ph of this.photons) {
+      const sp = Math.hypot(ph.vx, ph.vy), ux = ph.vx / sp, uy = ph.vy / sp;
+      for (let k = 0; k < 14; k++) { const s = k * 3, w = Math.sin(k * .9 - t * 22) * 4; P(ph.x - ux * s - uy * w, ph.y - uy * s + ux * w, 1.8, C.photon, 1 - k / 14); }
+      P(ph.x, ph.y, 10, C.photon, .35);
+    }
+  },
+  overlay() {
+    for (const q of this.parts) { const d = Math.hypot(q.x - pl.x, q.y - pl.y); if (d < 280) label(q.x, q.y - 17, q.k, { a: clamp(1.4 - d / 280, 0, 1) * .85 }); }
+    label(pl.x, pl.y + 30, NUCLIDE[this.key()].split("  ")[0], { a: .9, font: "italic 18px 'Instrument Serif', Georgia, serif" });
+  },
+});
+
+// ---- 06-ch4-first-light.js ----
+// =================== Chapter IV: First Light ===================
+const HE = n => -13.6 / (n * n);
+function wlRGB(w) {
+  if (w < 380) return [.86, .8, 1];
+  let r = 0, g = 0, b = 0;
+  if (w < 440) { r = -(w - 440) / 60; b = 1; } else if (w < 490) { g = (w - 440) / 50; b = 1; } else if (w < 510) { g = 1; b = -(w - 510) / 20; }
+  else if (w < 580) { r = (w - 510) / 70; g = 1; } else if (w < 645) { r = 1; g = -(w - 645) / 65; } else r = 1;
+  const f = w > 700 ? .45 + .55 * (750 - w) / 50 : 1;
+  return [r, g, b].map(v => .12 + .88 * Math.pow(v * f, .8));
+}
+// photons that fit hydrogen's gaps (lo → hi) and a few that fit nothing
+const LINES = [
+  { wl: 121.6, lo: 1, hi: 2, name: "Lyman α" }, { wl: 102.6, lo: 1, hi: 3, name: "Lyman β" }, { wl: 97.3, lo: 1, hi: 4, name: "Lyman γ" }, { wl: 95.0, lo: 1, hi: 5, name: "Lyman δ" },
+  { wl: 656.3, lo: 2, hi: 3, name: "Hα" }, { wl: 486.1, lo: 2, hi: 4, name: "Hβ" }, { wl: 434.0, lo: 2, hi: 5, name: "Hγ" },
+];
+const DECOYS = [520, 575, 610, 700, 465, 545, 140];
+const BALMER = { 3: [0, "Hα", 656.3], 4: [1, "Hβ", 486.1], 5: [2, "Hγ", 434.0] };
+function cloudPoint(n) {
+  // sample a position from a 2D sketch of the orbital |ψ|² (s, p, d, then ringed s shapes)
+  for (let k = 0; k < 12; k++) {
+    const th = Math.random() * TAU;
+    let r;
+    if (n === 1) { r = -Math.log(Math.random() * .98 + .02) * 11; return [Math.cos(th) * r, Math.sin(th) * r]; }
+    if (n === 2) { if (Math.random() > Math.cos(th) ** 2) continue; r = 20 + -Math.log(Math.random() * .98 + .02) * 13; return [Math.cos(th) * r, Math.sin(th) * r * .9]; }
+    if (n === 3) { if (Math.random() > Math.cos(2 * th) ** 2) continue; r = 34 + -Math.log(Math.random() * .98 + .02) * 18; return [Math.cos(th) * r, Math.sin(th) * r]; }
+    const shell = Math.random() < .35 ? .45 : 1; r = (n * n * 4.6) * shell + rand(-8, 8); return [Math.cos(th) * r, Math.sin(th) * r];
+  }
+  return [0, 0];
+}
+const cloudR = n => n === 1 ? 30 : n === 2 ? 58 : n === 3 ? 82 : n * n * 4.6 + 12;
+
+CH.push({
+  num: "IV", title: "First Light", scale: "10⁻¹⁰ m", era: "t ≈ 380,000 years · 3000 K", chord: "light", bright: 1300,
+  line: "The fog is about to lift.",
+  look: { c0: "#1a0d08", c1: "#5a3018", c2: "#ffb070", fog: 1, foam: 0, warp: 1.2 },
+  enter() { this.es = []; this.ph = []; this.has = false; this.n = 1; this.dwell = 0; this.painted = {}; this.np = 0; this.said = {}; this.spT = 0; this.near = null; },
+  afterCard() {
+    say("380,000 years later. The universe has cooled to 3000 K, about as hot as the surface of a small star.",
+        "Until now light couldn't travel. Free electrons scattered every photon, and the whole cosmos glowed like the inside of a cloud.");
+    objective("Catch an electron. You're a bare proton, and its negative charge is drawn to you.", 0, 0);
+  },
+  skin(t) {
+    P(pl.x, pl.y, 14, C.p, .35); P(pl.x, pl.y, 4.5, C.p, 1);
+    if (this.has) { const n = this.n, k = n === 1 ? 160 : 260; for (let i = 0; i < k; i++) { const [x, y] = cloudPoint(n); P(pl.x + x, pl.y + y, 1.5, C.matter, .5); } P(pl.x, pl.y, cloudR(n), C.matter, .06); }
+  },
+  spawnE() { const a = Math.random() * TAU, d = rand(260, 520); this.es.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: rand(-30, 30), vy: rand(-30, 30), cool: 0 }); },
+  spawnP() {
+    const a = Math.random() * TAU, d = rand(420, 560), pick = Math.random();
+    let L; if (pick < .62) { const pool = this.n === 1 ? LINES.filter(l => l.lo === 1) : LINES; L = pool[Math.random() * pool.length | 0]; } else L = { wl: DECOYS[Math.random() * DECOYS.length | 0] };
+    if (this.has && Math.random() < .07) L = { wl: 60, ion: true };
+    const aim = Math.atan2(pl.y - (pl.y + Math.sin(a) * d), pl.x - (pl.x + Math.cos(a) * d)) + rand(-.35, .35), sp = this.has ? 62 : 90;
+    this.ph.push(Object.assign({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: Math.cos(aim) * sp, vy: Math.sin(aim) * sp, t: 0, col: wlRGB(L.wl), passed: false }, L));
+  },
+  update(dt) {
+    while (this.es.length < (this.has ? 3 : 7)) this.spawnE();
+    this.spT -= dt; if (this.spT <= 0 && this.ph.length < (this.has ? 9 : 16)) { this.spT = this.has ? 1.1 : .35; this.spawnP(); }
+    for (let i = this.es.length - 1; i >= 0; i--) {
+      const e = this.es[i], dx = pl.x - e.x, dy = pl.y - e.y, d = Math.hypot(dx, dy) || 1; e.cool = Math.max(0, e.cool - dt);
+      if (!this.has && !e.cool && d < 240) { const f = 9000 / Math.max(d, 40); e.vx += dx / d * f * dt; e.vy += dy / d * f * dt; }
+      e.vx *= Math.exp(-dt * .6); e.vy *= Math.exp(-dt * .6); e.x += e.vx * dt; e.y += e.vy * dt;
+      if (d > 800) { this.es.splice(i, 1); continue; }
+      if (!this.has && !e.cool && d < 24) { this.es.splice(i, 1); this.capture(); }
+    }
+    this.near = null; let nd = 240;
+    for (let i = this.ph.length - 1; i >= 0; i--) {
+      const p = this.ph[i]; p.t += dt;
+      if (!this.has && Math.random() < dt * 1.4) { const a = Math.atan2(p.vy, p.vx) + rand(-1.6, 1.6), s = Math.hypot(p.vx, p.vy); p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; } // scattering in the fog
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      const d = Math.hypot(p.x - pl.x, p.y - pl.y);
+      if (d > 820 || p.t > 22) { this.ph.splice(i, 1); continue; }
+      if (this.has && !p.passed && d < nd) { nd = d; this.near = p; }
+      if (this.has && !p.passed && !G.focus && d < cloudR(this.n) * .7 + 10 && this.dwell <= 0) {
+        if (p.ion) { this.ph.splice(i, 1); this.ionize(); continue; }
+        if (p.lo === this.n) { this.ph.splice(i, 1); this.absorb(p); continue; }
+        p.passed = true;
+        if (!this.said.pass) { this.said.pass = true; say(`${Math.round(p.wl)} nm passed straight through. Its energy doesn't match any gap from level ${this.n}.`); }
+      }
+    }
+    if (this.has && this.n > 1) { this.dwell -= dt; if (this.dwell <= 0) this.fall(); }
+  },
+  capture() {
+    this.has = true; this.n = 1;
+    burst(pl.x, pl.y, C.matter, 40, 150, 1.6); ring(pl.x, pl.y, C.matter, 260, 2.2, 2.5); Music.arp([5, 9, 12, 14], .16, .12); Music.low(55, .2, 7);
+    if (this.said.cap) { objective(this.objText(), 3, this.np); return; }
+    this.said.cap = true;
+    setLook({ fog: 0, cmb: 1, c0: "#03040c", c1: "#111b3d", c2: "#9fd0ff", star: .55 });
+    Music.chord("light", 2200);
+    Moment.add("An electron settles around you, and you're a hydrogen atom. All across the universe the same thing happens at once. With nothing left to scatter it, light flies free. It's still arriving today, stretched into microwaves: the cosmic microwave background.", "Recombination");
+    made("A hydrogen atom", "and the first free light, 380,000 years in");
+    say("An atom can only hold energy in exact amounts, its energy levels. They're the lines on the right.",
+        "It absorbs a photon only when that photon's energy exactly matches a gap between two levels. Any other colour passes straight through.");
+    objective(this.objText(), 3, 0);
+  },
+  objText() { return "Touch photons whose energy fits a gap, then let the electron fall. Paint red Hα, cyan Hβ and violet Hγ"; },
+  absorb(p) {
+    this.n = p.hi; this.dwell = 1.9;
+    burst(pl.x, pl.y, p.col || wlRGB(p.wl), 22, 110, 1); Music.note(p.hi * 2 + 1, .11, 2.6);
+    floatText(pl.x, pl.y - cloudR(this.n) - 14, `absorbed ${p.name} ${p.wl} nm · n=${p.lo} → ${p.hi}`, "#efeaff");
+    if (!this.said.abs) { this.said.abs = true; say(`The photon's energy fit the gap exactly, so the electron jumped to level ${p.hi}. Its cloud grows a new shape.`); }
+  },
+  fall() {
+    const from = this.n, to = from >= 3 ? 2 : 1, wl = to === 2 ? BALMER[from][2] : 121.6;
+    this.n = to; this.dwell = to === 2 ? 1.3 : 0;
+    const a = Math.random() * TAU; this.ph.push({ x: pl.x, y: pl.y, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, t: 0, col: wlRGB(wl), wl, passed: true, emitted: true });
+    burst(pl.x, pl.y, wlRGB(wl), 30, 160, 1.3); ring(pl.x, pl.y, wlRGB(wl), 200, 1.6, 2);
+    if (to === 2) {
+      const [k, name] = BALMER[from];
+      Music.arp([9 + k, 11 + k, 13 + k], .1, .13);
+      floatText(pl.x, pl.y - 70, `${name}  ${wl} nm`, "#ffd38a", true);
+      if (!this.painted[name]) {
+        this.painted[name] = true; this.np++; const c = wlRGB(wl); FX.lines[k] = [c[0], c[1], c[2], .9];
+        made(name + " · " + wl + " nm", "painted by your hydrogen atom");
+        if (this.np === 1) Moment.add("Falling back, the electron gives its energy away as light of one exact colour. Every hydrogen atom in the universe emits these same colours, which is how astronomers recognise hydrogen in galaxies billions of light-years away.", "Spectral lines");
+        objective(this.objText(), 3, this.np);
+        if (this.np === 3) { say("Hydrogen's signature, written across the sky.", "Over the next hundred million years gravity gathers this gas into clouds. The clouds collapse, and the first stars ignite."); completeChapter(2); }
+      }
+    } else { Music.note(3, .06, 2); floatText(pl.x, pl.y - 40, "Lyman α 121.6 nm · ultraviolet", "#c9c2ff"); }
+  },
+  ionize() {
+    this.has = false; this.n = 1; this.dwell = 0;
+    const a = Math.random() * TAU; this.es.push({ x: pl.x + Math.cos(a) * 30, y: pl.y + Math.sin(a) * 30, vx: Math.cos(a) * 220, vy: Math.sin(a) * 220, cool: 2.5 });
+    burst(pl.x, pl.y, C.white, 30, 200, 1); Music.note(0, .12, 2); cam.shake = REDUCED ? 0 : 4;
+    say("An ultraviolet photon carried more than 13.6 eV and knocked the electron clean off. Catch another, and hold Focus to let such photons pass.");
+    objective("Catch another electron", 3, this.np);
+  },
+  draw(t) {
+    for (const e of this.es) { for (let k = 0; k < 5; k++) P(e.x + rand(-7, 7), e.y + rand(-7, 7), 1.8, C.matter, .7); P(e.x, e.y, 14, C.matter, .25); }
+    for (const p of this.ph) {
+      const sp = Math.hypot(p.vx, p.vy) || 1, ux = p.vx / sp, uy = p.vy / sp, uv = p.wl < 380;
+      for (let k = 0; k < 16; k++) { const s = k * 3.2, w = Math.sin(k * (uv ? 1.5 : .8) - t * 16) * 4.5; P(p.x - ux * s - uy * w, p.y - uy * s + ux * w, 2, p.col, (1 - k / 16) * (p.passed && !p.emitted ? .45 : 1)); }
+      P(p.x, p.y, p.ion ? 16 : 11, p.col, p.ion ? .6 : .38);
+    }
+  },
+  overlay() {
+    if (!this.has) return;
+    for (const p of this.ph) { const d = Math.hypot(p.x - pl.x, p.y - pl.y); if (d < 260 && !p.emitted) label(p.x, p.y - 16, (p.ion ? "60 nm  ionizing" : Math.round(p.wl) + " nm"), { a: clamp(1.3 - d / 260, 0, 1) * (p.passed ? .45 : .9), color: p.ion ? "#ffffff" : `rgb(${p.col.map(v => v * 255 | 0).join(",")})` }); }
+    // the energy staff
+    const sm = W < 760, x0 = sm ? W - 112 : W - 190, w = sm ? 80 : 150, top = sm ? 150 : 140, h = sm ? 210 : 300, y = E => top + (-E / 13.6) * h;
+    oc.save(); oc.font = "11px 'IBM Plex Mono', monospace"; oc.textBaseline = "middle";
+    oc.fillStyle = "rgba(14,12,38,.55)"; oc.fillRect(x0 - 12, top - 26, w + (sm ? 30 : 40), h + 46);
+    oc.fillStyle = "#aaa3d6"; oc.textAlign = "left"; oc.fillText("ENERGY LEVELS", x0 - 4, top - 14);
+    for (let n = 1; n <= 5; n++) {
+      const yy = y(HE(n)); oc.strokeStyle = n === this.n ? "#8af3ff" : "rgba(190,180,255,.45)"; oc.lineWidth = n === this.n ? 2 : 1;
+      oc.beginPath(); oc.moveTo(x0, yy); oc.lineTo(x0 + w * .62, yy); oc.stroke();
+      if (n <= 3 || !sm) { oc.fillStyle = n === this.n ? "#8af3ff" : "#aaa3d6"; oc.fillText(n <= 2 || !sm ? `n=${n}` : "", x0 + w * .66, yy); }
+      if (n === 1 && !sm) { oc.fillStyle = "#6f69a0"; oc.fillText("−13.6 eV", x0 + w * .66, yy + 13); }
+    }
+    const ey = y(HE(this.n)); oc.fillStyle = "#8af3ff"; oc.shadowColor = "#8af3ff"; oc.shadowBlur = 10; oc.beginPath(); oc.arc(x0 + w * .3, ey, 4.5, 0, TAU); oc.fill(); oc.shadowBlur = 0;
+    const p = this.near;
+    if (p && !p.ion && this.dwell <= 0) { // preview: where would this photon lift the electron?
+      const E = 1239.84 / p.wl, ty = y(HE(this.n) + E), fits = p.lo === this.n, ax = x0 + w * .3;
+      oc.strokeStyle = oc.fillStyle = fits ? "#7dffb0" : `rgb(${p.col.map(v => v * 255 | 0).join(",")})`; oc.lineWidth = 2;
+      oc.beginPath(); oc.moveTo(ax, ey); oc.lineTo(ax, Math.max(top - 20, ty)); oc.stroke();
+      oc.beginPath(); oc.moveTo(ax - 5, Math.max(top - 20, ty) + 7); oc.lineTo(ax, Math.max(top - 20, ty)); oc.lineTo(ax + 5, Math.max(top - 20, ty) + 7); oc.stroke();
+      oc.textAlign = "right"; oc.fillText(fits ? `fits n=${p.lo}→${p.hi}` : (ty < top ? "escapes" : "no level"), x0 - 16 + (sm ? 0 : 0), Math.max(top, ty));
+    }
+    oc.restore();
+  },
+});
+
+// ---- 07-ch5-heart-of-a-star.js ----
+// =================== Chapter V: The Heart of a Star ===================
+const STAGE = { 4: ["⁴He", "helium-4"], 8: ["⁸Be", "beryllium-8"], 12: ["¹²C", "carbon-12"], 16: ["¹⁶O", "oxygen-16"] };
+function drawBigNucleus(x, y, A, t, tremble) {
+  P(x, y, 26 + A * 2.2, C.gold, .2);
+  const rot = t * .35;
+  for (let i = 0; i < A; i++) {
+    const r = 5.2 * Math.sqrt(i + .5), a = i * 2.39996 + rot, jx = tremble ? rand(-tremble, tremble) : 0, jy = tremble ? rand(-tremble, tremble) : 0;
+    const isP = (i % 2) === 0, c = isP ? C.p : C.n;
+    P(x + Math.cos(a) * r + jx, y + Math.sin(a) * r + jy, 5.6, c, .95); P(x + Math.cos(a) * r + jx - 1.2, y + Math.sin(a) * r + jy - 1.2, 2, C.white, .45);
+  }
+}
+CH.push({
+  num: "V", title: "The Heart of a Star", scale: "10⁸ m · a red giant's core", era: "≈ 13 billion years ago · 10⁸ K", chord: "star", bright: 1500,
+  line: "Inside a dying star, nuclei have to keep time.",
+  look: { c0: "#120302", c1: "#5c1406", c2: "#ffb347", foam: .05, warp: 2.6 },
+  enter() { this.A = 4; this.al = []; this.beUntil = -1; this.lastBeat = -1; this.said = {}; this.prevFocus = false; this.inRange = null; this.missT = 0; this.nova = -1; this.boom = false; pl.maxV = 200; },
+  afterCard() {
+    say("Hundreds of millions of years later, inside a star that has burned through its hydrogen. Its core has shrunk and heated to 100 million kelvin.",
+        "Helium nuclei, also called alpha particles, collide here. But two of them make beryllium-8, which falls apart almost instantly.",
+        "There's one way through. Carbon-12 has an energy level at exactly the right height, the Hoyle state. Arrive with just that energy and the nucleus resonates instead of shattering.");
+    Music.startBeat(84);
+    this.obj();
+  },
+  obj() {
+    const steps = this.A === 4 ? 0 : this.A === 8 ? 1 : this.A === 12 ? 2 : 3;
+    const txt = this.A === 4 ? "Catch an alpha particle to become beryllium-8"
+      : this.A === 8 ? `Quick: bring a second alpha close and press ${COARSE ? "Focus" : "Space or click"} exactly on the beat, as the ring closes`
+      : this.A === 12 ? "Carbon. One more alpha makes oxygen." : "Oxygen.";
+    objective(txt, 3, steps);
+  },
+  skin(t) { drawBigNucleus(pl.x, pl.y, this.A, t, this.A === 8 ? 1.8 : 0); },
+  spawn() {
+    const a = Math.random() * TAU, d = rand(300, 520), tang = a + Math.PI / 2;
+    this.al.push({ x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d, vx: Math.cos(tang) * 45 - Math.cos(a) * 18, vy: Math.sin(tang) * 45 - Math.sin(a) * 18, cool: 0 });
+  },
+  update(dt) {
+    if (this.nova >= 0) { this.nova += dt; this.novaStep(dt); return; }
+    const b = Music.beatInfo();
+    if (b && b.index !== this.lastBeat) {
+      this.lastBeat = b.index; FX.pulse = this.A === 8 ? 1 : .55;
+      if (this.A === 8 && this.beUntil >= 0 && b.index >= this.beUntil) this.split();
+    }
+    while (this.al.length < 7) this.spawn();
+    this.inRange = null; let best = 95;
+    for (let i = this.al.length - 1; i >= 0; i--) {
+      const a = this.al[i], dx = pl.x - a.x, dy = pl.y - a.y, d = Math.hypot(dx, dy) || 1; a.cool = Math.max(0, a.cool - dt);
+      a.vx += dx / d * 10 * dt; a.vy += dy / d * 10 * dt; a.x += a.vx * dt; a.y += a.vy * dt;
+      if (d > 820) { this.al.splice(i, 1); continue; }
+      if (d < best && !a.cool) { best = d; this.inRange = a; }
+      if (d < 30 && !a.cool) {
+        if (this.A === 4 || this.A === 12) { this.al.splice(i, 1); this.capture(); }
+        else if (this.A === 8) { a.vx = -dx / d * 90; a.vy = -dy / d * 90; a.cool = 1; if (!this.said.glance) { this.said.glance = true; say("It glanced off. Off resonance, an alpha can't stick to beryllium-8. Catch it on the beat."); } }
+      }
+    }
+    const pressed = G.focus && !this.prevFocus; this.prevFocus = G.focus;
+    if (this.A === 8 && pressed && b) {
+      if (this.inRange && Math.abs(b.nearestOff) < .19) { this.al.splice(this.al.indexOf(this.inRange), 1); this.hoyle(); }
+      else { this.missT = 1; Music.note(0, .05, 1); floatText(pl.x, pl.y - 52, this.inRange ? "off the beat" : "no alpha close enough", "#ff9ab8"); }
+    }
+    this.missT = Math.max(0, this.missT - dt);
+  },
+  capture() {
+    this.A += 4; burst(pl.x, pl.y, C.gold, 34, 170, 1.3); ring(pl.x, pl.y, C.gold, 200, 1.4); Music.arp([4, 7, 9], .12, .11);
+    floatText(pl.x, pl.y - 52, STAGE[this.A][0] + "  " + STAGE[this.A][1], "#ffd38a", true);
+    if (this.A === 8) { const b = Music.beatInfo(); this.beUntil = (b ? b.index : 0) + 3; if (!this.said.be) { this.said.be = true; say("Beryllium-8: in reality it survives about 10⁻¹⁶ seconds. Here you have three beats."); } }
+    if (this.A === 16) {
+      made("Carbon and oxygen", "forged in a red giant's core");
+      Moment.add("Oxygen-16. Every breath you take was forged like this, in the core of a star that died before the Sun was born.", "Stellar nucleosynthesis");
+      say("Massive stars keep going: neon, magnesium, silicon, all the way up to iron. Iron is where fusion stops releasing energy.",
+          "With nothing left to burn, the core collapses in under a second and the star explodes.");
+      this.nova = 0; Music.stopBeat();
+    }
+    this.obj();
+  },
+  hoyle() {
+    this.A = 12; this.beUntil = -1;
+    burst(pl.x, pl.y, C.white, 60, 240, 2, 3.5); ring(pl.x, pl.y, C.gold, 300, 2, 3); ring(pl.x, pl.y, C.white, 200, 1.4, 2); FX.flash = .18; cam.shake = REDUCED ? 0 : 5;
+    Music.arp([2, 5, 7, 9, 12, 14], .09, .13); Music.low(46.2, .25, 6);
+    floatText(pl.x, pl.y - 60, "¹²C*  Hoyle state  7.65 MeV", "#ffd38a", true);
+    if (!this.said.hoyle) { this.said.hoyle = true; Moment.add("Resonance. Fred Hoyle predicted this energy level in carbon in 1953, reasoning that without it the universe couldn't hold enough carbon for life. Experiment found it the same year. Every carbon atom in your body passed through this state.", "The Hoyle state"); }
+    this.obj();
+  },
+  split() {
+    this.A = 4; this.beUntil = -1;
+    const a = Math.random() * TAU; this.al.push({ x: pl.x + Math.cos(a) * 34, y: pl.y + Math.sin(a) * 34, vx: Math.cos(a) * 170, vy: Math.sin(a) * 170, cool: 1.5 });
+    burst(pl.x, pl.y, C.p, 26, 180, 1); Music.note(1, .1, 2); cam.shake = REDUCED ? 0 : 3;
+    floatText(pl.x, pl.y - 52, "⁸Be → ⁴He + ⁴He", "#ff9ab8");
+    if (!this.said.split) { this.said.split = true; say("Beryllium-8 fell apart into two alphas. Catch another and try again: wait for an alpha to drift close, then strike on the beat."); }
+    this.obj();
+  },
+  novaStep(dt) {
+    if (narrBusy() || Moment.cur) return;
+    if (!this.boom) {
+      this.boom = true; FX.flash = .9; cam.shake = REDUCED ? 0 : 10; Music.low(36.7, .35, 8); Music.arp([0, 4, 7, 9, 12, 14, 16], .07, .12);
+      const cols = [C.gold, C.p, C.n, C.matter, C.anti, C.white, hex("#9fd0ff")];
+      for (const c of cols) burst(pl.x, pl.y, c, 70, 520, 3.4, 4);
+      for (let k = 0; k < 4; k++) ring(pl.x, pl.y, cols[k], 500 + k * 180, 2.4 + k * .4, 3);
+      setLook({ c0: "#05030c", c1: "#2a0f3a", c2: "#ff9ad5", warp: 3 });
+      pl.hidden = true;
+      say("The supernova scatters carbon, oxygen and everything else the star made across the galaxy, to be gathered into new stars, planets and people.");
+      completeChapter(2.5);
+    }
+  },
+  draw(t) {
+    for (const a of this.al) { drawNucleusAt(a.x, a.y, 2, 2, t * 1.3, .8); }
+    const b = Music.beatInfo();
+    if (b && this.nova < 0) {
+      const nxt = 1 - b.phase, show = this.A === 8;
+      const R = 26 + 130 * nxt, al = show ? .85 : .18, col = show ? (this.inRange ? C.gold : hex("#ff9ab8")) : C.gold;
+      for (let i = 0; i < 64; i++) { const a = i / 64 * TAU; P(pl.x + Math.cos(a) * R, pl.y + Math.sin(a) * R, show ? 2.2 : 1.4, col, al * (1 - nxt * .4)); }
+      if (show && this.inRange) PLine(pl.x, pl.y, this.inRange.x, this.inRange.y, 1.4, C.gold, .35, 6, 3, t * 6);
+      if (show && this.beUntil >= 0) { const left = this.beUntil - b.index; for (let k = 0; k < 3; k++) P(pl.x - 14 + k * 14, pl.y + 58, 4, k < left ? C.gold : C.p, k < left ? .95 : .3); }
+    }
+  },
+  overlay() {
+    if (this.nova >= 0) return;
+    label(pl.x, pl.y + 42 + this.A, STAGE[this.A][0], { font: "italic 20px 'Instrument Serif', Georgia, serif" });
+    for (const a of this.al) { const d = Math.hypot(a.x - pl.x, a.y - pl.y); if (d < 260) label(a.x, a.y - 22, "α", { a: clamp(1.3 - d / 260, 0, 1) * .85, font: "14px 'IBM Plex Mono', monospace" }); }
+  },
+});
+
+// ---- 08-ch6-cosmic-web.js ----
+// =================== Chapter VI: The Cosmic Web ===================
+const MYSTERIES = [
+  ["Dark matter", "Galaxies in clusters like this move far too fast for the matter we can see to hold them together. About 85% of all matter is something that has never been directly detected."],
+  ["Dark energy", "The expansion of the universe is speeding up. Whatever drives it makes up roughly 68% of the total energy of the cosmos, and nobody knows what it is."],
+  ["Inflation", "In its first instant, the universe may have expanded by a factor of at least 10²⁶. That stretch would have blown tiny quantum flickers up to the size of galaxy clusters."],
+  ["Matter and antimatter", "For every billion antiparticles in the early universe there seem to have been a billion and one particles. The one left over from each annihilation is everything you see."],
+  ["Quantum gravity", "Our two best theories, quantum mechanics and general relativity, disagree at the Planck scale. The foam where you began is exactly where they meet, and no one yet knows its true shape."],
+];
+CH.push({
+  num: "VI", title: "The Cosmic Web", scale: "10²⁵ m", era: "today · 13.8 billion years", chord: "web", bright: 1800,
+  line: "Now look at everything at once.",
+  look: { c0: "#020208", c1: "#0b0f2a", c2: "#9fb8ff", foam: 0, star: .9, warp: 1 },
+  enter() {
+    pl.maxV = 360; cam.zoomT = .72; pl.col = hex("#ffe9c2");
+    // build the web: nodes (clusters), filaments to near neighbours, galaxies scattered along them
+    const nodes = [], R = 1700;
+    for (let tries = 0; nodes.length < 30 && tries < 2000; tries++) {
+      const a = Math.random() * TAU, d = Math.sqrt(Math.random()) * R, x = Math.cos(a) * d, y = Math.sin(a) * d;
+      if (Math.hypot(x, y) < 180) continue;
+      if (nodes.every(n => Math.hypot(n.x - x, n.y - y) > 260)) nodes.push({ x, y, m: rand(.6, 1.4) });
+    }
+    const edges = new Set(), gal = [];
+    nodes.forEach((n, i) => {
+      const near = nodes.map((m, j) => [Math.hypot(m.x - n.x, m.y - n.y), j]).filter(v => v[1] !== i).sort((a, b) => a[0] - b[0]).slice(0, 3);
+      for (const [, j] of near) edges.add(i < j ? i + "-" + j : j + "-" + i);
+    });
+    for (const e of edges) {
+      const [i, j] = e.split("-").map(Number), a = nodes[i], b = nodes[j], L = Math.hypot(b.x - a.x, b.y - a.y), cnt = L / 9 | 0, nx = -(b.y - a.y) / L, ny = (b.x - a.x) / L;
+      const bow = rand(-60, 60);
+      for (let k = 0; k < cnt; k++) { const s = Math.random(), off = (Math.random() + Math.random() - 1) * 26, curve = Math.sin(s * Math.PI) * bow;
+        gal.push([a.x + (b.x - a.x) * s + nx * (off + curve), a.y + (b.y - a.y) * s + ny * (off + curve), rand(.8, 2.1), Math.random()]); }
+    }
+    for (const n of nodes) for (let k = 0; k < 70 * n.m; k++) { const r = Math.abs(rand(-1, 1) * rand(0, 1)) * 70 * n.m, a = Math.random() * TAU; gal.push([n.x + Math.cos(a) * r, n.y + Math.sin(a) * r, rand(1, 2.6), Math.random()]); }
+    this.nodes = nodes; this.gal = gal;
+    // the five brightest-looking clusters hold the five mysteries, spread around you
+    const sorted = nodes.slice().sort((a, b) => Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y));
+    this.marks = []; for (const n of sorted) { if (this.marks.length >= 5) break; if (this.marks.every(m => Math.hypot(m.x - n.x, m.y - n.y) > 500)) this.marks.push(n); }
+    while (this.marks.length < 5) this.marks.push(sorted[this.marks.length + 3]);
+    this.marks.forEach((m, i) => { m.myst = i; m.lit = 0; m.visited = false; });
+    this.found = 0; this.final = -1; this.home = null; this.saidF = false; this.morphAt = null; this.ended = false;
+  },
+  afterCard() {
+    say("Every point of light here is a galaxy. Each galaxy holds hundreds of billions of stars, and each star burned through the same steps you just did.",
+        "Gravity has gathered them along vast filaments, with empty voids in between: the cosmic web.");
+    objective("Fly to the five glowing clusters. Each holds one of the great open questions.", 5, 0);
+  },
+  update(dt) {
+    if (this.final >= 0) { this.final += dt; this.finale(dt); return; }
+    if (this.home && !this.home.reached) {
+      if (!this.home.told && !Moment.cur) { this.home.told = true; objective("One more light remains. Small, yellow, ordinary.", 0, 0); say("Five questions no one can answer yet. There's one more light out here, small and easy to miss."); }
+      if (Math.hypot(this.home.x - pl.x, this.home.y - pl.y) < 70) {
+        this.home.reached = true; this.final = 0;
+        ring(this.home.x, this.home.y, C.gold, 200, 2.4, 2); Music.arp([0, 4, 7, 9, 12], .2, .1); Music.low(36.7, .2, 8);
+        Moment.add("A spiral galaxy. In it, a small yellow star. Around it, a rocky planet with liquid water. Some of the carbon and oxygen you forged ended up here, and in time it learned to look up and wonder where it came from.", "Home", true, { x: this.home.x, y: this.home.y });
+        made("You", "the universe, finding out how it was made");
+        say("That's you. You are the universe, finding out how it was made.");
+      }
+      return;
+    }
+    for (const m of this.marks) {
+      if (m.visited) { m.lit = Math.min(1, m.lit + dt); continue; }
+      if (Math.hypot(m.x - pl.x, m.y - pl.y) < 80) {
+        m.visited = true; this.found++;
+        const [title, text] = MYSTERIES[m.myst];
+        ring(m.x, m.y, C.gold, 260, 2, 2.5); burst(m.x, m.y, C.gold, 40, 160, 2); Music.arp([2 + this.found, 5 + this.found, 7 + this.found, 9 + this.found], .15, .12);
+        Moment.add(text, title, true, { x: m.x, y: m.y });
+        made(title, "an open question at 10²⁵ m");
+        objective("Fly to the five glowing clusters. Each holds one of the great open questions.", 5, this.found);
+        if (this.found === 5) { const a = Math.atan2(-pl.y, -pl.x) + rand(-.6, .6); this.home = { x: pl.x + Math.cos(a) * 520, y: pl.y + Math.sin(a) * 520, reached: false }; }
+      }
+    }
+  },
+  finale(dt) {
+    if (Moment.cur || narrBusy()) { if (!this.saidF) { /* wait for the last mystery */ } }
+    if (!this.saidF && !Moment.cur) {
+      this.saidF = true;
+      say("Look closely at the largest structure in the universe and you find the smallest.",
+          "These filaments are the foam's flickers, stretched across billions of light-years. Every galaxy began as a quantum fluctuation.");
+      this.morphAt = null;
+    }
+    if (this.saidF && !this.morphAt && Narr.q.length === 0) { this.morphAt = G.time; setLook({ c0: "#04030d", c1: "#1c1552", c2: "#8af3ff", foam: 1, star: .2, warp: 1.9 }); cam.zoomT = 3.2; Music.chord("foam", 1100); }
+    if (this.morphAt && !this.ended && !narrBusy()) { this.ended = true; completeChapter(2); }
+  },
+  draw(t) {
+    if (this.home) {
+      const h = this.home, b = .5 + .5 * Math.sin(t * 1.4), f = this.morphAt ? clamp(1 - (G.time - this.morphAt) / 6, 0, 1) : 1;
+      P(h.x, h.y, 70, [1, .85, .5], (.1 + .05 * b) * f); P(h.x, h.y, 6, [1, .95, .75], .95 * f);
+      for (let k = 0; k < 4; k++) { const a = k / 4 * TAU + t * .1; PLine(h.x, h.y, h.x + Math.cos(a) * 30, h.y + Math.sin(a) * 30, 1, [1, .9, .6], .25 * f, 4); }
+      const pa = t * .7; P(h.x + Math.cos(pa) * 22, h.y + Math.sin(pa) * 22 * .5, 1.8, [.5, .75, 1], .9 * f);
+    }
+    const fade = this.morphAt ? clamp(1 - (G.time - this.morphAt) / 6, 0, 1) : 1;
+    const cx = cam.x, cy = cam.y, vw = W / cam.zoom / 2 + 60, vh = H / cam.zoom / 2 + 60;
+    for (const g of this.gal) {
+      if (Math.abs(g[0] - cx) > vw || Math.abs(g[1] - cy) > vh) continue;
+      const tw = .55 + .45 * Math.sin(t * 1.3 + g[3] * 40);
+      P(g[0], g[1], g[2], g[3] < .7 ? [.75, .8, 1] : [1, .85, .6], .6 * tw * fade);
+    }
+    for (const n of this.nodes) P(n.x, n.y, 90 * n.m, [.45, .5, 1], .07 * fade);
+    for (const m of this.marks) {
+      const pulse = .5 + .5 * Math.sin(t * 2 + m.myst);
+      P(m.x, m.y, 130, m.visited ? C.gold : [.7, .8, 1], (m.visited ? .22 : .1 + .08 * pulse) * fade);
+      if (!m.visited) for (let i = 0; i < 40; i++) { const a = i / 40 * TAU + t * .3, r = 92 + pulse * 10; P(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r, 2, C.gold, .45 * fade); }
+    }
+    // a faint guide toward the nearest unvisited cluster
+    const left = this.home && !this.home.reached ? [this.home] : this.marks.filter(m => !m.visited);
+    if (left.length && this.final < 0) {
+      const m = left.reduce((a, b) => Math.hypot(a.x - pl.x, a.y - pl.y) < Math.hypot(b.x - pl.x, b.y - pl.y) ? a : b);
+      const dx = m.x - pl.x, dy = m.y - pl.y, d = Math.hypot(dx, dy);
+      if (d > 300) for (let k = 0; k < 5; k++) { const s = 60 + k * 16 + (t * 30 % 16); P(pl.x + dx / d * s, pl.y + dy / d * s, 2.2, C.gold, .5 - k * .08); }
+    }
+  },
+  overlay() {
+    if (this.home && !this.morphAt) label(this.home.x, this.home.y + 42, this.home.reached ? "home" : "·", { color: "#ffe9c2", font: "italic 20px 'Instrument Serif', Georgia, serif", a: .9 });
+    for (const m of this.marks) { const d = Math.hypot(m.x - pl.x, m.y - pl.y); if (m.visited || d < 900) label(m.x, m.y + 112, m.visited ? MYSTERIES[m.myst][0] : "?", { a: m.visited ? .8 : clamp(1.2 - d / 900, 0, 1), font: m.visited ? "italic 18px 'Instrument Serif', Georgia, serif" : "22px 'Instrument Serif', Georgia, serif", color: "#ffd38a" }); }
+  },
+});
+
+// ---- 09-title.js ----
+// =================== Title: the orbital sculpture and the playable void ===================
+// Real hydrogen orbitals (unnormalised ψ), sampled in 3D from |ψ|². Point colour shows the wavefunction's phase.
+const ORBS = [
+  { name: "1s", q: "n = 1 · ℓ = 0 · m = 0", L: 6, f: (x, y, z, r) => Math.exp(-r) },
+  { name: "2p", q: "n = 2 · ℓ = 1 · m = 0", L: 15, f: (x, y, z, r) => z * Math.exp(-r / 2) },
+  { name: "3d z²", q: "n = 3 · ℓ = 2 · m = 0", L: 26, f: (x, y, z, r) => (3 * z * z - r * r) * Math.exp(-r / 3) },
+  { name: "3d xy", q: "n = 3 · ℓ = 2 · m = ±2", L: 26, f: (x, y, z, r) => x * y * Math.exp(-r / 3) },
+  { name: "4f xyz", q: "n = 4 · ℓ = 3 · m = ±2", L: 38, f: (x, y, z, r) => x * y * z * Math.exp(-r / 4) },
+  { name: "4f z³", q: "n = 4 · ℓ = 3 · m = 0", L: 38, f: (x, y, z, r) => z * (5 * z * z - 3 * r * r) * Math.exp(-r / 4) },
+];
+const ORB_N = 2600;
+function sampleOrbital(o) {
+  const out = new Float32Array(ORB_N * 4), L = o.L;
+  let mx = 0;
+  for (let i = 0; i < 6000; i++) { const x = rand(-L, L), y = rand(-L, L), z = rand(-L, L), v = o.f(x, y, z, Math.hypot(x, y, z)); mx = Math.max(mx, v * v); }
+  let n = 0, guard = 0; const rs = [];
+  while (n < ORB_N && guard++ < 3e6) {
+    const x = rand(-L, L), y = rand(-L, L), z = rand(-L, L), v = o.f(x, y, z, Math.hypot(x, y, z));
+    if (Math.random() * mx < v * v) { out[n * 4] = x; out[n * 4 + 1] = y; out[n * 4 + 2] = z; out[n * 4 + 3] = v >= 0 ? 1 : -1; rs.push(Math.hypot(x, y, z)); n++; }
+  }
+  rs.sort((a, b) => a - b); const r95 = rs[Math.floor(rs.length * .94)] || 1;
+  for (let i = 0; i < ORB_N * 4; i += 4) { out[i] /= r95; out[i + 1] /= r95; out[i + 2] /= r95; }
+  return out;
+}
+const Sculpt = { data: [], a: 0, b: 1, m: 1, hold: 0, yaw: .6, pitch: -.42, vy: 0, vp: 0, hover: 0, cx: 0, cy: 0, R: 200, ready: false, labelA: 1 };
+function sculptInit() {
+  if (Sculpt.ready) return;
+  Sculpt.data = ORBS.map(sampleOrbital); Sculpt.ready = true; Sculpt.a = 0; Sculpt.b = 0; Sculpt.m = 1; Sculpt.hold = 3.5;
+}
+function sculptNext() {
+  Sculpt.a = Sculpt.b; Sculpt.b = (Sculpt.b + 1) % ORBS.length; Sculpt.m = 0; Sculpt.hold = 7;
+  const n = [1, 2, 3, 3, 4, 4][Sculpt.b]; Music.arp([n + 2, n + 4, n + 6], .16, .06);
+}
+function sculptLayout() {
+  const narrow = W < 820;
+  Sculpt.R = narrow ? Math.min(W * .32, 150, H * .13) : Math.min(H * .37, W * .24, 350);
+  Sculpt.cx = worldX(narrow ? W * .5 : W * .72); Sculpt.cy = worldY(narrow ? H * .8 : H * .46);
+}
+function sculptStep(dt) {
+  if (!Sculpt.ready) return;
+  sculptLayout();
+  if (Sculpt.m < 1) Sculpt.m = Math.min(1, Sculpt.m + dt / 2.8);
+  else if ((Sculpt.hold -= dt) <= 0) sculptNext();
+  Sculpt.yaw += dt * .22 + Sculpt.vy * dt; Sculpt.pitch = clamp(Sculpt.pitch + Sculpt.vp * dt, -1.3, 1.3);
+  Sculpt.vy *= Math.exp(-dt * 2); Sculpt.vp *= Math.exp(-dt * 2);
+  Sculpt.pitch = lerp(Sculpt.pitch, -.42, dt * .15);
+}
+function sculptDraw(t, dim = 1) {
+  if (!Sculpt.ready) return;
+  const A = Sculpt.data[Sculpt.a], B = Sculpt.data[Sculpt.b], m = ease(Sculpt.m), sw = m * (1 - m) * 3.2;
+  const cy = Math.cos(Sculpt.yaw), sy = Math.sin(Sculpt.yaw), cp = Math.cos(Sculpt.pitch), sp = Math.sin(Sculpt.pitch);
+  const R = Sculpt.R, bright = (1 + Sculpt.hover * .45) * dim, cs = Math.cos(sw), ss = Math.sin(sw);
+  const pos = [.55, .95, 1], neg = [1, .5, .78];
+  P(Sculpt.cx, Sculpt.cy, R * .9, [.35, .4, 1], .05 * bright);
+  for (let i = 0; i < ORB_N; i++) {
+    const k = i * 4;
+    let x = lerp(A[k], B[k], m), y = lerp(A[k + 1], B[k + 1], m), z = lerp(A[k + 2], B[k + 2], m);
+    const sg = lerp(A[k + 3], B[k + 3], m);
+    const xs = x * cs - y * ss, ys = x * ss + y * cs; x = xs; y = ys;           // vortex while morphing
+    const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+    const y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    const s = 3.2 / (3.2 + z2), tw = .75 + .25 * Math.sin(t * 2.3 + i);
+    const col = sg >= 0 ? (sg > .99 ? pos : mix3(neg, pos, (sg + 1) / 2)) : (sg < -.99 ? neg : mix3(neg, pos, (sg + 1) / 2));
+    P(Sculpt.cx + x1 * R * s, Sculpt.cy - y1 * R * s, 1.55 * s, col, .72 * s * s * tw * bright);
+  }
+  P(Sculpt.cx, Sculpt.cy, 9, [1, .85, .7], .9 * dim); P(Sculpt.cx, Sculpt.cy, 26, [1, .6, .45], .25 * dim);
+}
+function sculptLabel(dim = 1) {
+  if (!Sculpt.ready) return;
+  const o = ORBS[Sculpt.b], a = clamp(Sculpt.m * 1.4 - .3, 0, 1) * dim;
+  label(Sculpt.cx, Sculpt.cy + Sculpt.R * 1.08, o.name + " orbital", { font: "italic 24px 'Instrument Serif', Georgia, serif", a: a * .95 });
+  label(Sculpt.cx, Sculpt.cy + Sculpt.R * 1.08 + 22, o.q, { a: a * .6, color: "#aaa3d6", font: "11px 'IBM Plex Mono', monospace" });
+  if (G.state === "title") label(Sculpt.cx, Sculpt.cy + Sculpt.R * 1.08 + 40, COARSE ? "drag to turn · tap to change" : "drag to turn · click to change", { a: a * .38, color: "#aaa3d6", font: "10px 'IBM Plex Mono', monospace" });
+}
+
+// ----- the playable void -----
+const Void = { down: null, last: 0, started: false };
+function voidActive() { return G.state === "title" || G.state === "coda"; }
+glc.addEventListener("pointerdown", e => {
+  if (!voidActive()) return;
+  if (!Void.started) { Void.started = true; Music.start(); Music.chord("foam", 800); }
+  Void.down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: 0, onSculpt: Math.hypot(worldX(e.clientX) - Sculpt.cx, worldY(e.clientY) - Sculpt.cy) < Sculpt.R * 1.05 };
+});
+glc.addEventListener("pointermove", e => {
+  if (!voidActive()) return;
+  Sculpt.hover = Math.hypot(worldX(e.clientX) - Sculpt.cx, worldY(e.clientY) - Sculpt.cy) < Sculpt.R ? 1 : Sculpt.hover * .9;
+  const now = performance.now();
+  if (now - Void.last > 28) { Void.last = now; const c = mix3(C.matter, C.anti, .5 + .5 * Math.sin(now / 700)); FXL.sparks.push({ x: worldX(e.clientX) + rand(-3, 3), y: worldY(e.clientY) + rand(-3, 3), vx: rand(-20, 20), vy: rand(-20, 20), t: 0, life: rand(.6, 1.2), c, size: rand(1.4, 2.6) }); }
+  const d = Void.down; if (!d) return;
+  const dx = e.clientX - d.lx, dy = e.clientY - d.ly; d.lx = e.clientX; d.ly = e.clientY; d.moved += Math.abs(dx) + Math.abs(dy);
+  if (d.onSculpt) { Sculpt.vy += dx * .02; Sculpt.vp -= dy * .015; }
+});
+glc.addEventListener("pointerup", e => {
+  if (!voidActive() || !Void.down) return;
+  const d = Void.down; Void.down = null;
+  if (d.moved > 8) return;
+  const x = worldX(e.clientX), y = worldY(e.clientY);
+  if (d.onSculpt) { if (Sculpt.m >= 1) sculptNext(); ring(Sculpt.cx, Sculpt.cy, C.matter, Sculpt.R * 1.3, 1.6, 2); return; }
+  // touch the void: it rings, and a virtual pair blooms where you touched
+  const deg = 2 + Math.floor(clamp(e.clientX / W, 0, .999) * 11) - (e.clientY > H * .6 ? 2 : 0);
+  Music.note(deg, .1, 3.2); Music.note(deg + 2, .04, 3.2, .09);
+  ring(x, y, mix3(C.matter, C.gold, Math.random()), 150, 1.6, 2);
+  amb.push({ x, y, ax: Math.random() * TAU, t: .2, life: 2.6 });
+});
+
+const EXPS = [-35, -18, -15, -10, 8, 25], MOTIFS = [[5, 7, 9], [4, 6, 9], [5, 8, 10], [7, 9, 12], [3, 5, 8], [9, 12, 14]];
+CH.forEach((c, i) => { c.expN = EXPS[i]; c.exp = (EXPS[i] < 0 ? "−" : "") + Math.abs(EXPS[i]); c.motif = MOTIFS[i]; });
+// ----- journey ruler (scale map) -----
+function buildRuler(box) {
+  box.innerHTML = "";
+  CH.forEach((ch, i) => {
+    const b = document.createElement("button"); b.className = "tick" + (i <= save.reached ? " open" : "") + (i === save.reached && !save.finished ? " here" : "");
+    b.disabled = i > save.reached;
+    b.style.setProperty("--sw", `linear-gradient(135deg, ${ch.look.c1}, ${ch.look.c2})`);
+    b.innerHTML = `<span class="dot"></span><span class="ex">10<sup>${ch.exp}</sup> m</span><span class="nm">${ch.num} · ${ch.title}</span>`;
+    b.title = ch.line;
+    b.onclick = () => begin(i);
+    box.appendChild(b);
+  });
+}
+
+// ---- 10-story.js ----
+// =================== Story layer: prologue, echoes, field notes ===================
+const KEYS = ["foam", "quark", "nuclei", "light", "star", "web"];
+CH.forEach((c, i) => { c.key = KEYS[i]; });
+save.echoes = save.echoes || {}; save.notes = save.notes || [];
+
+// ----- prologue: the observer wakes -----
+const PROLOGUE = [
+  "Before there was anything to see, there was the chance of seeing.",
+  "You are that chance: a ripple of probability, with nowhere yet to be.",
+  "Everything that will ever exist is still waiting to be made.",
+  "Go and watch it happen.",
+];
+const Pro = { t: 0, i: -1, el: $("proLine") };
+function startPrologue() {
+  G.state = "prologue"; Pro.t = 0; Pro.i = -1;
+  $("prologue").hidden = false; $("title").hidden = true; $("hud").classList.remove("on");
+  setLook({ c0: "#000000", c1: "#05040f", c2: "#8af3ff", foam: 0, star: 0, fog: 0, cmb: 0, warp: 1.9 });
+  cam.x = cam.y = 0; cam.zoom = 1; cam.zoomT = 1.25;
+  Music.chord("foam", 500);
+}
+function stepPrologue(dt) {
+  Pro.t += dt;
+  const idx = Math.floor((Pro.t - 1.2) / 4.6);
+  if (idx !== Pro.i && idx >= 0 && idx < PROLOGUE.length) {
+    Pro.i = idx; Pro.el.classList.remove("on");
+    setTimeout(() => { Pro.el.textContent = PROLOGUE[idx]; Pro.el.classList.add("on"); }, 500);
+    Music.note([2, 4, 5, 7][idx], .06, 4);
+    if (idx === 2) setLook({ c1: "#1c1552", foam: .6 });
+  }
+  if (Pro.t > 1.2 + PROLOGUE.length * 4.6) endPrologue();
+}
+function drawPrologue(t) {
+  const k = clamp(Pro.t / 6, 0, 1), b = .5 + .5 * Math.sin(t * 1.6);
+  P(0, 0, 60 * k + 10, [.55, .9, 1], .12 * k);
+  P(0, 0, 6 + 3 * b * k, [1, 1, 1], .25 + .7 * k);
+  for (let i = 0; i < 26; i++) { const a = i / 26 * TAU + t * .3, r = 18 + 4 * Math.sin(t * 2 + i) ; P(Math.cos(a) * r, Math.sin(a) * r, 1.6, [.75, .97, 1], .45 * k); }
+}
+function endPrologue() {
+  if (G.state !== "prologue") return;
+  Pro.el.classList.remove("on"); $("prologue").hidden = true;
+  startChapter(0);
+}
+$("proSkip").onclick = endPrologue;
+
+// ----- echoes: one hidden glimmer per chapter, each holding a deeper fact -----
+const ECHOES = {
+  foam: ["The Casimir effect", "Put two uncharged metal plates a hair apart in a vacuum and they're pushed together. Fewer kinds of fluctuation fit between them than outside. The force was measured precisely in 1997."],
+  quark: ["Gluons attract gluons", "Unlike photons, gluons carry the charge they transmit, so they pull on each other. That's why the field between quarks narrows into a string that doesn't weaken with distance."],
+  nuclei: ["The lithium problem", "Big Bang theory predicts about three times more lithium-7 than astronomers find in the oldest stars. Nobody yet knows where the missing lithium went."],
+  light: ["Hydrogen's whisper", "When a hydrogen atom's electron flips its spin, it emits a radio wave 21 centimetres long. Radio telescopes use that faint signal to map the gas of entire galaxies."],
+  star: ["A ghostly glow", "Fusion also makes neutrinos. Around a hundred trillion from the Sun pass through your body every second, and almost none of them touch anything."],
+  web: ["The Hubble tension", "Measured from the early universe's afterglow, space expands more slowly than measured from nearby galaxies. The mismatch has survived years of checking."],
+};
+const Echo = { x: 0, y: 0, found: false, near: false };
+function placeEcho(ch) {
+  const a = Math.random() * TAU, d = ch.key === "web" ? rand(900, 1300) : rand(520, 820);
+  Echo.x = Math.cos(a) * d; Echo.y = Math.sin(a) * d; Echo.found = !!save.echoes[ch.key]; Echo.near = false;
+}
+function stepEcho() {
+  if (!G.ch || Echo.found || G.state !== "play" || transition) return;
+  const d = Math.hypot(pl.x - Echo.x, pl.y - Echo.y);
+  if (d < 380 && !Echo.near) { Echo.near = true; if (!save.echoHint) { save.echoHint = true; persist(); say("Something faint and golden is glimmering nearby. An echo, if you can find it."); } }
+  if (d < 42) {
+    Echo.found = true; save.echoes[G.ch.key] = true; persist();
+    const [title, text] = ECHOES[G.ch.key];
+    ring(Echo.x, Echo.y, C.gold, 240, 2.2, 2.5); burst(Echo.x, Echo.y, C.gold, 40, 140, 2);
+    Music.arp([7, 9, 11, 12, 14], .12, .1);
+    Moment.add(text, "Echo · " + title, true, { x: Echo.x, y: Echo.y });
+  }
+}
+function drawEcho(t) {
+  if (Echo.found || !G.ch) return;
+  const b = .5 + .5 * Math.sin(t * 1.3);
+  P(Echo.x, Echo.y, 26, C.gold, .08 + .06 * b);
+  P(Echo.x, Echo.y, 3, [1, .95, .8], .55 + .35 * b);
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + t * .5, r = 14 + 3 * b; P(Echo.x + Math.cos(a) * r, Echo.y + Math.sin(a) * r, 1.3, C.gold, .4); }
+}
+const echoCount = () => KEYS.filter(k => save.echoes[k]).length;
+
+// ----- field notes: every explanation you've reached, kept in a journal -----
+function recordNote(kicker, text) {
+  if (!G.ch || kicker === "Close-up") return;
+  const id = G.ch.key + "|" + kicker;
+  if (save.notes.some(n => n.id === id)) return;
+  save.notes.push({ id, ch: G.ch.num, chTitle: G.ch.title, kicker, text }); persist();
+}
+function openNotes() {
+  const box = $("notesList"); box.innerHTML = "";
+  if (!save.notes.length) { box.innerHTML = `<p class="empty">Nothing yet. Explanations you reach on the journey are kept here.</p>`; }
+  const order = ["I", "II", "III", "IV", "V", "VI"];
+  const sorted = save.notes.slice().sort((a, b) => order.indexOf(a.ch) - order.indexOf(b.ch));
+  for (const n of sorted) {
+    const d = document.createElement("article"); d.className = "note" + (n.kicker.startsWith("Echo") ? " echo" : "");
+    const h = document.createElement("p"); h.className = "nk"; h.textContent = `Chapter ${n.ch} · ${n.kicker}`;
+    const b = document.createElement("p"); b.className = "nb"; b.textContent = n.text;
+    d.append(h, b); box.appendChild(d);
+  }
+  $("notesMeta").textContent = `${save.notes.length} notes · ${echoCount()} of 6 echoes found`;
+  $("notes").hidden = false; $("notesClose").focus();
+}
+$("notesClose").onclick = () => { $("notes").hidden = true; };
+
+// ---- 11-main.js ----
+// =================== Title ambience, wiring and the main loop ===================
+const amb = [];
+function ambient(dt, t) {
+  while (amb.length < 26) { const a = Math.random() * TAU, d = rand(40, Math.max(W, H) * .6); amb.push({ x: Math.cos(a) * d + W * .18, y: Math.sin(a) * d, ax: Math.random() * TAU, t: 0, life: rand(2.5, 5) }); }
+  for (let i = amb.length - 1; i >= 0; i--) {
+    const p = amb[i]; p.t += dt;
+    if (p.t > p.life) { amb.splice(i, 1); burst(p.x, p.y, C.white, 4, 30, .5, 1.6); continue; }
+    const ph = p.t / p.life, sep = Math.pow(Math.sin(Math.PI * ph), .7) * 22, cx = Math.cos(p.ax), cy = Math.sin(p.ax), a = Math.min(1, Math.sin(Math.PI * ph) * 2);
+    P(p.x + cx * sep, p.y + cy * sep, 9, C.matter, .2 * a); P(p.x + cx * sep, p.y + cy * sep, 2.8, C.matter, a);
+    P(p.x - cx * sep, p.y - cy * sep, 9, C.anti, .2 * a); P(p.x - cx * sep, p.y - cy * sep, 2.8, C.anti, a);
+  }
+}
+
+// a far layer of drifting motes, for depth
+const dust = []; for (let i = 0; i < 90; i++) dust.push({ x: Math.random(), y: Math.random(), d: rand(.15, .6), s: rand(.6, 1.8), p: Math.random() * TAU });
+function drawDust(t) {
+  const c = mix3(FX.c2, C.white, .4), z = cam.zoom;
+  for (const m of dust) {
+    const sx = (((m.x * W * 1.2 - cam.x * z * m.d) % (W * 1.2)) + W * 1.2) % (W * 1.2) - W * .1, sy = (((m.y * H * 1.2 - cam.y * z * m.d) % (H * 1.2)) + H * 1.2) % (H * 1.2) - H * .1;
+    P(worldX(sx), worldY(sy), m.s / z, c, (.12 + .1 * Math.sin(t * .8 + m.p)) * (1 - FX.fog * .7));
+  }
+}
+function begin(i = 0) {
+  Music.start(); Music.setMuted(!!save.muted); $("bSound").classList.toggle("off", !!save.muted);
+  $("title").hidden = true; $("coda").hidden = true; $("pause").hidden = true;
+  if (i === 0) { G.made = []; startPrologue(); } else startChapter(i);
+}
+function toTitle() {
+  G.state = "title"; transition = null; Music.stopBeat();
+  $("pause").hidden = true; $("coda").hidden = true; $("title").hidden = false; $("hud").classList.remove("on"); $("focusBtn").hidden = true;
+  $("card").classList.remove("on"); Narr.q.length = 0; Narr.cur = null; Narr.el.classList.remove("on"); Moment.q.length = 0; Moment.next(true);
+  setLook({ c0: "#04030d", c1: "#1c1552", c2: "#8af3ff", foam: 1, fog: 0, cmb: 0, star: 0, warp: 1.9 }); FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  cam.x = cam.y = 0; cam.zoom = cam.zoomT = 1;
+  sculptInit(); buildRuler($("ruler"));
+  const tt = $("title"); tt.classList.remove("play"); void tt.offsetWidth; tt.classList.add("play");
+  $("begin").textContent = save.reached > 0 ? "Begin again from the foam" : "Begin the journey";
+  $("tNotes").hidden = !save.notes.length; $("prologue").hidden = true; $("notes").hidden = true;
+}
+$("begin").onclick = () => begin(0);
+$("pResume").onclick = () => togglePause();
+$("pTitle").onclick = toTitle;
+$("cAgain").onclick = () => begin(0);
+$("cTitle").onclick = toTitle;
+$("tNotes").onclick = openNotes; $("pNotes").onclick = openNotes; $("cNotes").onclick = openNotes;
+$("bPause").onclick = togglePause;
+$("bSound").onclick = toggleSound;
+document.addEventListener("visibilitychange", () => { if (document.hidden && G.state === "play") togglePause(); });
+
+let last = performance.now(), ftAvg = 16, qT = 0;
+function adaptQuality(ms, rdt) {
+  // dynamic resolution: keep the foam smooth on slower GPUs
+  ftAvg = lerp(ftAvg, ms, .05); qT += rdt;
+  if (qT > 2) { qT = 0;
+    if (ftAvg > 24 && QUALITY > .5) { QUALITY = Math.max(.5, QUALITY - .15); resize(); }
+    else if (ftAvg < 13 && QUALITY < 1) { QUALITY = Math.min(1, QUALITY + .1); resize(); } }
+}
+function frame(now) {
+  const ms = now - last, rdt = Math.min(.05, ms / 1000); last = now;
+  try { step(now, ms, rdt); } catch (e) { if (!frame.err) { frame.err = 1; console.error(e); } }
+  requestAnimationFrame(frame);
+}
+function step(now, ms, rdt) {
+  adaptQuality(ms, rdt);
+  const t = now / 1000;
+  Music.tick();
+  G.ts = lerp(G.ts, G.tsT, 1 - Math.exp(-rdt * 6));
+  const dt = rdt * G.ts;
+  oc.clearRect(0, 0, W, H);
+  if (G.state === "play") {
+    G.time += dt; G.chT += dt;
+    updatePlayer(dt); G.ch.update(dt); stepFXL(dt); stepEcho();
+    const fx = cam.focus ? cam.focus.x : pl.x, fy = cam.focus ? cam.focus.y : pl.y, fk = cam.focus ? 1.6 : 3;
+    cam.x = lerp(cam.x, fx, 1 - Math.exp(-rdt * fk)); cam.y = lerp(cam.y, fy, 1 - Math.exp(-rdt * fk));
+  } else if (G.state === "prologue") {
+    G.time += rdt; stepPrologue(rdt); stepFXL(rdt); cam.x = lerp(cam.x, 0, rdt); cam.y = lerp(cam.y, 0, rdt);
+  } else if (G.state === "title" || G.state === "coda") {
+    G.time += rdt; ambient(rdt, t); stepFXL(rdt); sculptStep(rdt);
+    const tx = input.px != null ? (input.px - W / 2) * .06 : 0, ty = input.py != null ? (input.py - H / 2) * .06 : 0;
+    cam.x = lerp(cam.x, tx, 1 - Math.exp(-rdt * 1.5)); cam.y = lerp(cam.y, ty, 1 - Math.exp(-rdt * 1.5));
+  }
+  // the observer (or your cursor, on the title) gently lenses the foam
+  if (G.state === "play" && !pl.hidden) FX.lens = [(scrX(pl.x) - W / 2) / H, -(scrY(pl.y) - H / 2) / H, .5 + pl.focusAmt * 1.4];
+  else if (input.px != null && G.state !== "play") FX.lens = [(input.px - W / 2) / H, -(input.py - H / 2) / H, .6];
+  else FX.lens = [0, 0, 0];
+  cam.zoom = lerp(cam.zoom, cam.zoomT ?? 1, 1 - Math.exp(-rdt * .9));
+  cam.shake *= Math.exp(-rdt * 6); if (cam.shake < .2) cam.shake = 0;
+  Moment.step(rdt); stepNarr(rdt); stepCard(rdt); stepTransition(rdt); stepFX(rdt);
+  drawDust(t);
+  if ((G.state === "play" || G.state === "paused") && G.ch) {
+    drawEcho(t); G.ch.draw(t); drawFXL(t); drawPlayer(t); drawWarp(); G.ch.overlay(); drawFloats();
+  } else if (G.state === "prologue") { drawPrologue(t); drawFXL(t);
+  } else { drawFXL(t); sculptDraw(t, G.state === "coda" ? .4 : 1); if (G.state === "title") sculptLabel(); }
+  renderGL(t);
+}
+
+// =================== boot ===================
+(function boot() {
+  resize();
+  if (!initGL()) { $("nogl").hidden = false; $("title").hidden = true; return; }
+  Music.setMuted(!!save.muted);
+  toTitle();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Github } from "lucide-react";
+import { ArrowLeft, ExternalLink, Github, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export type CaseStudyGalleryItem = {
@@ -20,6 +20,9 @@ type CaseStudyProps = {
   sections: CaseStudySection[];
   gallery?: CaseStudyGalleryItem[];
   githubUrl?: string;
+  /** Opens a playable build; shown as the primary action when present. */
+  playUrl?: string;
+  playLabel?: string;
   downloadUrl?: string;
   downloadLabel?: string;
   installHint?: string;
@@ -32,6 +35,8 @@ export function CaseStudy({
   sections,
   gallery,
   githubUrl,
+  playUrl,
+  playLabel = "Play",
   downloadUrl,
   downloadLabel = "Download installer",
   installHint,
@@ -66,8 +71,16 @@ export function CaseStudy({
           </ul>
         ) : null}
         <div className="mt-8 flex flex-wrap gap-3">
-          {githubUrl ? (
+          {playUrl ? (
             <Button asChild className="h-11 rounded-md px-5">
+              <a href={playUrl} target="_blank" rel="noopener noreferrer">
+                <Play className="mr-2 h-4 w-4" />
+                {playLabel}
+              </a>
+            </Button>
+          ) : null}
+          {githubUrl ? (
+            <Button asChild variant={playUrl ? "outline" : "default"} className="h-11 rounded-md px-5">
               <a href={githubUrl} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
                 Read code
@@ -81,7 +94,7 @@ export function CaseStudy({
                 {downloadLabel}
               </a>
             </Button>
-          ) : githubUrl ? (
+          ) : githubUrl && !playUrl ? (
             <Button asChild variant="outline" className="h-11 rounded-md px-5">
               <a href={`${githubUrl}#install`} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />

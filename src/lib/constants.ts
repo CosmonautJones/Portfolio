@@ -166,6 +166,21 @@ export const PROJECTS: Project[] = [
     actionLabel: "Play Alcubemy",
   },
   {
+    title: "Quantum Forge",
+    playground: true,
+    description:
+      "A slow, musical journey through the quantum realm. Make particles real in the vacuum foam, bind quarks, fuse the first helium, paint hydrogen's spectral lines and keep time with a star's heart.",
+    image: "/projects/quantum-forge.jpg",
+    tags: ["WebGL 2", "GLSL", "Web Audio"],
+    liveUrl: "/quantum-forge/index.html",
+    caseStudyUrl: "/work/quantum-forge",
+    role: "Browser game",
+    featured: false,
+    proof:
+      "One self-contained HTML file with no dependencies: a GLSL foam shader, glow points with half-resolution bloom, and a generative Web Audio score. Hydrogen's line wavelengths, the 2.22 MeV deuteron and the 7.65 MeV Hoyle state are measured values; reaction timescales are compressed for play.",
+    actionLabel: "Play Quantum Forge",
+  },
+  {
     title: "Lumen Garden",
     description:
       "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",
