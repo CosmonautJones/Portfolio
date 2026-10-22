@@ -92,6 +92,7 @@ export const PROJECTS: Project[] = [
     actionLabel: "Get the extension",
   },
   {
+    slug: "article-to-markdown",
     title: "Article to Markdown",
     description: "Export a public X post or attached article as Markdown, or convert text you paste yourself. Keep an attributed copy for notes, research, or an assistant handoff.",
     image: "/projects/article-to-markdown.jpg",
@@ -148,6 +149,7 @@ export const PROJECTS: Project[] = [
     actionLabel: "Open the firing room",
   },
   {
+    slug: "alcubemy",
     title: "Alcubemy",
     playground: true,
     preview: {
@@ -245,6 +247,7 @@ export const PROJECTS: Project[] = [
     actionLabel: "Build evidence",
   },
   {
+    slug: "tablesense",
     title: "TableSense",
     description:
       "A Flutter poker practice app with a six-seat Quick Deal table, hand replays, and decision feedback. Play with simulated chips in the browser.",
@@ -388,3 +391,38 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
     description: "",
   },
 ];
+
+/** Home "Try it now" strip. Copy locked in Portfolio Copy (TRY-IT-NOW.md, 2026-10-21). Media comes from PROJECTS. */
+const TRY_IT_NOW_COPY = [
+  {
+    slug: "article-to-markdown",
+    project: "Article to Markdown",
+    line: "Turn a public X post or pasted text into clean Markdown.",
+    cta: "Use the tool",
+    badge: "Browser tool",
+  },
+  {
+    slug: "tablesense",
+    project: "TableSense",
+    line: "Practice poker decisions at a six-seat table with simulated chips.",
+    cta: "Play TableSense",
+    badge: "Working prototype",
+  },
+  {
+    slug: "alcubemy",
+    project: "Alcubemy",
+    line: "Paint with sand, water, and heat, then watch the reactions play out.",
+    cta: "Play Alcubemy",
+    badge: "Experimental",
+  },
+] as const;
+
+/** Try it now tiles: locked copy above, with links derived from the matching PROJECTS entry so they can't drift. */
+export const TRY_IT_NOW = TRY_IT_NOW_COPY.map((tile) => {
+  const project = PROJECTS.find((p) => p.slug === tile.slug);
+  const href = project?.liveUrl ?? project?.demoUrl;
+  if (!project || !href) {
+    throw new Error(`TRY_IT_NOW: no PROJECTS entry with a link for slug "${tile.slug}"`);
+  }
+  return { ...tile, href, external: /^https?:\/\//.test(href) };
+});
