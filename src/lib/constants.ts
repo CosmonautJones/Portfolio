@@ -373,3 +373,31 @@ export const EXPERIENCE: readonly ExperienceItem[] = [
     description: "",
   },
 ];
+
+/** Home "Try it now" strip. Copy locked in Portfolio Copy (TRY-IT-NOW.md, 2026-10-21). Media comes from PROJECTS. */
+export const TRY_IT_NOW = [
+  {
+    project: "Article to Markdown",
+    line: "Turn a public X post or pasted text into clean Markdown.",
+    cta: "Use the tool",
+    href: "/work/article-to-markdown",
+    external: false,
+    badge: "Browser tool",
+  },
+  {
+    project: "TableSense",
+    line: "Practice poker decisions at a six-seat table with simulated chips.",
+    cta: "Play TableSense",
+    href: "https://cosmonautjones.github.io/poker-pokr/",
+    external: true,
+    badge: "Working prototype",
+  },
+  {
+    project: "Alcubemy",
+    line: "Paint with sand, water, and heat, then watch the reactions play out.",
+    cta: "Play Alcubemy",
+    href: "https://alcubemy.travisjohnjones.com/",
+    external: true,
+    badge: "Experimental",
+  },
+] as const;
