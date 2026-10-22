@@ -1,8 +1,23 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminEmail } from "@/lib/utils";
+import { hasSupabaseConfig } from "./config";
 
 export async function updateSession(request: NextRequest) {
+  // Without Supabase env (e.g. Netlify deploy previews) createServerClient
+  // throws and every auth route 500s. Nobody can be signed in, so treat the
+  // request as anonymous: protected routes still redirect to /login.
+  if (!hasSupabaseConfig()) {
+    const { pathname } = request.nextUrl;
+    if (pathname.startsWith("/tools") || pathname.startsWith("/admin")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirectTo", pathname);
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
