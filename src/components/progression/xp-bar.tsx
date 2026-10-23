@@ -5,7 +5,7 @@ import { useVisitor } from "@/hooks/use-visitor";
 import { getLevelProgress, getNextLevelXP } from "@/lib/xp";
 
 export function XPBar() {
-  const { profile, isAuthenticated, loading } = useVisitor();
+  const { profile, loading } = useVisitor();
 
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
@@ -14,7 +14,7 @@ export function XPBar() {
   const springProgress = useSpring(progress, { stiffness: 100, damping: 30 });
   const width = useTransform(springProgress, (v) => `${v}%`);
 
-  if (!isAuthenticated || loading || !profile) return null;
+  if (loading || !profile) return null;
 
   const tooltipText = nextXP
     ? `Level ${level} \u2014 ${xp}/${nextXP} XP`

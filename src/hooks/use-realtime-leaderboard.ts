@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getLeaderboard } from "@/actions/game-scores";
 import { createClient } from "@/lib/supabase/client";
+import { hasAuthCookies } from "@/lib/supabase/cookies";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
+import { loadGuestScores, mergeLeaderboard } from "@/lib/guest-scores";
 import type { LeaderboardEntry as BaseLeaderboardEntry } from "@/lib/types";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -35,22 +38,30 @@ export function useRealtimeLeaderboard(
   const mountedRef = useRef(true);
 
   const fetchLeaderboard = useCallback(async () => {
-    const result = await getLeaderboard(limit, gameType);
+    let serverScores: BaseLeaderboardEntry[] = [];
+    if (hasSupabaseConfig()) {
+      try {
+        const result = await getLeaderboard(limit, gameType);
+        if ("scores" in result && result.scores) serverScores = result.scores;
+      } catch {
+        serverScores = [];
+      }
+    }
     if (!mountedRef.current) return;
 
-    if ("scores" in result && result.scores) {
-      const prev = prevEntriesRef.current;
-      const prevIds = new Set(prev.map((e) => e.id));
+    const localScores = hasAuthCookies() ? [] : loadGuestScores();
+    const merged = mergeLeaderboard(serverScores, localScores, limit);
 
-      const newEntries: LeaderboardEntry[] = result.scores.map((entry) => ({
-        ...entry,
-        changed: !prevIds.has(entry.id),
-      }));
+    const prev = prevEntriesRef.current;
+    const prevIds = new Set(prev.map((e) => e.id));
+    const newEntries: LeaderboardEntry[] = merged.map((entry) => ({
+      ...entry,
+      changed: !prevIds.has(entry.id),
+    }));
 
-      prevEntriesRef.current = newEntries;
-      setEntries(newEntries);
-      setLastUpdated(new Date());
-    }
+    prevEntriesRef.current = newEntries;
+    setEntries(newEntries);
+    setLastUpdated(new Date());
     setIsLoading(false);
   }, [limit, gameType]);
 
@@ -98,6 +109,14 @@ export function useRealtimeLeaderboard(
 
     // Try Realtime subscription
     let channel: RealtimeChannel | null = null;
+
+    if (!hasSupabaseConfig()) {
+      startPolling();
+      return () => {
+        mountedRef.current = false;
+        stopPolling();
+      };
+    }
 
     try {
       const supabase = createClient();

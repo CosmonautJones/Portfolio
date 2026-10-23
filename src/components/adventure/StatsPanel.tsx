@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { RetroPanel } from "./RetroPanel";
 import { getPlayerStats } from "@/actions/game-scores";
+import { computeGuestStats, loadGuestScores } from "@/lib/guest-scores";
 
 function getDeathIcon(cause: string): string {
   switch (cause) {
@@ -35,9 +36,16 @@ export function StatsPanel({ refreshKey }: StatsPanelProps) {
   const [stats, setStats] = useState<PlayerStats | null>(null);
 
   useEffect(() => {
-    getPlayerStats().then((result) => {
-      if ("stats" in result && result.stats) setStats(result.stats);
-    });
+    const guestStats = computeGuestStats(loadGuestScores());
+    if (guestStats) setStats(guestStats);
+
+    getPlayerStats()
+      .then((result) => {
+        if ("stats" in result && result.stats) setStats(result.stats);
+      })
+      .catch(() => {
+        /* keep guest stats */
+      });
   }, [refreshKey]);
 
   if (!stats) {

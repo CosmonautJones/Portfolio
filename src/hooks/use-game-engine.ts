@@ -34,6 +34,8 @@ import {
   getUserAchievements,
 } from "@/actions/game-scores";
 import { AchievementTracker } from "@/lib/game/achievement-tracker";
+import { recordGuestScore } from "@/lib/guest-scores";
+import { hasAuthCookies } from "@/lib/supabase/cookies";
 import {
   ChallengeTracker,
   getDailyChallenges,
@@ -87,6 +89,8 @@ interface UseGameEngineProps {
   onChallengeProgress?: (progress: ChallengeProgress[]) => void;
   /** Fired on death with the challenges newly completed this run (deduped + persisted). */
   onChallengeComplete?: (rewards: ChallengeReward[]) => void;
+  /** Fired when in-game achievements unlock so the site profile can record them. */
+  onAchievementUnlock?: (ids: string[]) => void;
 }
 
 export function useGameEngine({
@@ -100,6 +104,7 @@ export function useGameEngine({
   onCoinUpdate: onCoinUpdateExternal,
   onChallengeProgress: onChallengeProgressExternal,
   onChallengeComplete: onChallengeCompleteExternal,
+  onAchievementUnlock: onAchievementUnlockExternal,
 }: UseGameEngineProps): [GameEngineState, GameEngineControls] {
   const gameStateRef = useRef<GameState | null>(null);
   const [phase, setPhase] = useState<GamePhase>("menu");
@@ -141,6 +146,8 @@ export function useGameEngine({
   onChallengeProgressExternalRef.current = onChallengeProgressExternal;
   const onChallengeCompleteExternalRef = useRef(onChallengeCompleteExternal);
   onChallengeCompleteExternalRef.current = onChallengeCompleteExternal;
+  const onAchievementUnlockExternalRef = useRef(onAchievementUnlockExternal);
+  onAchievementUnlockExternalRef.current = onAchievementUnlockExternal;
 
   const showAchievementPopup = useCallback(
     (achievementId: string) => {
@@ -165,6 +172,9 @@ export function useGameEngine({
       unlocks.forEach((u, i) => {
         setTimeout(() => showAchievementPopup(u.achievementId), i * 800);
       });
+      const t = achievementTrackerRef.current;
+      if (t) AchievementTracker.saveUnlocked(t.getUnlockedIds());
+      onAchievementUnlockExternalRef.current?.(unlocks.map((u) => u.achievementId));
     },
     [showAchievementPopup],
   );
@@ -194,10 +204,14 @@ export function useGameEngine({
     const audio = new GameAudio();
     audioRef.current = audio;
 
-    // Initialize achievement tracker
+    // Initialize achievement tracker from this device, then union server unlocks.
     const deathHistory = AchievementTracker.loadDeathHistory();
-    const tracker = new AchievementTracker([], deathHistory);
+    const localUnlocked = AchievementTracker.loadUnlocked();
+    const tracker = new AchievementTracker(localUnlocked, deathHistory);
     achievementTrackerRef.current = tracker;
+    if (localUnlocked.length > 0) {
+      setUnlockedAchievements(new Set(localUnlocked));
+    }
 
     // Initialize challenge tracker with today's daily + this week's weekly
     // challenges. The tracker holds run progress; completion XP is awarded on
@@ -210,14 +224,14 @@ export function useGameEngine({
     // Fetch unlocked achievements from server
     getUserAchievements()
       .then((result) => {
-        if (result.achievementIds.length > 0) {
-          const serverTracker = new AchievementTracker(
-            result.achievementIds,
-            deathHistory,
-          );
-          achievementTrackerRef.current = serverTracker;
-          setUnlockedAchievements(new Set(result.achievementIds));
-        }
+        const combined = [
+          ...new Set([...localUnlocked, ...result.achievementIds]),
+        ];
+        if (combined.length === 0) return;
+        const serverTracker = new AchievementTracker(combined, deathHistory);
+        achievementTrackerRef.current = serverTracker;
+        setUnlockedAchievements(new Set(combined));
+        AchievementTracker.saveUnlocked(combined);
       })
       .catch(() => {});
 
@@ -376,6 +390,7 @@ export function useGameEngine({
             submitAchievements(allUnlocks).catch(() => {});
           }
           AchievementTracker.saveDeathHistory(t.getDeathCausesSeen());
+          AchievementTracker.saveUnlocked(t.getUnlockedIds());
         }
 
         // Challenge completion + reward on death. Record the death cause first
@@ -404,6 +419,14 @@ export function useGameEngine({
         ghostRuntimeRef.current?.persistIfBest(finalScore);
 
         const gs = gameStateRef.current;
+        if (!hasAuthCookies()) {
+          recordGuestScore({
+            score: finalScore,
+            deathCause: cause,
+            coinsCollected: gs?.coinsCollected ?? 0,
+            coinBonus: gs?.coinBonusScore ?? 0,
+          });
+        }
         submitScore(
           finalScore,
           cause,

@@ -7,7 +7,7 @@ import { shouldUnlockCartographer } from "@/lib/easter-eggs/triggers";
 import { addDiscovery } from "@/actions/profiles";
 
 export function useEasterEgg() {
-  const { profile, awardXP, unlockAchievement, trackEvent } = useVisitor();
+  const { profile, awardXP, unlockAchievement, trackEvent, recordDiscovery } = useVisitor();
 
   const discover = useCallback(
     (eggId: string) => {
@@ -25,7 +25,7 @@ export function useEasterEgg() {
         unlockAchievement(egg.achievementId);
       }
 
-      // Persist discovery to profile
+      recordDiscovery(eggId);
       addDiscovery(eggId);
 
       // Unlock "cartographer" once all distinct eggs have been discovered.
@@ -37,7 +37,7 @@ export function useEasterEgg() {
         unlockAchievement("cartographer");
       }
     },
-    [awardXP, unlockAchievement, trackEvent, profile]
+    [awardXP, unlockAchievement, trackEvent, recordDiscovery, profile]
   );
 
   const isDiscovered = useCallback(

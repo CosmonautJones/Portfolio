@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { PALETTE } from "@/lib/game/sprites/palette";
 import { cn } from "@/lib/utils";
 import { useVisitor } from "@/hooks/use-visitor";
-import { isCanvasFull } from "@/lib/easter-eggs/triggers";
+import { isPixelPerfectCanvas } from "@/lib/easter-eggs/triggers";
 import {
   cloneGrid,
   CORE_PALETTE_INDICES,
@@ -56,7 +56,7 @@ export function PixelArtEditor() {
   // "Pixel Perfect" — fire once when the canvas becomes fully painted.
   useEffect(() => {
     if (pixelPerfectFired.current) return;
-    if (isCanvasFull(grid)) {
+    if (isPixelPerfectCanvas(grid, gridSize)) {
       pixelPerfectFired.current = true;
       trackEvent("fill_canvas", { gridSize });
       unlockAchievement("pixel_perfect");

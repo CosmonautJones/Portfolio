@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { RetroPanel } from "./RetroPanel";
 import { getRecentScores } from "@/actions/game-scores";
+import { loadGuestScores } from "@/lib/guest-scores";
 
 function getDeathIcon(cause: string): string {
   switch (cause) {
@@ -42,9 +43,25 @@ export function RecentScoresPanel({ refreshKey }: RecentScoresPanelProps) {
   const [scores, setScores] = useState<RecentScore[]>([]);
 
   useEffect(() => {
-    getRecentScores(5).then((result) => {
-      if ("scores" in result && result.scores) setScores(result.scores);
-    });
+    const guest = loadGuestScores()
+      .slice(0, 5)
+      .map((entry) => ({
+        id: entry.id,
+        score: entry.score,
+        deathCause: entry.deathCause,
+        createdAt: entry.createdAt,
+      }));
+    if (guest.length > 0) setScores(guest);
+
+    getRecentScores(5)
+      .then((result) => {
+        if ("scores" in result && result.scores && result.scores.length > 0) {
+          setScores(result.scores);
+        }
+      })
+      .catch(() => {
+        /* keep guest scores */
+      });
   }, [refreshKey]);
 
   return (
