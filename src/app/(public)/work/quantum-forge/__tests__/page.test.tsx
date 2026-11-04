@@ -14,6 +14,7 @@ describe("Quantum Forge case study", () => {
     expect(screen.queryByRole("link", { name: "Install notes" })).toBeNull();
     expect(screen.getAllByRole("img")).toHaveLength(6);
     expect(screen.getByText(/7.65 MeV Hoyle state/)).toBeDefined();
+    expect(screen.getByText(/entangled twin/)).toBeDefined();
   });
 
   it("matches the project card and ships a self-contained game", () => {
@@ -26,5 +27,8 @@ describe("Quantum Forge case study", () => {
     const external = [...html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)].map((m) => new URL(m[1]).host);
     expect(external.every((host) => ["fonts.googleapis.com", "fonts.gstatic.com", "github.com", "travisjohnjones.com"].includes(host))).toBe(true);
     expect(html).not.toMatch(/<script[^>]+src=/);
+    // Regression: the old sparkle layer lit hundreds of cells in unison every few seconds.
+    expect(html).not.toContain("step(.9, fract(v2.z*13.");
+    expect(html).toContain("EXT_color_buffer_float");
   });
 });

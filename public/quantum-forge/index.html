@@ -145,6 +145,8 @@ h1.title em{font-style:italic;color:transparent;background:linear-gradient(100de
 #prologue{position:fixed;inset:0;z-index:16;display:flex;align-items:center;justify-content:center;padding-inline:24px;pointer-events:none}
 #proLine{font-family:var(--f-display);font-style:italic;font-size:clamp(24px,3.4vw,40px);line-height:1.25;text-align:center;max-width:24ch;text-wrap:balance;margin:0;margin-top:34vh;opacity:0;transform:translateY(8px);filter:blur(6px);transition:opacity 1.6s ease,transform 1.6s ease,filter 1.6s ease;text-shadow:0 0 30px rgba(138,243,255,.25)}
 #proLine.on{opacity:1;transform:none;filter:none}
+#proSeed{position:fixed;top:calc(22px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-family:var(--f-mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint);margin:0;white-space:nowrap}
+#codaArt{width:100%;height:auto;aspect-ratio:4/1;display:block}
 #proSkip{position:fixed;right:max(20px, env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));pointer-events:auto;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--dim);padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--glass)}
 #proSkip:hover{color:var(--text);border-color:var(--accent)}
 .notes-list{display:flex;flex-direction:column;gap:12px;max-height:56vh;overflow-y:auto;padding-right:6px}
@@ -219,12 +221,13 @@ h1.title em{font-style:italic;color:transparent;background:linear-gradient(100de
 <div class="overlay" id="coda" hidden><div class="panel">
   <p class="eyebrow">Coda</p><h2>Everything began as a flicker</h2>
   <p id="codaText">You crossed sixty orders of magnitude, from 10⁻³⁵ metres to 10²⁵, and nearly fourteen billion years.</p>
+  <canvas id="codaArt" width="1200" height="300" aria-label="Your worldline through the six scales"></canvas>
   <div class="stats-row" id="codaStats"></div>
   <div class="coda-list" id="codaList"></div>
   <div class="row"><button class="btn primary" id="cAgain">Return to the foam</button><button class="btn" id="cNotes">Field notes</button><button class="btn" id="cTitle">Title screen</button></div>
   <p class="credit">Quantum Forge · a game by Travis Jones · <a href="https://github.com/CosmonautJones/quantum-forge" target="_blank" rel="noopener">source on GitHub</a></p>
 </div></div>
-<div id="prologue" hidden><p id="proLine"></p><button id="proSkip">SKIP</button></div>
+<div id="prologue" hidden><p id="proSeed"></p><p id="proLine"></p><button id="proSkip">SKIP</button></div>
 <div class="overlay" id="notes" hidden><div class="panel">
   <p class="eyebrow">Field notes</p><h2>What you've learned</h2>
   <p class="stats-row" id="notesMeta"></p>
@@ -245,7 +248,10 @@ const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) /
 const mix3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// =================== WebGL renderer: shader background + additive glow points ===================
+// =================== WebGL renderer ===================
+// Pipeline: the field shader and every glow point render into an HDR scene buffer; points are also
+// drawn into a half-resolution buffer, blurred and added back as bloom; a final pass tone-maps,
+// adds chromatic fringing at the edges, a vignette and film grain.
 const glc = $("gl"), ovc = $("ov"), oc = ovc.getContext("2d");
 const gl = glc.getContext("webgl2", { antialias: false, alpha: false, preserveDrawingBuffer: false });
 let W = 1, H = 1, DPR = 1, QUALITY = 1;
@@ -253,61 +259,78 @@ const cam = { x: 0, y: 0, zoom: 1, shake: 0 };
 
 const BG_VS = `#version 300 es
 void main(){ vec2 p = vec2(float((gl_VertexID<<1)&2), float(gl_VertexID&2)); gl_Position = vec4(p*2.-1., 0., 1.); }`;
+const NOISE = `
+float h21(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y)*p3.z); }
+vec2 h22(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*vec3(.1031,.1030,.0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx + p3.yz)*p3.zy); }`;
 const BG_FS = `#version 300 es
 precision highp float;
-uniform vec2 uRes; uniform float uTime; uniform vec2 uCam;
+uniform vec2 uRes; uniform float uTime; uniform vec2 uCam; uniform vec2 uSeed;
 uniform vec3 uC0, uC1, uC2, uFogCol;
-uniform float uFoam, uFog, uPulse, uFlash, uCMB, uWarp, uStar;
-uniform vec4 uLines[3]; uniform vec4 uRip[4]; uniform vec3 uLens;
+uniform float uFoam, uFog, uPulse, uFlash, uCMB, uWarp, uStar, uFabric;
+uniform vec4 uLines[3]; uniform vec4 uRip[4]; uniform vec3 uLens; uniform vec4 uMass[4];
 out vec4 o;
-float h21(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
-vec2 h22(vec2 p){ float n = h21(p); return vec2(n, h21(p+n+17.1)); }
+${NOISE}
+const mat2 ROT = mat2(.8, .6, -.6, .8);
 float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.-2.*f);
   return mix(mix(h21(i), h21(i+vec2(1,0)), u.x), mix(h21(i+vec2(0,1)), h21(i+vec2(1,1)), u.x), u.y); }
-float fbm(vec2 p){ float a = .5, s = 0.; for(int i=0;i<5;i++){ s += a*noise(p); p = p*2.03 + vec2(1.7,9.2); a *= .5; } return s; }
+float fbm(vec2 p){ float a = .5, s = 0.; for(int i=0;i<5;i++){ s += a*noise(p); p = ROT*p*2.03 + vec2(1.7,9.2); a *= .5; } return s; }
 vec3 voro(vec2 p, float t){ vec2 i = floor(p), f = fract(p); float d1 = 8., d2 = 8., id = 0.;
   for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){ vec2 g = vec2(x,y); vec2 r = h22(i+g); r = .5+.42*sin(t*.5 + 6.2831*r);
-    vec2 d = g + r - f; float dd = dot(d,d); if(dd < d1){ d2 = d1; d1 = dd; id = h21(i+g); } else if(dd < d2) d2 = dd; }
+    vec2 d = g + r - f; float dd = dot(d,d); if(dd < d1){ d2 = d1; d1 = dd; id = h21(i+g+.5); } else if(dd < d2) d2 = dd; }
   return vec3(sqrt(d1), sqrt(d2)-sqrt(d1), id); }
 void main(){
   vec2 uv = (gl_FragCoord.xy - .5*uRes)/uRes.y;
   vec2 uvw = uv;
+  // mass tells the fabric how to curve
+  for(int k=0;k<4;k++){ vec4 m = uMass[k]; if(m.z > .001){ vec2 dv = uv - m.xy; uvw -= dv*m.z*exp(-dot(dv,dv)/(m.w*m.w)); } }
   for(int k=0;k<4;k++){ vec4 r = uRip[k]; if(r.w > .001){ vec2 dv = uv - r.xy; float d = length(dv);
     float wave = sin(d*36. - r.z*10.)*exp(-abs(d - r.z*.5)*8.)*exp(-r.z*1.1)*r.w; uvw += dv/(d+.001)*wave*.04; } }
   vec2 dl = uv - uLens.xy; float dd = length(dl); uvw -= dl/(dd+.03)*uLens.z*exp(-dd*7.)*.025;
-  vec2 w = uvw*1.5 + uCam*.00055;
+  vec2 w = uvw*1.5 + uCam*.00055 + uSeed;
   float t = uTime*.045;
+  // a far layer that drifts more slowly than everything else: depth
+  float far = fbm(uv*.65 + uCam*.00016 + uSeed*.5 + vec2(t*.3, -t*.2));
+  vec3 col = uC0 + uC1*.28*smoothstep(.3, .85, far) + uC2*.04*pow(max(0., far - .55)*2.5, 2.);
   vec2 q = vec2(fbm(w*1.2 + t), fbm(w*1.2 - t + 5.2));
   vec2 r2 = vec2(fbm(w*1.6 + q*1.8 + vec2(1.7,9.2) + t*.6), fbm(w*1.6 + q*1.8 + vec2(8.3,2.8) - t*.4));
   float n = fbm(w*1.4 + r2*uWarp);
-  vec3 col = mix(uC0, uC1, smoothstep(.2, .9, n));
+  col = mix(col, uC1, smoothstep(.2, .9, n)*.85);
   col += uC2 * pow(max(0., n - .5)*2.1, 3.) * 1.1;
-  col += uC1 * .35 * pow(length(q - .5), 2.);
-  // planck-scale foam: shimmering cell walls that pop in and out
+  col += uC1 * .3 * pow(length(q - .5), 2.);
+  // planck-scale foam: iridescent cell walls breathing in and out, each on its own rhythm
   vec3 v = voro(w*6.5 + q*1.4, uTime);
   float edge = smoothstep(.07, 0., v.y);
-  float flick = pow(.5 + .5*sin(uTime*(1.3 + v.z*4.) + v.z*40.), 3.);
+  float flick = pow(.5 + .5*sin(uTime*(.6 + v.z*2.1) + v.z*628.), 3.);
   vec3 irid = .5 + .5*cos(6.2831*(v.z + uTime*.03 + vec3(0., .33, .67)));
-  col += uFoam * edge * flick * mix(uC2, irid, .55) * .34;
-  col += uFoam * smoothstep(.5, .0, v.x) * flick * irid * .035;
-  vec3 v2 = voro(w*19. + r2*2. + t*2., uTime*1.7);
-  col += uFoam * smoothstep(.05, 0., v2.x) * step(.9, fract(v2.z*13. + uTime*.35)) * mix(uC2, vec3(1.), .6) * .9;
-  // star field (cosmic chapters)
-  vec3 v3 = voro(uv*42. + uCam*.0002, 0.);
-  col += uStar * smoothstep(.06, 0., v3.x) * step(.82, v3.z) * (.5 + .5*sin(uTime*2. + v3.z*90.)) * vec3(.9,.92,1.);
+  col += uFoam * edge * flick * mix(uC2, irid, .55) * .32;
+  col += uFoam * smoothstep(.5, .0, v.x) * flick * irid * .03;
+  // fine sparkle: never in unison, never a hard pop
+  vec3 v2 = voro(w*19. + r2*2. + t*2., uTime*1.3);
+  float tw = pow(max(0., sin(uTime*(.3 + v2.z*.8) + v2.z*628.)), 22.);
+  col += uFoam * smoothstep(.06, 0., v2.x) * tw * mix(uC2, vec3(1.), .6) * .65;
+  // the fabric of reality: warp and weft threads woven over and under, bent by everything above
+  vec2 fp = (uvw + uCam*.00042)*13. + uSeed*.37;
+  vec2 cell = floor(fp), fr = fract(fp) - .5;
+  float wx = smoothstep(.05, 0., abs(fr.x)), wy = smoothstep(.05, 0., abs(fr.y));
+  float over = mod(cell.x + cell.y, 2.);
+  float weave = mix(wx*.45 + wy, wx + wy*.45, over);
+  float fshim = .5 + .5*sin(uTime*.5 + (cell.x - cell.y)*.6 + n*7.);
+  float fnear = 1. + 2.4*exp(-dd*5.);
+  col += uFabric * weave * (.35 + .65*fshim) * fnear * mix(uC1*1.8, uC2, .5) * .075;
+  // star field
+  vec3 v3 = voro(uv*42. + uCam*.0002 + uSeed, 0.);
+  col += uStar * smoothstep(.06, 0., v3.x) * step(.82, v3.z) * (.55 + .45*sin(uTime*(.8 + v3.z*1.5) + v3.z*90.)) * vec3(.9,.92,1.);
   // emission lines painted across the sky
   for(int k=0;k<3;k++){ if(uLines[k].a > 0.001){
     float y = uv.y - (.30 - float(k)*.075) - .045*sin(uv.x*2.6 + uTime*.25 + float(k)*1.7);
     float band = exp(-y*y*700.) * (.55 + .45*fbm(vec2(uv.x*5. + uTime*.15, float(k)*3.)));
     float curtain = exp(-max(0., -y)*14.) * step(y, 0.) * .25;
     col += uLines[k].rgb * (band + curtain) * uLines[k].a; } }
-  col += uCMB * mix(vec3(1.,.5,.25), vec3(.4,.6,1.), fbm(uv*2.2 + 3.)) * (fbm(uv*3.5 + uTime*.01) - .35) * .5;
+  col += uCMB * mix(vec3(1.,.5,.25), vec3(.4,.6,1.), fbm(uv*2.2 + 3. + uSeed)) * (fbm(uv*3.5 + uTime*.01) - .35) * .5;
   float fogn = fbm(uv*2.4 + vec2(uTime*.04, uTime*.01));
   col = mix(col, uFogCol*(.55 + .8*fogn), uFog*.9);
   col += uPulse * uC2 * .16 * (1. - length(uv)*.9);
-  col *= 1. - .6*dot(uv*.85, uv*.85);
   col += uFlash;
-  col += (h21(gl_FragCoord.xy + uTime) - .5) * .012;
   o = vec4(col, 1.);
 }`;
 const PT_VS = `#version 300 es
@@ -322,7 +345,6 @@ in vec4 vCol; out vec4 o;
 void main(){ vec2 c = gl_PointCoord*2. - 1.; float d = dot(c,c); if(d > 1.) discard;
   float core = exp(-d*9.); float halo = exp(-d*2.4)*.38; float a = (core*1.15 + halo)*vCol.a*(1. - d);
   o = vec4(vCol.rgb*a, a); }`;
-
 const BLUR_FS = `#version 300 es
 precision mediump float; uniform sampler2D uTex; uniform vec2 uDir; uniform vec2 uRes; out vec4 o;
 void main(){ vec2 uv = gl_FragCoord.xy/uRes; vec4 s = texture(uTex, uv)*.227027;
@@ -331,6 +353,25 @@ void main(){ vec2 uv = gl_FragCoord.xy/uRes; vec4 s = texture(uTex, uv)*.227027;
 const COMP_FS = `#version 300 es
 precision mediump float; uniform sampler2D uTex; uniform vec2 uRes; uniform float uAmt; out vec4 o;
 void main(){ o = texture(uTex, gl_FragCoord.xy/uRes)*uAmt; }`;
+const FIN_FS = `#version 300 es
+precision highp float;
+uniform sampler2D uTex; uniform vec2 uRes; uniform float uTime; uniform float uExposure; uniform float uGrain;
+out vec4 o;
+${NOISE}
+vec3 aces(vec3 x){ return clamp((x*(2.51*x + .03))/(x*(2.43*x + .59) + .14), 0., 1.); }
+void main(){
+  vec2 st = gl_FragCoord.xy/uRes, c = st - .5;
+  vec2 off = c*dot(c, c)*.014;                         // chromatic fringing grows toward the edges
+  vec3 col = vec3(texture(uTex, st - off).r, texture(uTex, st).g, texture(uTex, st + off).b);
+  col = aces(col*uExposure);
+  col = mix(col, col*col*(3. - 2.*col), .35);          // a gentle S-curve for deeper blacks
+  vec2 uv = (gl_FragCoord.xy - .5*uRes)/uRes.y;
+  col *= 1. - .62*dot(uv*.85, uv*.85);
+  float lum = dot(col, vec3(.299,.587,.114));
+  col += (h21(gl_FragCoord.xy + fract(uTime*7.31)*917.) - .5) * uGrain * (1. - lum*.7);
+  o = vec4(col, 1.);
+}`;
+
 function mkProg(vs, fs) {
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
@@ -338,23 +379,47 @@ function mkProg(vs, fs) {
   if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
   return p;
 }
-let bgP, ptP, ptVao, ptBuf, BGU = {}, PTU = {}, blurP, compP, BLU = {}, CMU = {}, bloom = null;
-const MAXP = 24000, PTS = new Float32Array(MAXP * 7);
+let bgP, ptP, blurP, compP, finP, ptVao, ptBuf, HDR = false;
+const BGU = {}, PTU = {}, BLU = {}, CMU = {}, FNU = {};
+let targets = null;
+const MAXP = 26000, PTS = new Float32Array(MAXP * 7);
 let np = 0;
 function initGL() {
   if (!gl) return false;
-  try { bgP = mkProg(BG_VS, BG_FS); ptP = mkProg(PT_VS, PT_FS); blurP = mkProg(BG_VS, BLUR_FS); compP = mkProg(BG_VS, COMP_FS); } catch (e) { console.error(e); return false; }
-  for (const k of ["uTex","uDir","uRes"]) BLU[k] = gl.getUniformLocation(blurP, k);
-  for (const k of ["uTex","uRes","uAmt"]) CMU[k] = gl.getUniformLocation(compP, k);
-  for (const k of ["uRes","uTime","uCam","uC0","uC1","uC2","uFogCol","uFoam","uFog","uPulse","uFlash","uCMB","uWarp","uStar","uLines","uRip","uLens"]) BGU[k] = gl.getUniformLocation(bgP, k);
-  for (const k of ["uRes","uCam","uZoom","uDpr"]) PTU[k] = gl.getUniformLocation(ptP, k);
+  try { bgP = mkProg(BG_VS, BG_FS); ptP = mkProg(PT_VS, PT_FS); blurP = mkProg(BG_VS, BLUR_FS); compP = mkProg(BG_VS, COMP_FS); finP = mkProg(BG_VS, FIN_FS); }
+  catch (e) { console.error(e); return false; }
+  HDR = !!gl.getExtension("EXT_color_buffer_float");
+  const U = (p, o, ks) => ks.forEach(k => o[k] = gl.getUniformLocation(p, k));
+  U(bgP, BGU, ["uRes","uTime","uCam","uSeed","uC0","uC1","uC2","uFogCol","uFoam","uFog","uPulse","uFlash","uCMB","uWarp","uStar","uFabric","uLines","uRip","uLens","uMass"]);
+  U(ptP, PTU, ["uRes","uCam","uZoom","uDpr"]);
+  U(blurP, BLU, ["uTex","uDir","uRes"]);
+  U(compP, CMU, ["uTex","uRes","uAmt"]);
+  U(finP, FNU, ["uTex","uRes","uTime","uExposure","uGrain"]);
   ptVao = gl.createVertexArray(); gl.bindVertexArray(ptVao);
   ptBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ptBuf); gl.bufferData(gl.ARRAY_BUFFER, PTS.byteLength, gl.DYNAMIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 28, 0);
   gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 28, 8);
   gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 28, 12);
   gl.bindVertexArray(null);
+  makeTargets();
   return true;
+}
+function makeTarget(w, h) {
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+  if (HDR) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+  else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+  if (HDR && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { HDR = false; gl.deleteTexture(t); gl.deleteFramebuffer(f); return makeTarget(w, h); }
+  gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  return { t, f, w, h };
+}
+function makeTargets() {
+  if (targets) for (const k of ["scene", "b1", "b2"]) { gl.deleteTexture(targets[k].t); gl.deleteFramebuffer(targets[k].f); }
+  const bw = Math.max(1, glc.width >> 1), bh = Math.max(1, glc.height >> 1);
+  targets = { scene: makeTarget(glc.width, glc.height), b1: makeTarget(bw, bh), b2: makeTarget(bw, bh) };
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 function resize() {
   DPR = Math.max(.5, Math.min(window.devicePixelRatio || 1, 1.6) * QUALITY);
@@ -362,20 +427,7 @@ function resize() {
   glc.width = Math.round(W * DPR); glc.height = Math.round(H * DPR);
   ovc.width = Math.round(W * DPR); ovc.height = Math.round(H * DPR);
   oc.setTransform(DPR, 0, 0, DPR, 0, 0);
-  if (gl && blurP) makeBloom();
-}
-// bloom: points are also drawn into a half-resolution buffer, blurred, and added back on top
-function makeBloom() {
-  if (bloom) { gl.deleteTexture(bloom.t1); gl.deleteTexture(bloom.t2); gl.deleteFramebuffer(bloom.f1); gl.deleteFramebuffer(bloom.f2); }
-  const bw = Math.max(1, glc.width >> 1), bh = Math.max(1, glc.height >> 1);
-  const mk = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bw, bh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
-    return [t, f]; };
-  const [t1, f1] = mk(), [t2, f2] = mk(); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  bloom = { t1, f1, t2, f2, bw, bh };
+  if (gl && finP) makeTargets();
 }
 window.addEventListener("resize", resize);
 
@@ -391,13 +443,15 @@ function PLine(x0, y0, x1, y1, r, c, a, step = 6, wob = 0, t = 0) {
 }
 
 // shared visual state, eased toward chapter targets each frame
-const FX = { c0: hex("#05040f"), c1: hex("#1d1645"), c2: hex("#8af3ff"), fogCol: hex("#ff9a55"), foam: 1, fog: 0, pulse: 0, flash: 0, cmb: 0, warp: 1.6, star: 0, lines: [[0,0,0,0],[0,0,0,0],[0,0,0,0]], rips: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], lens: [0, 0, 0] };
-const FXT = { c0: FX.c0, c1: FX.c1, c2: FX.c2, foam: 1, fog: 0, cmb: 0, warp: 1.6, star: 0 };
+const Z4 = () => [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+const FX = { c0: hex("#05040f"), c1: hex("#1d1645"), c2: hex("#8af3ff"), fogCol: hex("#ff9a55"), foam: 1, fog: 0, pulse: 0, flash: 0, cmb: 0, warp: 1.6, star: 0, fabric: .45,
+  lines: [[0,0,0,0],[0,0,0,0],[0,0,0,0]], rips: Z4(), mass: Z4(), lens: [0, 0, 0], seed: [0, 0], exposure: .74 };
+const FXT = { c0: FX.c0, c1: FX.c1, c2: FX.c2, foam: 1, fog: 0, cmb: 0, warp: 1.6, star: 0, fabric: .45 };
 function setLook(o) { for (const k in o) FXT[k] = typeof o[k] === "string" ? hex(o[k]) : o[k]; }
 function stepFX(dt) {
   const k = 1 - Math.exp(-dt * .9);
   for (const c of ["c0", "c1", "c2"]) FX[c] = mix3(FX[c], FXT[c], k);
-  for (const s of ["foam", "fog", "cmb", "warp", "star"]) FX[s] = lerp(FX[s], FXT[s], k);
+  for (const s of ["foam", "fog", "cmb", "warp", "star", "fabric"]) FX[s] = lerp(FX[s], FXT[s], k);
   FX.pulse *= Math.exp(-dt * 5); FX.flash *= Math.exp(-dt * 2.6);
   for (const r of FX.rips) if (r[3] > 0) { r[2] += dt; if (r[2] > 3.5) r[3] = 0; }
 }
@@ -408,14 +462,15 @@ function addRipple(x, y, s = 1) {
   FX.rips[slot] = [(scrX(x) - W / 2) / H, -(scrY(y) - H / 2) / H, 0, clamp(s, .15, 1.4) * (REDUCED ? .3 : 1)];
 }
 function renderGL(time) {
-  gl.viewport(0, 0, glc.width, glc.height);
+  const S = targets.scene, B1 = targets.b1, B2 = targets.b2;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, S.f); gl.viewport(0, 0, S.w, S.h);
   gl.disable(gl.BLEND);
   gl.useProgram(bgP);
-  gl.uniform2f(BGU.uRes, glc.width, glc.height); gl.uniform1f(BGU.uTime, time); gl.uniform2f(BGU.uCam, cam.x, cam.y);
+  gl.uniform2f(BGU.uRes, S.w, S.h); gl.uniform1f(BGU.uTime, time); gl.uniform2f(BGU.uCam, cam.x, cam.y); gl.uniform2fv(BGU.uSeed, FX.seed);
   gl.uniform3fv(BGU.uC0, FX.c0); gl.uniform3fv(BGU.uC1, FX.c1); gl.uniform3fv(BGU.uC2, FX.c2); gl.uniform3fv(BGU.uFogCol, FX.fogCol);
   gl.uniform1f(BGU.uFoam, FX.foam); gl.uniform1f(BGU.uFog, FX.fog); gl.uniform1f(BGU.uPulse, FX.pulse); gl.uniform1f(BGU.uFlash, FX.flash);
-  gl.uniform1f(BGU.uCMB, FX.cmb); gl.uniform1f(BGU.uWarp, FX.warp); gl.uniform1f(BGU.uStar, FX.star);
-  gl.uniform4fv(BGU.uLines, FX.lines.flat()); gl.uniform4fv(BGU.uRip, FX.rips.flat()); gl.uniform3fv(BGU.uLens, FX.lens);
+  gl.uniform1f(BGU.uCMB, FX.cmb); gl.uniform1f(BGU.uWarp, FX.warp); gl.uniform1f(BGU.uStar, FX.star); gl.uniform1f(BGU.uFabric, FX.fabric);
+  gl.uniform4fv(BGU.uLines, FX.lines.flat()); gl.uniform4fv(BGU.uRip, FX.rips.flat()); gl.uniform3fv(BGU.uLens, FX.lens); gl.uniform4fv(BGU.uMass, FX.mass.flat());
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   if (np) {
     const sx = cam.shake ? rand(-cam.shake, cam.shake) : 0, sy = cam.shake ? rand(-cam.shake, cam.shake) : 0;
@@ -424,21 +479,27 @@ function renderGL(time) {
     gl.useProgram(ptP);
     gl.uniform2f(PTU.uRes, W, H); gl.uniform2f(PTU.uCam, cam.x + sx, cam.y + sy); gl.uniform1f(PTU.uZoom, cam.zoom);
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-    if (bloom) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, bloom.f1); gl.viewport(0, 0, bloom.bw, bloom.bh); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(PTU.uDpr, DPR * .5); gl.drawArrays(gl.POINTS, 0, np);
-      gl.bindVertexArray(null); gl.disable(gl.BLEND); gl.useProgram(blurP); gl.uniform2f(BLU.uRes, bloom.bw, bloom.bh); gl.uniform1i(BLU.uTex, 0); gl.activeTexture(gl.TEXTURE0);
-      const pass = (src, dst, dx, dy) => { gl.bindFramebuffer(gl.FRAMEBUFFER, dst); gl.bindTexture(gl.TEXTURE_2D, src); gl.uniform2f(BLU.uDir, dx / bloom.bw, dy / bloom.bh); gl.drawArrays(gl.TRIANGLES, 0, 3); };
-      pass(bloom.t1, bloom.f2, 1.2, 0); pass(bloom.t2, bloom.f1, 0, 1.2); pass(bloom.t1, bloom.f2, 3, 0); pass(bloom.t2, bloom.f1, 0, 3);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, glc.width, glc.height);
-      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-      gl.useProgram(compP); gl.bindTexture(gl.TEXTURE_2D, bloom.t1); gl.uniform1i(CMU.uTex, 0); gl.uniform2f(CMU.uRes, glc.width, glc.height); gl.uniform1f(CMU.uAmt, 1.5);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      gl.useProgram(ptP); gl.bindVertexArray(ptVao);
-    }
-    gl.uniform1f(PTU.uDpr, DPR); gl.drawArrays(gl.POINTS, 0, np);
+    // bloom source at half resolution
+    gl.bindFramebuffer(gl.FRAMEBUFFER, B1.f); gl.viewport(0, 0, B1.w, B1.h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(PTU.uDpr, DPR * .5); gl.drawArrays(gl.POINTS, 0, np);
+    gl.bindVertexArray(null); gl.disable(gl.BLEND);
+    gl.useProgram(blurP); gl.uniform2f(BLU.uRes, B1.w, B1.h); gl.uniform1i(BLU.uTex, 0); gl.activeTexture(gl.TEXTURE0);
+    const pass = (src, dst, dx, dy) => { gl.bindFramebuffer(gl.FRAMEBUFFER, dst.f); gl.bindTexture(gl.TEXTURE_2D, src.t); gl.uniform2f(BLU.uDir, dx / B1.w, dy / B1.h); gl.drawArrays(gl.TRIANGLES, 0, 3); };
+    pass(B1, B2, 1.2, 0); pass(B2, B1, 0, 1.2); pass(B1, B2, 3, 0); pass(B2, B1, 0, 3); pass(B1, B2, 6, 0); pass(B2, B1, 0, 6);
+    // composite bloom and crisp points into the scene
+    gl.bindFramebuffer(gl.FRAMEBUFFER, S.f); gl.viewport(0, 0, S.w, S.h);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+    gl.useProgram(compP); gl.bindTexture(gl.TEXTURE_2D, B1.t); gl.uniform1i(CMU.uTex, 0); gl.uniform2f(CMU.uRes, S.w, S.h); gl.uniform1f(CMU.uAmt, HDR ? .95 : 1.5);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.useProgram(ptP); gl.bindVertexArray(ptVao); gl.uniform1f(PTU.uDpr, DPR); gl.drawArrays(gl.POINTS, 0, np);
     gl.bindVertexArray(null);
   }
+  // final grade to the screen
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, glc.width, glc.height); gl.disable(gl.BLEND);
+  gl.useProgram(finP); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, S.t);
+  gl.uniform1i(FNU.uTex, 0); gl.uniform2f(FNU.uRes, glc.width, glc.height); gl.uniform1f(FNU.uTime, time);
+  gl.uniform1f(FNU.uExposure, FX.exposure); gl.uniform1f(FNU.uGrain, REDUCED ? .012 : .03);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
   np = 0;
 }
 // world -> screen (CSS px) for the 2D overlay
@@ -678,7 +739,7 @@ const Moment = {
     if (!this.cur && this.q.length && G.state === "play") {
       this.cur = this.q.shift(); this.t = 0;
       $("mK").textContent = this.cur.kicker; $("mB").textContent = this.cur.text; $("mC").style.opacity = 0;
-      $("moment").classList.add("on"); G.tsT = .08; if (this.cur.sound) Music.low(73.4, .16, 5); recordNote(this.cur.kicker, this.cur.text);
+      $("moment").classList.add("on"); G.tsT = .08; if (this.cur.sound) Music.low(73.4, .16, 5); recordNote(this.cur.kicker, this.cur.text); wlKnot(this.cur.focus.x, this.cur.focus.y);
       // cinematic close-up: letterbox, push in on the event
       document.body.classList.add("cinema"); cam.focus = this.cur.focus; this.zoomSaved = cam.zoomT ?? 1; cam.zoomT = this.zoomSaved * 1.85;
     }
@@ -719,7 +780,7 @@ function startChapter(i) {
   $("hud").classList.remove("on"); hudChapter(ch); objective("");
   $("focusBtn").hidden = !COARSE;
   save.reached = Math.max(save.reached, i); persist();
-  ch.enter(); placeEcho(ch);
+  ch.enter(); placeEcho(ch); soulChapterStart(ch);
 }
 const supNum = n => (n < 0 ? "⁻" : "") + String(Math.abs(Math.round(n))).split("").map(d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
 function stepCard(dt) {
@@ -757,7 +818,9 @@ function showCoda() {
   G.state = "coda"; save.finished = true; persist();
   $("hud").classList.remove("on"); $("focusBtn").hidden = true;
   $("codaList").innerHTML = G.made.map(m => `<div><b>${m.what}</b><span>${m.where}</span></div>`).join("");
-  $("codaStats").innerHTML = `<span>Echoes found <b>${echoCount()} / 6</b></span><span>Field notes <b>${save.notes.length}</b></span>`;
+  const reun = Object.keys(save.reunions || {}).length;
+  $("codaStats").innerHTML = `<span><b>${universeName()}</b></span><span>Reunions with your twin <b>${reun} / 6</b></span><span>Echoes found <b>${echoCount()} / 6</b></span><span>Field notes <b>${save.notes.length}</b></span>`;
+  codaArt();
   $("coda").hidden = false;
   Music.arp([5, 7, 9, 10, 12, 14], .22, .09);
 }
@@ -1182,7 +1245,7 @@ CH.push({
     burst(pl.x, pl.y, C.matter, 40, 150, 1.6); ring(pl.x, pl.y, C.matter, 260, 2.2, 2.5); Music.arp([5, 9, 12, 14], .16, .12); Music.low(55, .2, 7);
     if (this.said.cap) { objective(this.objText(), 3, this.np); return; }
     this.said.cap = true;
-    setLook({ fog: 0, cmb: 1, c0: "#03040c", c1: "#111b3d", c2: "#9fd0ff", star: .55 });
+    setLook({ fog: 0, cmb: 1, c0: "#03040c", c1: "#111b3d", c2: "#9fd0ff", star: .55, fabric: .6 });
     Music.chord("light", 2200);
     Moment.add("An electron settles around you, and you're a hydrogen atom. All across the universe the same thing happens at once. With nothing left to scatter it, light flies free. It's still arriving today, stretched into microwaves: the cosmic microwave background.", "Recombination");
     made("A hydrogen atom", "and the first free light, 380,000 years in");
@@ -1435,7 +1498,8 @@ CH.push({
         ring(this.home.x, this.home.y, C.gold, 200, 2.4, 2); Music.arp([0, 4, 7, 9, 12], .2, .1); Music.low(36.7, .2, 8);
         Moment.add("A spiral galaxy. In it, a small yellow star. Around it, a rocky planet with liquid water. Some of the carbon and oxygen you forged ended up here, and in time it learned to look up and wonder where it came from.", "Home", true, { x: this.home.x, y: this.home.y });
         made("You", "the universe, finding out how it was made");
-        say("That's you. You are the universe, finding out how it was made.");
+        twinHome(this.home.x, this.home.y);
+        say("Your twin arrives from the far side of the sky. You were never two things, only the two ends of one thread.", "That's you. You are the universe, finding out how it was made.");
       }
       return;
     }
@@ -1629,14 +1693,15 @@ save.echoes = save.echoes || {}; save.notes = save.notes || [];
 const PROLOGUE = [
   "Before there was anything to see, there was the chance of seeing.",
   "You are that chance: a ripple of probability, with nowhere yet to be.",
+  "Beside you, a second ripple wakes. Your twin: the other half of the same flicker.",
   "Everything that will ever exist is still waiting to be made.",
-  "Go and watch it happen.",
+  "Go and watch it happen. Together, even when you're apart.",
 ];
 const Pro = { t: 0, i: -1, el: $("proLine") };
 function startPrologue() {
-  G.state = "prologue"; Pro.t = 0; Pro.i = -1;
+  G.state = "prologue"; Pro.t = 0; Pro.i = -1; $("proSeed").textContent = universeName();
   $("prologue").hidden = false; $("title").hidden = true; $("hud").classList.remove("on");
-  setLook({ c0: "#000000", c1: "#05040f", c2: "#8af3ff", foam: 0, star: 0, fog: 0, cmb: 0, warp: 1.9 });
+  setLook({ c0: "#000000", c1: "#05040f", c2: "#8af3ff", foam: 0, star: 0, fog: 0, cmb: 0, warp: 1.9, fabric: 0 });
   cam.x = cam.y = 0; cam.zoom = 1; cam.zoomT = 1.25;
   Music.chord("foam", 500);
 }
@@ -1646,12 +1711,18 @@ function stepPrologue(dt) {
   if (idx !== Pro.i && idx >= 0 && idx < PROLOGUE.length) {
     Pro.i = idx; Pro.el.classList.remove("on");
     setTimeout(() => { Pro.el.textContent = PROLOGUE[idx]; Pro.el.classList.add("on"); }, 500);
-    Music.note([2, 4, 5, 7][idx], .06, 4);
-    if (idx === 2) setLook({ c1: "#1c1552", foam: .6 });
+    Music.note([2, 4, 6, 5, 7][idx], .06, 4); if (idx === 2) Music.note(9, .05, 4, .3);
+    if (idx === 3) setLook({ c1: "#1c1552", foam: .6, fabric: .4 });
   }
   if (Pro.t > 1.2 + PROLOGUE.length * 4.6) endPrologue();
 }
 function drawPrologue(t) {
+  const tk = clamp((Pro.t - (1.2 + 2 * 4.6)) / 5, 0, 1);
+  if (tk > 0) { // the twin wakes beside you and drifts a little way off
+    const tx = lerp(26, 170, ease(tk)), ty = lerp(-8, -64, ease(tk)), b = .5 + .5 * Math.sin(t * 1.6 + Math.PI);
+    P(tx, ty, 50 * tk + 8, C.anti, .12 * tk); P(tx, ty, 5 + 2 * b, [1, .9, .95], .3 + .6 * tk);
+    for (let i = 0; i < 9; i++) { const s = i / 9; P(lerp(0, tx, s), lerp(0, ty, s), 1.1, mix3(C.matter, C.anti, s), .25 * tk * (1 - Math.abs(s - .5))); }
+  }
   const k = clamp(Pro.t / 6, 0, 1), b = .5 + .5 * Math.sin(t * 1.6);
   P(0, 0, 60 * k + 10, [.55, .9, 1], .12 * k);
   P(0, 0, 6 + 3 * b * k, [1, 1, 1], .25 + .7 * k);
@@ -1722,7 +1793,165 @@ function openNotes() {
 }
 $("notesClose").onclick = () => { $("notes").hidden = true; };
 
-// ---- 11-main.js ----
+// ---- 11-soul.js ----
+// =================== Soul layer: your universe, your worldline, your twin ===================
+// Every journey happens in its own universe: the seed shifts the whole fabric.
+function applySeed() { const s = save.seed || 1; FX.seed = [((s * .0137) % 1) * 60, ((s * .0291) % 1) * 60]; }
+function newUniverse() { save.seed = 1000 + Math.floor(Math.random() * 89000); persist(); applySeed(); }
+const universeName = () => "Universe " + (save.seed || 1);
+
+const FABRIC = { foam: .5, quark: .35, nuclei: .45, light: .25, star: .3, web: .95 };
+
+// ----- the worldline: the fabric remembers where you have been -----
+const Worldline = { pts: [], knots: [], t: 0, beads: [], chapter: null };
+function wlBead() {
+  const ch = Worldline.chapter, pts = Worldline.pts;
+  if (!ch || pts.length < 4) return;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const [x, y] of pts) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, s = Math.max(40, x1 - x0, y1 - y0) / 2;
+  const step = Math.max(1, Math.floor(pts.length / 90)), path = [];
+  for (let i = 0; i < pts.length; i += step) path.push([(pts[i][0] - cx) / s, (pts[i][1] - cy) / s]);
+  const knots = Worldline.knots.map(k => [(k.x - cx) / s, (k.y - cy) / s]);
+  Worldline.beads = Worldline.beads.filter(b => b.key !== ch.key);
+  Worldline.beads.push({ key: ch.key, num: ch.num, c: hex(ch.look.c2), path, knots });
+}
+function wlStep(dt) {
+  Worldline.t += dt;
+  if (Worldline.t < .16) return; Worldline.t = 0;
+  const pts = Worldline.pts, l = pts[pts.length - 1];
+  if (!l || Math.hypot(pl.x - l[0], pl.y - l[1]) > 7) {
+    pts.push([pl.x, pl.y]);
+    if (pts.length > 760) { const half = pts.splice(0, 380); for (let i = 0; i < half.length; i += 2) pts.splice(i / 2, 0, half[i]); }
+  }
+}
+function wlKnot(x, y) { if (G.state === "play") Worldline.knots.push({ x, y, t: G.time }); }
+function wlDraw(t) {
+  const pts = Worldline.pts, n = pts.length, c = mix3(FX.c2, C.white, .3);
+  for (let i = 1; i < n; i++) {
+    const a = pts[i - 1], b = pts[i], age = (n - i) / n, al = .045 + .2 * Math.pow(1 - age, 2);
+    P(b[0], b[1], 1.5, c, al); P((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 1.3, c, al * .8);
+  }
+  for (const k of Worldline.knots) {
+    const p = .5 + .5 * Math.sin(t * 1.2 + k.t);
+    P(k.x, k.y, 16, FX.c2, .1 + .06 * p); P(k.x, k.y, 3.2, [1, 1, 1], .75);
+  }
+}
+// the scales you've passed through travel with you as a necklace of light
+function beadsDraw(t) {
+  const b = Worldline.beads; if (!b.length || pl.hidden) return;
+  const R = 24 + b.length * 1.5;
+  b.forEach((bd, i) => {
+    const a = t * .45 + i / b.length * TAU, x = pl.x + Math.cos(a) * R, y = pl.y + Math.sin(a) * R * .85;
+    P(x, y, 9, bd.c, .22); P(x, y, 2.6, mix3(bd.c, C.white, .5), .95);
+  });
+}
+
+// ----- your entangled twin: the other half of the flicker you woke from -----
+const TWIN_LINES = {
+  foam: "There you are: your twin, the other half of the flicker you woke from. You'll stay entangled. Measure one of you and the other's answer is already settled, however far apart you drift.",
+  quark: "Your twin, mirror-wise, has been gathering colours of its own. Nothing passed between you. You were simply never separate.",
+  nuclei: "Two protons would push each other away here. You and your twin pass straight through: you aren't charge, you're correlation.",
+  light: "In the new light you can finally see each other clearly. Three hundred and eighty thousand years, and still a pair.",
+  star: "Your twin keeps the star's time too, on the off-beat. Between you, every beat is answered.",
+  web: "Billions of light-years apart, and still entangled. Distance was never what kept you apart.",
+};
+const Twin = { ax: 0, ay: 0, x: 0, y: 0, met: false, trail: [], home: null, hinted: false };
+function twinStart(ch) {
+  const a = Math.random() * TAU, d = ch.key === "web" ? 560 : rand(270, 340);
+  Twin.ax = Math.cos(a) * d; Twin.ay = Math.sin(a) * d; Twin.met = false; Twin.home = null; Twin.trail.length = 0;
+  Twin.x = 2 * Twin.ax - pl.x; Twin.y = 2 * Twin.ay - pl.y;
+}
+function twinStep(dt) {
+  if (Twin.home) { Twin.x = lerp(Twin.x, Twin.home.x, 1 - Math.exp(-dt * .6)); Twin.y = lerp(Twin.y, Twin.home.y, 1 - Math.exp(-dt * .6)); }
+  else { Twin.x = 2 * Twin.ax - pl.x; Twin.y = 2 * Twin.ay - pl.y; }          // a mirror image through the meeting point
+  Twin.trail.unshift([Twin.x, Twin.y]); if (Twin.trail.length > 34) Twin.trail.pop();
+  if (!G.ch || transition || G.state !== "play") return;
+  const d = Math.hypot(Twin.x - pl.x, Twin.y - pl.y);
+  if (!Twin.hinted && G.chT > 25 && !Twin.met && G.ch.key === "foam") { Twin.hinted = true; if (!narrBusy()) say("Somewhere out there, something moves exactly opposite to you. Head toward the point between you and it will come to meet you."); }
+  if (!Twin.met && !Twin.home && d < 38) {
+    Twin.met = true; save.reunions = save.reunions || {}; save.reunions[G.ch.key] = true; persist();
+    const mx = (Twin.x + pl.x) / 2, my = (Twin.y + pl.y) / 2;
+    ring(mx, my, C.anti, 170, 1.8, 2); ring(mx, my, C.matter, 120, 1.5, 2); burst(mx, my, C.anti, 24, 120, 1.6); burst(mx, my, C.matter, 24, 120, 1.6);
+    FX.flash = Math.max(FX.flash, .06); Music.arp([4, 9, 11, 16], .18, .09);
+    wlKnot(mx, my);
+    say(TWIN_LINES[G.ch.key]);
+  }
+}
+function twinDraw(t) {
+  if (!G.ch || pl.hidden) return;
+  const x = Twin.x, y = Twin.y, f = pl.focusAmt, rose = C.anti;
+  for (let i = 2; i < Twin.trail.length; i += 2) { const k = 1 - i / Twin.trail.length; P(Twin.trail[i][0], Twin.trail[i][1], 2 + 5 * k, rose, .18 * k); }
+  P(x, y, 28, rose, .2); P(x, y, 6, [1, .9, .95], .9);
+  const R = 15 + 3 * Math.sin(t * 2.1 + Math.PI) + f * 10;
+  for (let i = 0; i < 22; i++) { const a = i / 22 * TAU - t * .4, w = Math.sin(a * 3 - t * 3) * 3; P(x + Math.cos(a) * (R + w), y + Math.sin(a) * (R + w), 1.7, rose, .32 + .3 * f); }
+  if (f > .02) for (let k = 0; k < 2; k++) { const rr = ((t * 60 + k * 50) % 110) + 20; for (let i = 0; i < 32; i++) { const a = i / 32 * TAU; P(x + Math.cos(a) * rr, y + Math.sin(a) * rr, 1.4, [1, .8, .9], f * .4 * (1 - rr / 130)); } }
+  // the entanglement thread: a faint filament leaving each of you toward the other
+  const dx = x - pl.x, dy = y - pl.y, d = Math.hypot(dx, dy);
+  if (d > 140 && !Twin.home) {
+    const ux = dx / d, uy = dy / d;
+    for (let k = 0; k < 14; k++) { const s = k / 14, a = (.22 * (1 - s)) * (.6 + .4 * Math.sin(t * 3 - k)); P(pl.x + ux * (34 + s * 120), pl.y + uy * (34 + s * 120), 1.2, mix3(C.matter, C.anti, s), a); P(x - ux * (34 + s * 120), y - uy * (34 + s * 120), 1.2, mix3(C.anti, C.matter, s), a); }
+  }
+}
+function twinLabel() {
+  if (!G.ch || pl.hidden) return;
+  const d = Math.hypot(Twin.x - pl.x, Twin.y - pl.y);
+  if (d < 360) label(Twin.x, Twin.y + 30, Twin.met || Twin.home ? "your twin" : "?", { color: "#ffb3d4", a: clamp(1.3 - d / 360, 0, 1) * .8, font: "italic 16px 'Instrument Serif', Georgia, serif" });
+}
+function twinHome(x, y) { Twin.home = { x: x + 26, y: y - 10 }; }
+
+// ----- depth: soft out-of-focus motes drifting past in front of everything -----
+const bokeh = []; for (let i = 0; i < 16; i++) bokeh.push({ x: Math.random(), y: Math.random(), d: rand(1.5, 2.5), s: rand(16, 48), p: Math.random() * TAU });
+function drawBokeh(t) {
+  const c = mix3(FX.c2, C.white, .5), z = cam.zoom, ww = W * 1.4, hh = H * 1.4;
+  for (const b of bokeh) {
+    const sx = (((b.x * ww - cam.x * z * b.d + t * 6 * b.d) % ww) + ww) % ww - W * .2, sy = (((b.y * hh - cam.y * z * b.d) % hh) + hh) % hh - H * .2;
+    P(worldX(sx), worldY(sy), b.s / z, c, (.022 + .014 * Math.sin(t * .4 + b.p)) * (1 - FX.fog * .5));
+  }
+}
+
+// ----- gravity: in the cosmic web, clusters visibly bend the fabric -----
+function massStep() {
+  for (const m of FX.mass) m[2] = 0;
+  const ch = G.ch;
+  if (!ch || ch.key !== "web" || !ch.nodes || G.state !== "play") return;
+  const fade = ch.morphAt ? clamp(1 - (G.time - ch.morphAt) / 5, 0, 1) : 1;
+  const vis = ch.nodes.map(n => [Math.hypot(scrX(n.x) - W / 2, scrY(n.y) - H / 2), n]).filter(v => v[0] < Math.max(W, H) * .75).sort((a, b) => a[0] - b[0]).slice(0, 4);
+  vis.forEach(([, n], k) => { FX.mass[k] = [(scrX(n.x) - W / 2) / H, -(scrY(n.y) - H / 2) / H, .3 * n.m * fade, .13 * cam.zoom / .72 * Math.sqrt(n.m)]; });
+}
+
+// ----- hooks used by the chapter flow -----
+function soulChapterStart(ch) {
+  wlBead();
+  Worldline.pts = []; Worldline.knots = []; Worldline.chapter = ch;
+  twinStart(ch);
+  FXT.fabric = FABRIC[ch.key] ?? .45;
+}
+function soulStep(dt) { wlStep(dt); twinStep(dt); }
+
+// ----- the closing keepsake: your worldline through six scales -----
+function codaArt() {
+  wlBead();
+  const cv2 = $("codaArt"); if (!cv2) return;
+  const g = cv2.getContext("2d"), Wd = cv2.width, Hd = cv2.height;
+  g.clearRect(0, 0, Wd, Hd);
+  const r = Hd * .3, gap = Wd / 6, cy = Hd * .46;
+  g.strokeStyle = "rgba(190,180,255,.28)"; g.lineWidth = 2; g.beginPath(); g.moveTo(gap * .5, cy); g.lineTo(gap * 5.5, cy); g.stroke();
+  CH.forEach((ch, i) => {
+    const cx = gap * (i + .5), bead = Worldline.beads.find(b => b.key === ch.key), col = hex(ch.look.c2).map(v => v * 255 | 0);
+    g.fillStyle = "#0c0a24"; g.beginPath(); g.arc(cx, cy, r + 6, 0, TAU); g.fill();
+    g.strokeStyle = `rgba(${col},${bead ? .7 : .2})`; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, r + 6, 0, TAU); g.stroke();
+    if (bead) {
+      g.strokeStyle = `rgba(${col},.9)`; g.lineWidth = 2.2; g.shadowColor = `rgba(${col},.9)`; g.shadowBlur = 10; g.beginPath();
+      bead.path.forEach(([x, y], k) => { const px = cx + x * r * .86, py = cy + y * r * .86; k ? g.lineTo(px, py) : g.moveTo(px, py); });
+      g.stroke(); g.shadowBlur = 0;
+      g.fillStyle = "#ffffff"; for (const [x, y] of bead.knots) { g.beginPath(); g.arc(cx + x * r * .86, cy + y * r * .86, 3.4, 0, TAU); g.fill(); }
+    }
+    g.fillStyle = bead ? "#efeaff" : "#6f69a0"; g.font = "22px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.fillText(ch.num, cx, cy + r + 40);
+  });
+}
+
+// ---- 12-main.js ----
 // =================== Title ambience, wiring and the main loop ===================
 const amb = [];
 function ambient(dt, t) {
@@ -1748,13 +1977,13 @@ function drawDust(t) {
 function begin(i = 0) {
   Music.start(); Music.setMuted(!!save.muted); $("bSound").classList.toggle("off", !!save.muted);
   $("title").hidden = true; $("coda").hidden = true; $("pause").hidden = true;
-  if (i === 0) { G.made = []; startPrologue(); } else startChapter(i);
+  if (i === 0) { G.made = []; Worldline.beads = []; save.reunions = {}; newUniverse(); startPrologue(); } else startChapter(i);
 }
 function toTitle() {
   G.state = "title"; transition = null; Music.stopBeat();
   $("pause").hidden = true; $("coda").hidden = true; $("title").hidden = false; $("hud").classList.remove("on"); $("focusBtn").hidden = true;
   $("card").classList.remove("on"); Narr.q.length = 0; Narr.cur = null; Narr.el.classList.remove("on"); Moment.q.length = 0; Moment.next(true);
-  setLook({ c0: "#04030d", c1: "#1c1552", c2: "#8af3ff", foam: 1, fog: 0, cmb: 0, star: 0, warp: 1.9 }); FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  setLook({ c0: "#04030d", c1: "#1c1552", c2: "#8af3ff", foam: 1, fog: 0, cmb: 0, star: 0, warp: 1.9, fabric: .45 }); FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
   cam.x = cam.y = 0; cam.zoom = cam.zoomT = 1;
   sculptInit(); buildRuler($("ruler"));
   const tt = $("title"); tt.classList.remove("play"); void tt.offsetWidth; tt.classList.add("play");
@@ -1771,13 +2000,15 @@ $("bPause").onclick = togglePause;
 $("bSound").onclick = toggleSound;
 document.addEventListener("visibilitychange", () => { if (document.hidden && G.state === "play") togglePause(); });
 
-let last = performance.now(), ftAvg = 16, qT = 0;
+let last = performance.now(), ftAvg = 16, qT = 0, qCool = 0, qLow = 0, qHigh = 0;
 function adaptQuality(ms, rdt) {
-  // dynamic resolution: keep the foam smooth on slower GPUs
-  ftAvg = lerp(ftAvg, ms, .05); qT += rdt;
-  if (qT > 2) { qT = 0;
-    if (ftAvg > 24 && QUALITY > .5) { QUALITY = Math.max(.5, QUALITY - .15); resize(); }
-    else if (ftAvg < 13 && QUALITY < 1) { QUALITY = Math.min(1, QUALITY + .1); resize(); } }
+  // dynamic resolution with hysteresis: drop only after sustained slow frames, recover slowly, never oscillate
+  ftAvg = lerp(ftAvg, ms, .04); qT += rdt; qCool = Math.max(0, qCool - rdt);
+  if (qT < 1) return; qT = 0;
+  if (ftAvg > 27) { qLow++; qHigh = 0; } else if (ftAvg < 14) { qHigh++; qLow = 0; } else { qLow = 0; qHigh = 0; }
+  if (qCool > 0) return;
+  if (qLow >= 3 && QUALITY > .5) { QUALITY = Math.max(.5, QUALITY - .15); resize(); qCool = 8; qLow = 0; }
+  else if (qHigh >= 12 && QUALITY < 1) { QUALITY = Math.min(1, QUALITY + .1); resize(); qCool = 20; qHigh = 0; }
 }
 function frame(now) {
   const ms = now - last, rdt = Math.min(.05, ms / 1000); last = now;
@@ -1793,7 +2024,7 @@ function step(now, ms, rdt) {
   oc.clearRect(0, 0, W, H);
   if (G.state === "play") {
     G.time += dt; G.chT += dt;
-    updatePlayer(dt); G.ch.update(dt); stepFXL(dt); stepEcho();
+    updatePlayer(dt); G.ch.update(dt); stepFXL(dt); stepEcho(); soulStep(dt);
     const fx = cam.focus ? cam.focus.x : pl.x, fy = cam.focus ? cam.focus.y : pl.y, fk = cam.focus ? 1.6 : 3;
     cam.x = lerp(cam.x, fx, 1 - Math.exp(-rdt * fk)); cam.y = lerp(cam.y, fy, 1 - Math.exp(-rdt * fk));
   } else if (G.state === "prologue") {
@@ -1809,12 +2040,12 @@ function step(now, ms, rdt) {
   else FX.lens = [0, 0, 0];
   cam.zoom = lerp(cam.zoom, cam.zoomT ?? 1, 1 - Math.exp(-rdt * .9));
   cam.shake *= Math.exp(-rdt * 6); if (cam.shake < .2) cam.shake = 0;
-  Moment.step(rdt); stepNarr(rdt); stepCard(rdt); stepTransition(rdt); stepFX(rdt);
+  Moment.step(rdt); stepNarr(rdt); stepCard(rdt); stepTransition(rdt); stepFX(rdt); massStep();
   drawDust(t);
   if ((G.state === "play" || G.state === "paused") && G.ch) {
-    drawEcho(t); G.ch.draw(t); drawFXL(t); drawPlayer(t); drawWarp(); G.ch.overlay(); drawFloats();
-  } else if (G.state === "prologue") { drawPrologue(t); drawFXL(t);
-  } else { drawFXL(t); sculptDraw(t, G.state === "coda" ? .4 : 1); if (G.state === "title") sculptLabel(); }
+    drawEcho(t); wlDraw(t); twinDraw(t); G.ch.draw(t); drawFXL(t); drawPlayer(t); beadsDraw(t); drawWarp(); drawBokeh(t); G.ch.overlay(); twinLabel(); drawFloats();
+  } else if (G.state === "prologue") { drawPrologue(t); drawFXL(t); drawBokeh(t);
+  } else { drawFXL(t); drawBokeh(t); sculptDraw(t, G.state === "coda" ? .4 : 1); if (G.state === "title") sculptLabel(); }
   renderGL(t);
 }
 
@@ -1822,7 +2053,7 @@ function step(now, ms, rdt) {
 (function boot() {
   resize();
   if (!initGL()) { $("nogl").hidden = false; $("title").hidden = true; return; }
-  Music.setMuted(!!save.muted);
+  Music.setMuted(!!save.muted); applySeed();
   toTitle();
   requestAnimationFrame(frame);
 })();

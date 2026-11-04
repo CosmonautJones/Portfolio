@@ -61,12 +61,12 @@ const SECTIONS = [
   {
     heading: "How it's built",
     body:
-      "One self-contained HTML file with no dependencies. A full-screen GLSL shader draws the foam from domain-warped noise and animated Voronoi cells, with shockwave ripples that bend the field. Particles are additive glow points, drawn a second time into a half-resolution buffer and blurred for bloom. The score is generated with Web Audio: a chapter-specific pad, pentatonic bell tones for every interaction, and a heartbeat scheduled on the audio clock that also judges rhythm timing.",
+      "One self-contained HTML file with no dependencies. A full-screen GLSL shader draws the foam from domain-warped noise and animated Voronoi cells, with shockwave ripples that bend the field. Everything renders into a half-float HDR buffer: particles are additive glow points with a six-pass bloom, and a final pass tone-maps the frame and adds edge fringing, a vignette and film grain. A woven fabric of warp and weft threads bends around mass, visibly curving around galaxy clusters in the last chapter. The score is generated with Web Audio: a chapter-specific pad, pentatonic bell tones for every interaction, and a heartbeat scheduled on the audio clock that also judges rhythm timing.",
   },
   {
     heading: "Story, access and performance",
     body:
-      "A prologue, one hidden echo per chapter with a deeper fact, and field notes that keep every explanation you reach. Keyboard, mouse and touch all work, reduced-motion settings soften shake and ripples, and the renderer lowers its resolution when frames run long.",
+      "You wake beside an entangled twin that mirrors your every move through all six chapters, meeting you only at the point between you. A worldline thread records your path, each scale you cross joins a necklace that travels with you, and the ending draws that worldline as a keepsake. Every run takes place in its own seeded universe, with one hidden echo per chapter and field notes that keep every explanation you reach. Keyboard, mouse and touch all work, reduced-motion settings soften shake and ripples, and the renderer lowers its resolution when frames run long.",
   },
 ];
 
