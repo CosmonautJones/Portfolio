@@ -66,7 +66,7 @@ const SECTIONS = [
   {
     heading: "Story, access and performance",
     body:
-      "You wake beside an entangled twin that mirrors your every move through all six chapters, meeting you only at the point between you. A worldline thread records your path, each scale you cross joins a necklace that travels with you, and the ending draws that worldline as a keepsake. Every run takes place in its own seeded universe, with one hidden echo per chapter and field notes that keep every explanation you reach. Keyboard, mouse and touch all work, reduced-motion settings soften shake and ripples, and the renderer lowers its resolution when frames run long.",
+      "You wake beside an entangled twin that mirrors your every move through all six chapters, speaks in its own voice, and meets you only at the point between you. Each chapter closes on a verse; read in order, the six verses form a poem, What you are made of, which the ending gives back to you after an epilogue in which you and your twin become one point of light. A worldline thread records your path, each scale you cross joins a necklace that travels with you, and the ending draws that worldline as a keepsake. Every run takes place in its own seeded universe, with one hidden echo per chapter and field notes that keep every explanation you reach. Keyboard, mouse and touch all work, reduced-motion settings soften shake and ripples, and the renderer lowers its resolution when frames run long.",
   },
 ];
 

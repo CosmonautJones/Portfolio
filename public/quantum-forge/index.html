@@ -120,6 +120,17 @@ h1.title em{font-style:italic;color:transparent;background:linear-gradient(100de
 #narr{position:fixed;left:50%;bottom:calc(46px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px, calc(100% - 32px));text-align:center;z-index:11;pointer-events:none;
   font-family:var(--f-display);font-size:clamp(20px,2.3vw,27px);line-height:1.3;color:var(--text);text-shadow:0 2px 18px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.8);text-wrap:balance;opacity:0;transition:opacity .9s ease, transform .9s ease}
 #narr.on{opacity:1;transform:translate(-50%,-6px)}
+#narr.twin{color:#ffc6de;font-style:italic}
+#narr.twin::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rose);box-shadow:0 0 12px var(--rose);margin-right:12px;vertical-align:middle;transform:translateY(-2px)}
+#verse{position:fixed;inset:0;z-index:14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;pointer-events:none;padding-inline:24px;opacity:0;transition:opacity 1.8s ease}
+#verse.on{opacity:1}
+#verse .vn{font-family:var(--f-mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent);margin:0}
+#verse .vt{font-family:var(--f-display);font-style:italic;font-size:clamp(28px,4.4vw,56px);line-height:1.14;max-width:21ch;text-wrap:balance;margin:0;text-shadow:0 0 40px rgba(0,0,0,.8),0 0 26px rgba(255,211,138,.2);transform:translateY(10px);filter:blur(7px);transition:transform 2.4s cubic-bezier(.2,.7,.2,1),filter 2.4s ease}
+#verse.on .vt{transform:none;filter:none}
+.poem{display:flex;flex-direction:column;gap:10px;margin:2px 0 4px}
+.verse-line{display:flex;gap:16px;align-items:baseline;margin:0;font-family:var(--f-display);font-style:italic;font-size:clamp(19px,2.3vw,25px);line-height:1.3;color:var(--text);animation:rise 1.8s cubic-bezier(.2,.7,.2,1) both}
+.verse-line .vn{font-family:var(--f-mono);font-style:normal;font-size:11px;letter-spacing:.16em;color:var(--c);min-width:2.4em;flex:none}
+.verse-line.missing{color:var(--faint)}
 
 #moment{position:fixed;inset:0;z-index:12;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;opacity:0;transition:opacity .9s ease;padding-inline:16px;padding-bottom:calc(11vh + env(safe-area-inset-bottom,0px))}
 #moment .panel{transform:translateY(14px) scale(.985);transition:transform 1.1s cubic-bezier(.2,.7,.2,1)}
@@ -142,13 +153,15 @@ h1.title em{font-style:italic;color:transparent;background:linear-gradient(100de
 .coda-list b{display:block;font-family:var(--f-display);font-weight:400;font-size:22px}
 .coda-list span{font-family:var(--f-mono);font-size:11px;color:var(--dim)}
 
-#prologue{position:fixed;inset:0;z-index:16;display:flex;align-items:center;justify-content:center;padding-inline:24px;pointer-events:none}
-#proLine{font-family:var(--f-display);font-style:italic;font-size:clamp(24px,3.4vw,40px);line-height:1.25;text-align:center;max-width:24ch;text-wrap:balance;margin:0;margin-top:34vh;opacity:0;transform:translateY(8px);filter:blur(6px);transition:opacity 1.6s ease,transform 1.6s ease,filter 1.6s ease;text-shadow:0 0 30px rgba(138,243,255,.25)}
-#proLine.on{opacity:1;transform:none;filter:none}
+#prologue,#epilogue{position:fixed;inset:0;z-index:16;display:flex;align-items:center;justify-content:center;padding-inline:24px;pointer-events:none}
+#proLine,#epiLine{font-family:var(--f-display);font-style:italic;font-size:clamp(24px,3.4vw,40px);line-height:1.25;text-align:center;max-width:24ch;text-wrap:balance;margin:0;margin-top:34vh;opacity:0;transform:translateY(8px);filter:blur(6px);transition:opacity 1.6s ease,transform 1.6s ease,filter 1.6s ease;text-shadow:0 0 30px rgba(138,243,255,.25)}
+#proLine.on,#epiLine.on{opacity:1;transform:none;filter:none}
+#proLine.twin,#epiLine.twin{color:#ffc6de;text-shadow:0 0 30px rgba(255,126,182,.3)}
+#epiLine{margin-top:40vh;max-width:26ch}
 #proSeed{position:fixed;top:calc(22px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-family:var(--f-mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint);margin:0;white-space:nowrap}
 #codaArt{width:100%;height:auto;aspect-ratio:4/1;display:block}
-#proSkip{position:fixed;right:max(20px, env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));pointer-events:auto;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--dim);padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--glass)}
-#proSkip:hover{color:var(--text);border-color:var(--accent)}
+#proSkip,#epiSkip{position:fixed;right:max(20px, env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));pointer-events:auto;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--dim);padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--glass)}
+#proSkip:hover,#epiSkip:hover{color:var(--text);border-color:var(--accent)}
 .notes-list{display:flex;flex-direction:column;gap:12px;max-height:56vh;overflow-y:auto;padding-right:6px}
 .note{border-left:2px solid var(--line-strong);padding:4px 0 4px 14px}
 .note.echo{border-left-color:var(--accent)}
@@ -219,15 +232,18 @@ h1.title em{font-style:italic;color:transparent;background:linear-gradient(100de
 </div></div>
 
 <div class="overlay" id="coda" hidden><div class="panel">
-  <p class="eyebrow">Coda</p><h2>Everything began as a flicker</h2>
+  <p class="eyebrow">Coda · the poem your journey wrote</p><h2>What you are made of</h2>
+  <div class="poem" id="poem"></div>
   <p id="codaText">You crossed sixty orders of magnitude, from 10⁻³⁵ metres to 10²⁵, and nearly fourteen billion years.</p>
   <canvas id="codaArt" width="1200" height="300" aria-label="Your worldline through the six scales"></canvas>
   <div class="stats-row" id="codaStats"></div>
-  <div class="coda-list" id="codaList"></div>
+  <div class="coda-list" id="codaList" hidden></div>
   <div class="row"><button class="btn primary" id="cAgain">Return to the foam</button><button class="btn" id="cNotes">Field notes</button><button class="btn" id="cTitle">Title screen</button></div>
   <p class="credit">Quantum Forge · a game by Travis Jones · <a href="https://github.com/CosmonautJones/quantum-forge" target="_blank" rel="noopener">source on GitHub</a></p>
 </div></div>
 <div id="prologue" hidden><p id="proSeed"></p><p id="proLine"></p><button id="proSkip">SKIP</button></div>
+<div id="verse" aria-live="polite"><p class="vn" id="vNum"></p><p class="vt" id="vText"></p></div>
+<div id="epilogue" hidden><p id="epiLine"></p><button id="epiSkip">SKIP</button></div>
 <div class="overlay" id="notes" hidden><div class="panel">
   <p class="eyebrow">Field notes</p><h2>What you've learned</h2>
   <p class="stats-row" id="notesMeta"></p>
@@ -723,9 +739,12 @@ function stepNarr(dt) {
     if (Narr.t > Narr.dur) { Narr.el.classList.remove("on"); if (Narr.t > Narr.dur + 1) Narr.cur = null; }
     else Narr.el.classList.add("on");
   } else if (Narr.q.length && G.state === "play") {
-    Narr.cur = Narr.q.shift(); Narr.t = 0; Narr.dur = 3 + Narr.cur.length * .052;
+    Narr.cur = Narr.q.shift(); Narr.t = 0;
+    const twin = Narr.cur.startsWith("~"), text = twin ? Narr.cur.slice(1) : Narr.cur;
+    Narr.dur = 3 + text.length * .052 + (twin ? .6 : 0);
+    Narr.el.classList.toggle("twin", twin); if (twin) twinVoice();
     Narr.el.textContent = "";
-    Narr.cur.split(" ").forEach((w, i) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w + " "; s.style.animationDelay = (i * 55) + "ms"; Narr.el.appendChild(s); });
+    text.split(" ").forEach((w, i) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w + " "; s.style.animationDelay = (i * 55) + "ms"; Narr.el.appendChild(s); });
     Narr.el.classList.add("on");
   }
 }
@@ -768,7 +787,7 @@ function startChapter(i) {
   const ch = CH[i]; G.idx = i; G.ch = ch; G.chT = 0; G.state = "play"; ch.done = false;
   FXL.sparks.length = FXL.rings.length = FXL.floats.length = FXL.comps.length = 0;
   Narr.q.length = 0; Narr.cur = null; Narr.el.classList.remove("on");
-  Moment.q.length = 0; Moment.next(true); transition = null; document.body.classList.remove("cinema"); cam.focus = null;
+  Moment.q.length = 0; Moment.next(true); transition = null; document.body.classList.remove("cinema"); cam.focus = null; hideVerse();
   pl.x = pl.y = pl.vx = pl.vy = 0; pl.trail.length = 0; pl.hidden = false; pl.maxV = 230; pl.col = hex("#bff8ff");
   cam.x = cam.y = 0; cam.zoom = 2.6; cam.zoomT = 1;
   FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
@@ -785,7 +804,7 @@ function startChapter(i) {
 const supNum = n => (n < 0 ? "⁻" : "") + String(Math.abs(Math.round(n))).split("").map(d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
 function stepCard(dt) {
   if (cardTimer > 0 && G.ch) { G.cardT += dt; const k = ease(clamp((G.cardT - .6) / 2.2, 0, 1)); $("cMeta").textContent = "10" + supNum(lerp(G.expFrom, G.ch.expN, k)) + " m  ·  " + G.ch.era; }
-  if (cardTimer > 0) { cardTimer -= dt; if (cardTimer <= 0) { $("card").classList.remove("on"); $("hud").classList.add("on"); if (G.ch && G.ch.afterCard) G.ch.afterCard(); } }
+  if (cardTimer > 0) { cardTimer -= dt; if (cardTimer <= 0) { $("card").classList.remove("on"); $("hud").classList.add("on"); if (G.ch && G.ch.afterCard) G.ch.afterCard(); if (G.ch && TWIN_OPEN[G.ch.key]) Narr.q.splice(Math.min(1, Narr.q.length), 0, "~" + TWIN_OPEN[G.ch.key]); } }
 }
 let transition = null;
 function completeChapter(delay = 4) {
@@ -802,22 +821,30 @@ function drawWarp() {
     for (let k = 0; k < n; k++) { const rr = r + len * k / n; P(cam.x + Math.cos(p.a) * rr / z, cam.y + Math.sin(p.a) * rr / z, 1.5 / z, col, w * (1 - k / n) * .9); }
   }
 }
+// end of a chapter: the last words, a held close-up, the chapter's verse, then the warp to the next scale
+const VERSE_HOLD = 7.5;
 function stepTransition(dt) {
   if (!transition) return;
-  if (narrBusy() || Moment.cur) { if (transition.t < 0) return; }
-  transition.t += dt;
-  if (transition.t < 0 && !Moment.cur) { document.body.classList.add("cinema"); if (!transition.hero) { transition.hero = true; cam.zoomT = (cam.zoomT ?? 1) * 1.35; } }
-  if (transition.t > 0 && !transition.started) { transition.started = true; document.body.classList.remove("cinema"); Music.whoosh(3.4, true); $("hud").classList.remove("on"); cam.zoomT = .12; }
-  if (transition.t > 0) FX.flash = Math.max(FX.flash, clamp(transition.t / transition.dur, 0, 1) * .5);
-  if (transition.t >= transition.dur) {
-    transition = null;
-    if (G.idx + 1 < CH.length) startChapter(G.idx + 1); else showCoda();
+  const T = transition;
+  if (T.t < 0) {
+    if (narrBusy() || Moment.cur) return;
+    document.body.classList.add("cinema");
+    if (!T.hero) { T.hero = true; cam.zoomT = (cam.zoomT ?? 1) * 1.35; }
+    if (!T.verse) T.verse = { t: 0, on: showVerse(G.ch) };
+    if (T.verse.on && T.verse.t < VERSE_HOLD) { T.verse.t += dt; if (T.verse.t >= VERSE_HOLD) hideVerse(); return; }
+    T.t += dt;
+    if (T.t >= 0 && G.idx + 1 >= CH.length) { transition = null; startEpilogue(); }
+    return;
   }
+  T.t += dt;
+  if (!T.started) { T.started = true; document.body.classList.remove("cinema"); Music.whoosh(3.4, true); $("hud").classList.remove("on"); cam.zoomT = .12; }
+  FX.flash = Math.max(FX.flash, clamp(T.t / T.dur, 0, 1) * .5);
+  if (T.t >= T.dur) { transition = null; startChapter(G.idx + 1); }
 }
 function showCoda() {
   G.state = "coda"; save.finished = true; persist();
   $("hud").classList.remove("on"); $("focusBtn").hidden = true;
-  $("codaList").innerHTML = G.made.map(m => `<div><b>${m.what}</b><span>${m.where}</span></div>`).join("");
+  buildPoem();
   const reun = Object.keys(save.reunions || {}).length;
   $("codaStats").innerHTML = `<span><b>${universeName()}</b></span><span>Reunions with your twin <b>${reun} / 6</b></span><span>Echoes found <b>${echoCount()} / 6</b></span><span>Field notes <b>${save.notes.length}</b></span>`;
   codaArt();
@@ -1065,7 +1092,7 @@ CH.push({
         "You are a single proton.");
     this.obj();
   },
-  key() { return this.Z + "," + this.N; },
+  nkey() { return this.Z + "," + this.N; },
   obj() {
     const A = this.Z + this.N, steps = A - 1;
     const txt = A === 1 ? "Catch a neutron. It has no charge, so nothing pushes it away."
@@ -1115,7 +1142,7 @@ CH.push({
     }
   },
   touch(q, i, wave) {
-    const k = this.key() + "+" + q.k;
+    const k = this.nkey() + "+" + q.k;
     if (q.k === "p" && !wave && this.Z + this.N < 4) { q.vx = (q.x - pl.x) * 3; q.vy = (q.y - pl.y) * 3; q.cool = .6; return; }
     if (REJECT[k]) {
       q.vx = (q.x - pl.x) * 4; q.vy = (q.y - pl.y) * 4; q.cool = 1.5;
@@ -1155,7 +1182,7 @@ CH.push({
   },
   overlay() {
     for (const q of this.parts) { const d = Math.hypot(q.x - pl.x, q.y - pl.y); if (d < 280) label(q.x, q.y - 17, q.k, { a: clamp(1.4 - d / 280, 0, 1) * .85 }); }
-    label(pl.x, pl.y + 30, NUCLIDE[this.key()].split("  ")[0], { a: .9, font: "italic 18px 'Instrument Serif', Georgia, serif" });
+    label(pl.x, pl.y + 30, NUCLIDE[this.nkey()].split("  ")[0], { a: .9, font: "italic 18px 'Instrument Serif', Georgia, serif" });
   },
 });
 
@@ -1499,7 +1526,7 @@ CH.push({
         Moment.add("A spiral galaxy. In it, a small yellow star. Around it, a rocky planet with liquid water. Some of the carbon and oxygen you forged ended up here, and in time it learned to look up and wonder where it came from.", "Home", true, { x: this.home.x, y: this.home.y });
         made("You", "the universe, finding out how it was made");
         twinHome(this.home.x, this.home.y);
-        say("Your twin arrives from the far side of the sky. You were never two things, only the two ends of one thread.", "That's you. You are the universe, finding out how it was made.");
+        say("Your twin arrives from the far side of the sky.", "~I'm here. I was always on my way to you.");
       }
       return;
     }
@@ -1696,6 +1723,7 @@ const PROLOGUE = [
   "Beside you, a second ripple wakes. Your twin: the other half of the same flicker.",
   "Everything that will ever exist is still waiting to be made.",
   "Go and watch it happen. Together, even when you're apart.",
+  "~Stay close. Or don't. Either way, we'll still be us.",
 ];
 const Pro = { t: 0, i: -1, el: $("proLine") };
 function startPrologue() {
@@ -1710,8 +1738,9 @@ function stepPrologue(dt) {
   const idx = Math.floor((Pro.t - 1.2) / 4.6);
   if (idx !== Pro.i && idx >= 0 && idx < PROLOGUE.length) {
     Pro.i = idx; Pro.el.classList.remove("on");
-    setTimeout(() => { Pro.el.textContent = PROLOGUE[idx]; Pro.el.classList.add("on"); }, 500);
-    Music.note([2, 4, 6, 5, 7][idx], .06, 4); if (idx === 2) Music.note(9, .05, 4, .3);
+    const line = PROLOGUE[idx], tw = line.startsWith("~");
+    setTimeout(() => { Pro.el.classList.toggle("twin", tw); Pro.el.textContent = tw ? line.slice(1) : line; Pro.el.classList.add("on"); }, 500);
+    Music.note([2, 4, 6, 5, 7, 9][idx], .06, 4); if (idx === 2) Music.note(9, .05, 4, .3); if (tw) twinVoice();
     if (idx === 3) setLook({ c1: "#1c1552", foam: .6, fabric: .4 });
   }
   if (Pro.t > 1.2 + PROLOGUE.length * 4.6) endPrologue();
@@ -1849,12 +1878,12 @@ function beadsDraw(t) {
 
 // ----- your entangled twin: the other half of the flicker you woke from -----
 const TWIN_LINES = {
-  foam: "There you are: your twin, the other half of the flicker you woke from. You'll stay entangled. Measure one of you and the other's answer is already settled, however far apart you drift.",
-  quark: "Your twin, mirror-wise, has been gathering colours of its own. Nothing passed between you. You were simply never separate.",
-  nuclei: "Two protons would push each other away here. You and your twin pass straight through: you aren't charge, you're correlation.",
-  light: "In the new light you can finally see each other clearly. Three hundred and eighty thousand years, and still a pair.",
-  star: "Your twin keeps the star's time too, on the off-beat. Between you, every beat is answered.",
-  web: "Billions of light-years apart, and still entangled. Distance was never what kept you apart.",
+  foam: "~There you are. We came from the same flicker, so we're entangled now: measure one of us, and the other's answer is already settled.",
+  quark: "~You gathered colours too? Nothing passed between us. We were simply never separate.",
+  nuclei: "~Two protons would push each other away. We pass straight through. We're not charge; we're correlation.",
+  light: "~I can see you! The fog is gone. Three hundred and eighty thousand years, and we're still a pair.",
+  star: "~You keep the beat, I keep the off-beat. Between us, the star never misses one.",
+  web: "~Billions of light-years, and nothing between us has changed. Distance never could.",
 };
 const Twin = { ax: 0, ay: 0, x: 0, y: 0, met: false, trail: [], home: null, hinted: false };
 function twinStart(ch) {
@@ -1951,7 +1980,110 @@ function codaArt() {
   });
 }
 
-// ---- 12-main.js ----
+// ---- 12-tale.js ----
+// =================== The tale: a twin's voice, a poem that writes itself, an epilogue ===================
+// Lines that start with "~" are spoken by your twin, in its own colour and with its own two-note call.
+const TWIN_OPEN = {
+  foam: "Can you feel it? Everything here is trying to exist.",
+  quark: "It's so hot that nothing can hold together yet. Let's change that.",
+  nuclei: "Three minutes old, and the whole universe is a furnace. Quickly, before it cools.",
+  light: "I can't see you through the fog. Everything glows, and nothing gets through.",
+  star: "Listen. The star has a heartbeat.",
+  web: "Look how far we've come. Every one of these lights started where we did.",
+};
+// One verse per chapter. Read in order, they answer the question the journey asks: what are you made of?
+const VERSES = {
+  foam: "You began as a debt that empty space never collected.",
+  quark: "You are held by a force that never weakens, however hard it is pulled.",
+  nuclei: "Most of your atoms are hydrogen that has waited since the third minute.",
+  light: "Light is what an atom gives away each time it falls back home.",
+  star: "The carbon in you kept time in the heart of a dying star.",
+  web: "And all of you is the foam, grown large enough to wonder.",
+};
+function twinVoice() { Music.note(11, .035, 3.2); Music.note(9, .03, 3.2, .3); }
+
+function showVerse(ch) {
+  const v = VERSES[ch.key]; if (!v) return false;
+  $("vNum").textContent = `Verse ${ch.num} · ${ch.title}`; $("vText").textContent = v;
+  $("verse").classList.add("on"); Narr.el.classList.remove("on");
+  save.verses = save.verses || {}; save.verses[ch.key] = true; persist();
+  recordNote("Verse", v);
+  const root = { foam: 2, quark: 1, nuclei: 3, light: 4, star: 0, web: 5 }[ch.key] ?? 2;
+  Music.arp([root + 2, root + 4, root + 7, root + 9], .32, .07); Music.low(36.7 + root * 4, .14, 7);
+  return true;
+}
+function hideVerse() { $("verse").classList.remove("on"); }
+
+// ----- the epilogue: you and your twin become one point of light -----
+const EPILOGUE = [
+  "Thirteen point eight billion years after the first flicker, a little of that matter has learned to look.",
+  "Borrowed energy. Bound quarks. Hydrogen from the third minute. Carbon from a dying star.",
+  "Some of it is reading this.",
+  "~I was never lost. I'm the other half of every question you ask.",
+  "That's you: the universe, finding out how it was made.",
+  "Go and look up tonight. The foam is looking back.",
+];
+const EPI_STEP = 5.4;
+const Epi = { t: 0, i: -1 };
+function startEpilogue() {
+  G.state = "epilogue"; Epi.t = 0; Epi.i = -1;
+  document.body.classList.remove("cinema"); $("hud").classList.remove("on"); $("focusBtn").hidden = true; $("card").classList.remove("on"); hideVerse();
+  $("epilogue").hidden = false; $("epiLine").classList.remove("on");
+  setLook({ c0: "#000000", c1: "#06050f", c2: "#ffe9c2", foam: 0, star: .18, fog: 0, cmb: 0, fabric: 0, warp: 1.4 });
+  FX.lines = [[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  cam.x = cam.y = 0; cam.zoom = 1.25; cam.zoomT = 1; cam.focus = null; pl.hidden = true;
+  Music.stopBeat(); Music.chord("web", 650);
+}
+function stepEpilogue(dt) {
+  Epi.t += dt;
+  const idx = Math.floor((Epi.t - 1.5) / EPI_STEP);
+  if (idx !== Epi.i && idx >= 0 && idx < EPILOGUE.length) {
+    Epi.i = idx; const el = $("epiLine"), line = EPILOGUE[idx], twin = line.startsWith("~");
+    el.classList.remove("on");
+    setTimeout(() => { el.classList.toggle("twin", twin); el.textContent = twin ? line.slice(1) : line; el.classList.add("on"); }, 700);
+    Music.note([3, 5, 7, 9, 12, 14][idx], .06, 5.5);
+    if (twin) twinVoice();
+    if (idx === 4) { Music.chord("foam", 1500); FX.flash = .3; Music.low(36.7, .22, 9); }
+    if (idx === 5) setLook({ c0: "#04030d", c1: "#1c1552", c2: "#8af3ff", foam: .8, fabric: .45, star: 0 });
+  }
+  if (Epi.t > 1.5 + EPILOGUE.length * EPI_STEP + .6) endEpilogue();
+}
+function drawEpilogue(t) {
+  // two halves of one flicker drift together, then become a single light
+  const meet = 1.5 + EPI_STEP * 3.6, k = clamp((Epi.t - 1.5) / (meet - 1.5), 0, 1), e = ease(k), sep = 160 * (1 - e);
+  const wob = Math.sin(t * .7) * 12 * (1 - e), ax = -sep, ay = wob, bx = sep, by = -wob, fade = clamp(Epi.t / 3, 0, 1);
+  if (k < 1) {
+    P(ax, ay, 44, C.matter, .14 * fade); P(ax, ay, 5, [.9, 1, 1], .9 * fade);
+    P(bx, by, 44, C.anti, .14 * fade); P(bx, by, 5, [1, .92, .96], .9 * fade);
+    for (let i = 1; i < 18; i++) { const s = i / 18; P(lerp(ax, bx, s), lerp(ay, by, s) + Math.sin(s * 9 + t * 2) * 4 * (1 - e), 1.2, mix3(C.matter, C.anti, s), .22 * fade * Math.sin(s * Math.PI)); }
+  }
+  const m = clamp((Epi.t - meet) / 3.5, 0, 1);
+  if (m > 0) {
+    P(0, 0, 30 + 110 * m, [1, .93, .82], .22 * m); P(0, 0, 6 + 4 * m, [1, 1, 1], .55 + .45 * m);
+    for (let i = 0; i < 40; i++) { const a = i / 40 * TAU + t * .2, r = 26 + 60 * m + Math.sin(t * 1.5 + i) * 4; P(Math.cos(a) * r, Math.sin(a) * r, 1.4, mix3(C.matter, C.anti, .5 + .5 * Math.sin(a * 2)), .35 * m); }
+  }
+}
+function endEpilogue() {
+  if (G.state !== "epilogue") return;
+  $("epiLine").classList.remove("on"); $("epilogue").hidden = true;
+  showCoda();
+}
+$("epiSkip").onclick = endEpilogue;
+
+// ----- the coda: the poem your journey wrote -----
+function buildPoem() {
+  const box = $("poem"); box.innerHTML = "";
+  CH.forEach((ch, i) => {
+    const got = save.verses && save.verses[ch.key];
+    const p = document.createElement("p"); p.className = "verse-line" + (got ? "" : " missing");
+    p.style.setProperty("--c", ch.look.c2); p.style.animationDelay = (.5 + i * .6) + "s";
+    const n = document.createElement("span"); n.className = "vn"; n.textContent = ch.num;
+    const tx = document.createElement("span"); tx.textContent = got ? VERSES[ch.key] : "A verse you haven't reached yet.";
+    p.append(n, tx); box.appendChild(p);
+  });
+}
+
+// ---- 13-main.js ----
 // =================== Title ambience, wiring and the main loop ===================
 const amb = [];
 function ambient(dt, t) {
@@ -1988,7 +2120,7 @@ function toTitle() {
   sculptInit(); buildRuler($("ruler"));
   const tt = $("title"); tt.classList.remove("play"); void tt.offsetWidth; tt.classList.add("play");
   $("begin").textContent = save.reached > 0 ? "Begin again from the foam" : "Begin the journey";
-  $("tNotes").hidden = !save.notes.length; $("prologue").hidden = true; $("notes").hidden = true;
+  $("tNotes").hidden = !save.notes.length; $("prologue").hidden = true; $("epilogue").hidden = true; $("notes").hidden = true; hideVerse();
 }
 $("begin").onclick = () => begin(0);
 $("pResume").onclick = () => togglePause();
@@ -2027,6 +2159,8 @@ function step(now, ms, rdt) {
     updatePlayer(dt); G.ch.update(dt); stepFXL(dt); stepEcho(); soulStep(dt);
     const fx = cam.focus ? cam.focus.x : pl.x, fy = cam.focus ? cam.focus.y : pl.y, fk = cam.focus ? 1.6 : 3;
     cam.x = lerp(cam.x, fx, 1 - Math.exp(-rdt * fk)); cam.y = lerp(cam.y, fy, 1 - Math.exp(-rdt * fk));
+  } else if (G.state === "epilogue") {
+    G.time += rdt; stepEpilogue(rdt); stepFXL(rdt); cam.x = lerp(cam.x, 0, rdt); cam.y = lerp(cam.y, 0, rdt);
   } else if (G.state === "prologue") {
     G.time += rdt; stepPrologue(rdt); stepFXL(rdt); cam.x = lerp(cam.x, 0, rdt); cam.y = lerp(cam.y, 0, rdt);
   } else if (G.state === "title" || G.state === "coda") {
@@ -2045,6 +2179,7 @@ function step(now, ms, rdt) {
   if ((G.state === "play" || G.state === "paused") && G.ch) {
     drawEcho(t); wlDraw(t); twinDraw(t); G.ch.draw(t); drawFXL(t); drawPlayer(t); beadsDraw(t); drawWarp(); drawBokeh(t); G.ch.overlay(); twinLabel(); drawFloats();
   } else if (G.state === "prologue") { drawPrologue(t); drawFXL(t); drawBokeh(t);
+  } else if (G.state === "epilogue") { drawEpilogue(t); drawFXL(t); drawBokeh(t);
   } else { drawFXL(t); drawBokeh(t); sculptDraw(t, G.state === "coda" ? .4 : 1); if (G.state === "title") sculptLabel(); }
   renderGL(t);
 }

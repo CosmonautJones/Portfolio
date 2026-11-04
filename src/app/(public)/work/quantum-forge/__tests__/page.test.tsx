@@ -30,5 +30,9 @@ describe("Quantum Forge case study", () => {
     // Regression: the old sparkle layer lit hundreds of cells in unison every few seconds.
     expect(html).not.toContain("step(.9, fract(v2.z*13.");
     expect(html).toContain("EXT_color_buffer_float");
+    // The coda returns the poem the six chapter verses write.
+    expect(html).toContain("What you are made of");
+    // Regression: a chapter id once overwrote Chapter III's own key() method and stopped it rendering.
+    expect(html).not.toContain("this.key()");
   });
 });
