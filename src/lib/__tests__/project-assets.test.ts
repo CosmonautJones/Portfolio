@@ -79,8 +79,7 @@ describe("portfolio artwork", () => {
         expect(metadata.height).toBeGreaterThan(0);
         continue;
       }
-      // Alcubemy uses its original share card; keep the actual renderer artwork intact.
-      const [width, height] = imagePath === "/projects/alcubemy.png" ? [1200, 630] : [1600, 900];
+      const [width, height] = [1600, 900];
       expect(metadata.width, `${imagePath} width`).toBe(width);
       expect(metadata.height, `${imagePath} height`).toBe(height);
     }

@@ -21,8 +21,8 @@ describe("project discovery", () => {
   it("puts Alcubemy first in Playground and lists it only once", () => {
     render(<WorkPage />);
     const playground = screen.getByRole("region", { name: "Playground" });
-    expect(within(playground).getAllByRole("heading")[0].textContent).toBe("Alcubemy");
-    expect(screen.getAllByRole("heading", { name: "Alcubemy" })).toHaveLength(1);
+    expect(within(playground).getAllByRole("heading")[0].textContent).toBe("Alcubemy: Matter Lab");
+    expect(screen.getAllByRole("heading", { name: "Alcubemy: Matter Lab" })).toHaveLength(1);
     expect(screen.getByRole("list", { name: "Selected project stories" }).querySelectorAll("article")).toHaveLength(3);
     for (const project of PROJECTS) {
       expect(screen.getAllByRole("heading", { name: project.title, exact: true })).toHaveLength(1);

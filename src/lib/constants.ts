@@ -148,22 +148,18 @@ export const PROJECTS: Project[] = [
     actionLabel: "Open the firing room",
   },
   {
-    title: "Alcubemy",
+    title: "Alcubemy: Matter Lab",
     playground: true,
-    preview: {
-      src: "/projects/alcubemy-reaction.mp4",
-      caption: "Water meets lava. Captured in Alcubemy.",
-    },
     description:
-      "An experimental falling-sand art game. Paint with sand, water, heat and alchemy, then watch the vessel change.",
-    image: "/projects/alcubemy.png",
-    tags: ["TypeScript", "Three.js", "Cellular simulation"],
+      "Build a miniature world, flip gravity, and make a beautiful mess. Drop in buildings and creature habitats, mix exotic materials, or save your own blueprints.",
+    image: "/projects/alcubemy-matter-lab.png",
+    tags: ["JavaScript", "Canvas", "Cellular simulation"],
     liveUrl: "https://alcubemy.travisjohnjones.com/",
     githubUrl: "https://github.com/CosmonautJones/falling-sand",
     role: "Experimental sandbox",
     featured: false,
-    proof: "129,600 cells with local reactions, living habitats and material-aware lighting. Living construction remains on the roadmap.",
-    actionLabel: "Play Alcubemy",
+    proof: "129,600 cells, 72 paintable materials plus air, adjustable 0–4g gravity, eight blueprints and five setups. Heat and velocity views expose the simulation. Detached structures move as connected pieces; this is playful physics, not an engineering model.",
+    actionLabel: "Play Matter Lab",
   },
   {
     title: "Quantum Forge",
