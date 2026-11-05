@@ -83,4 +83,22 @@ describe("LoginForm", () => {
     ).toBe(false);
     expect(signInWithOAuth).not.toHaveBeenCalled();
   });
+
+  it("replaces the GitHub button with a preview notice when auth is unavailable", () => {
+    render(<LoginForm authAvailable={false} />);
+
+    expect(screen.getByText("Sign-in isn't available here")).toBeDefined();
+    expect(
+      screen.getByText(
+        "This preview isn't connected to sign-in. Use the live site to sign in, or keep browsing the work."
+      )
+    ).toBeDefined();
+    expect(screen.queryByRole("button", { name: /continue with github/i })).toBeNull();
+    expect(screen.getByRole("link", { name: "Go to the live site" })).toHaveAttribute(
+      "href",
+      "https://www.travisjohnjones.com/login"
+    );
+    expect(screen.getByRole("link", { name: "See the work" })).toHaveAttribute("href", "/work");
+    expect(createClient).not.toHaveBeenCalled();
+  });
 });
