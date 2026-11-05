@@ -41,17 +41,19 @@ describe("PROJECTS", () => {
     }
   });
 
-  it("offers the Matter Lab release at the existing Alcubemy address", () => {
-    const matches = PROJECTS.filter((project) => project.title === "Alcubemy: Matter Lab");
+  it("offers V2 Playground with experimental Matter Lab at the existing Alcubemy address", () => {
+    const matches = PROJECTS.filter((project) => project.title === "Alcubemy: V2 Playground");
     expect(matches).toHaveLength(1);
     expect(matches[0]).toMatchObject({
       liveUrl: "https://alcubemy.travisjohnjones.com/",
       githubUrl: "https://github.com/CosmonautJones/falling-sand",
-      role: "Experimental sandbox",
-      image: "/projects/alcubemy-matter-lab.png",
-      actionLabel: "Play Matter Lab",
+      role: "Alchemical playground",
+      image: "/projects/alcubemy-v2-playground.png",
+      actionLabel: "Play V2 Playground",
     });
     expect(matches[0].preview).toBeUndefined();
+    expect(matches[0].proof).toContain("V2 Playground is the default");
+    expect(matches[0].description).toContain("experimental Matter Lab");
     expect(matches[0].proof).toContain("72 paintable materials plus air");
     expect(matches[0].proof).toContain("0–4g gravity");
   });
