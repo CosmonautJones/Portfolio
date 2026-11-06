@@ -60,8 +60,22 @@ describe("portfolio artwork", () => {
       expect(existsSync(path.join(process.cwd(), "public", "projects", `quantum-forge-${shot}.jpg`))).toBe(true);
     }
 
+    const starwake = PROJECTS.find((project) => project.title === "Starwake");
+    expect(starwake).toMatchObject({
+      image: "/projects/starwake.jpg",
+      liveUrl: "/starwake/index.html",
+      caseStudyUrl: "/work/starwake",
+      playground: true,
+      featured: false,
+      actionLabel: "Play Starwake",
+    });
+    expect(existsSync(path.join(process.cwd(), "public", "starwake", "index.html"))).toBe(true);
+    for (const shot of ["title", "battle", "hangar"]) {
+      expect(existsSync(path.join(process.cwd(), "public", "projects", `starwake-${shot}.jpg`))).toBe(true);
+    }
+
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(20);
+    expect(imagePaths).toHaveLength(21);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);

@@ -177,6 +177,21 @@ export const PROJECTS: Project[] = [
     actionLabel: "Play Quantum Forge",
   },
   {
+    title: "Starwake",
+    playground: true,
+    description:
+      "Rocket League–style racing down glowing wormholes. Hit boost pads, go supersonic, demolish rivals and dodge plasmoids, or take your craft into a team dogfight arena.",
+    image: "/projects/starwake.jpg",
+    tags: ["Three.js", "WebGL 2", "Web Audio", "Multiplayer"],
+    liveUrl: "/starwake/index.html",
+    caseStudyUrl: "/work/starwake",
+    role: "Browser game",
+    featured: false,
+    proof:
+      "Plain ES modules and Three.js with no build step. Ships, asteroids, planets and engine sounds are all generated in code. Physics run at a fixed 120 Hz, AI pilots fly with the same inputs a player has, and headless tests race every course before a release.",
+    actionLabel: "Play Starwake",
+  },
+  {
     title: "Lumen Garden",
     description:
       "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",

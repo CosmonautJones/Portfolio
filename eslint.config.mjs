@@ -20,6 +20,7 @@ const eslintConfig = [
       "next-env.d.ts",
       ".claude/**",
       "public/pad-7/**",
+      "public/starwake/**",
     ],
   },
   {
