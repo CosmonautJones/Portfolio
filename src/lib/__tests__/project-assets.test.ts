@@ -64,6 +64,7 @@ describe("portfolio artwork", () => {
     expect(starwake).toMatchObject({
       image: "/projects/starwake.jpg",
       liveUrl: "/starwake/index.html",
+      githubUrl: "https://github.com/CosmonautJones/starwake",
       caseStudyUrl: "/work/starwake",
       playground: true,
       featured: false,

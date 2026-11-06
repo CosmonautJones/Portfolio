@@ -13,6 +13,8 @@ describe("Starwake case study", () => {
     render(<StarwakePage />);
     const play = screen.getByRole("link", { name: "Play Starwake" });
     expect(play.getAttribute("href")).toBe("/starwake/index.html");
+    const code = screen.getByRole("link", { name: "Read code" });
+    expect(code.getAttribute("href")).toBe("https://github.com/CosmonautJones/starwake");
     expect(screen.getAllByRole("img")).toHaveLength(4);
     expect(screen.getByText(/Supersonic in Corona Run/)).toBeDefined();
     expect(screen.getByText(/same browser/)).toBeDefined();

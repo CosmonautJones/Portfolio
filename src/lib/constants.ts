@@ -184,6 +184,7 @@ export const PROJECTS: Project[] = [
     image: "/projects/starwake.jpg",
     tags: ["Three.js", "WebGL 2", "Web Audio", "Multiplayer"],
     liveUrl: "/starwake/index.html",
+    githubUrl: "https://github.com/CosmonautJones/starwake",
     caseStudyUrl: "/work/starwake",
     role: "Browser game",
     featured: false,
