@@ -122,6 +122,7 @@ export class Hud {
       <div class="hud" data-state="intro" data-game="${race.game}"${reduce ? ' data-reduce-motion="1"' : ''}>
         <canvas class="hud-overlay" aria-hidden="true"></canvas>
         <div class="hud-vignette" data-k="vignette"></div>
+        <div class="hud-padflash" data-k="padFlash" aria-hidden="true"></div>
         ${vitals()}
         <div class="hud-tl">
           <div class="hud-pos"><b data-k="rank">1</b><small data-k="suffix">st</small><em>/ <span data-k="total">1</span></em></div>
@@ -143,6 +144,7 @@ export class Hud {
             <b class="hud-time" data-k="raceTime">0:00.000</b>
           </div>
           <div class="race-only hud-sub" data-k="ringCount"></div>
+          <div class="race-only hud-ghost" data-k="ghost" hidden><span>Ghost</span><b data-k="ghostVal"></b></div>
           <div class="battle-only hud-score" data-k="scoreboard">
             <b class="sc t0" data-k="t0" hidden>0</b>
             <div class="hud-clock" data-k="clock">5:00</div>
@@ -160,6 +162,11 @@ export class Hud {
         <div class="hud-msg" data-k="msg">${ribbon('msgText', 'rb-msg')}</div>
         <div class="hud-center" data-k="center"></div>
         <div class="hud-hint" data-k="hint"></div>
+        <div class="hud-replay" aria-hidden="true">
+          <i class="rp-bar rp-top"></i><i class="rp-bar rp-bot"></i>
+          <span class="rp-tag"><b>Replay</b><em data-k="replayLabel"></em></span>
+          <span class="rp-skip">Press any key to skip</span>
+        </div>
       </div>`;
     this.el = {};
     root.querySelectorAll('[data-k]').forEach((n) => (this.el[n.dataset.k] = n));
@@ -293,6 +300,9 @@ export class Hud {
     this._set('suffix', ordinal(s.rank).replace(/^\d+/, ''));
     this._set('total', String(s.total));
     if (battle) this._battle(s); else this._raceBits(s);
+    // Replays: letterbox and a small tag; the instruments step aside.
+    this._flag('is-replay', !!s.replay);
+    if (s.replay) this._set('replayLabel', s.replay.label + (s.replay.count > 1 ? ` · ${s.replay.index} of ${s.replay.count}` : ''));
 
     // Wake gauge.
     const top = s.topSpeed || 1;
@@ -333,6 +343,7 @@ export class Hud {
         this.el.boostPulse.classList.toggle('big', !!pad.big);
         this._kick(this.el.boostPulse, 'go');
         this._kick(this.hudEl.querySelector('.hud-gauge'), pad.big ? 'pad-big' : 'pad');
+        if (pad.big) this._kick(this.el.padFlash, 'go');
       }
       this.lastPad = pad.t;
     } else this.lastPad = null;
@@ -360,10 +371,13 @@ export class Hud {
       this.el.alert.classList.toggle('show', !!alert);
     }
 
-    const bk = s.standings.map((r) => r.id + (r.finished ? 'f' : '') + (r.connected ? '' : 'x') + (r.dead ? 'd' : '') + (battle ? r.kills + '/' + r.deaths : '')).join(',');
+    // Online: each human's round trip to the host, from NetSession's ping table.
+    const net = this.race.net;
+    const ping = (id) => (net?.kind === 'relay' && id !== net.lobby?.hostId && net.pings?.[id] != null ? net.pings[id] : null);
+    const bk = s.standings.map((r) => r.id + (r.finished ? 'f' : '') + (r.connected ? '' : 'x') + (r.dead ? 'd' : '') + (battle ? r.kills + '/' + r.deaths : '') + (ping(r.id) ?? '')).join(',');
     if (this.cache.board !== bk) {
       this.cache.board = bk;
-      this.el.board.innerHTML = s.standings.map((r, i) => `<li class="${r.isPlayer ? 'me' : ''}${r.connected ? '' : ' gone'}${r.dead ? ' dead' : ''}" style="--c:${r.color}"><span class="n">${i + 1}</span><span class="nm">${escapeHtml(r.name)}</span>${battle ? `<em class="score">${r.kills}</em>` : r.finished ? '<em class="fin">Finished</em>' : ''}</li>`).join('');
+      this.el.board.innerHTML = s.standings.map((r, i) => `<li class="${r.isPlayer ? 'me' : ''}${r.connected ? '' : ' gone'}${r.dead ? ' dead' : ''}" style="--c:${r.color}"><span class="n">${i + 1}</span><span class="nm">${escapeHtml(r.name)}</span>${ping(r.id) != null ? `<em class="ping">${ping(r.id)} ms</em>` : ''}${battle ? `<em class="score">${r.kills}</em>` : r.finished ? '<em class="fin">Finished</em>' : ''}</li>`).join('');
     }
     const fk = s.killFeed.map((k) => k.text).join('|');
     if (this.cache.feed !== fk) {
@@ -393,6 +407,11 @@ export class Hud {
     this._flag('is-scraping', s.scraping);
     this._flag('is-wrongway', s.wrongWay);
     this._flag('is-finallap', s.lap === s.laps && s.laps > 1 && !s.finished);
+    // Live gap to your ghost: minus (green) when you're ahead, plus (warm) when behind.
+    const gd = s.ghostDelta;
+    const gt = gd == null ? '' : `${gd < 0 ? '\u2212' : '+'}${Math.abs(gd).toFixed(2)}`;
+    if (this.cache.ghostOn !== !!gt) { this.cache.ghostOn = !!gt; this.el.ghost.hidden = !gt; }
+    if (gt) { this._set('ghostVal', gt); this.el.ghost.dataset.tone = gd < 0 ? 'ahead' : 'behind'; }
     // Gates already passed this lap dim on the brow.
     const gk = Math.round(s.lapFrac * 200);
     if (this.cache.gates !== gk) {

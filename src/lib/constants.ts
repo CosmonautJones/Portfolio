@@ -180,7 +180,7 @@ export const PROJECTS: Project[] = [
     title: "Starwake",
     playground: true,
     description:
-      "Rocket League–style racing down glowing wormholes. Hit boost pads, go supersonic, demolish rivals and dodge plasmoids, or take your craft into a team dogfight arena.",
+      "Rocket League–style racing down glowing wormholes. Hit boost pads, go supersonic, demolish rivals, chase your own ghost for gold medals, and try a new wormhole generated every day.",
     image: "/projects/starwake.jpg",
     tags: ["Three.js", "WebGL 2", "Web Audio", "Multiplayer"],
     liveUrl: "/starwake/index.html",
@@ -189,7 +189,7 @@ export const PROJECTS: Project[] = [
     role: "Browser game",
     featured: false,
     proof:
-      "Plain ES modules and Three.js with no build step. Ships, asteroids, planets and engine sounds are all generated in code. Physics run at a fixed 120 Hz, AI pilots fly with the same inputs a player has, and headless tests race every course before a release.",
+      "Plain ES modules and Three.js with no build step. Ships, planets, adaptive music and a daily course are all generated in code. Physics run at a fixed 120 Hz, AI pilots fly with the same inputs a player has, and headless tests race every course, including 60 future daily runs, before a release.",
     actionLabel: "Play Starwake",
   },
   {

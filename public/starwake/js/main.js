@@ -9,24 +9,29 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 import { storage } from './core/storage.js';
+import { loadCareer, recordRun, RunTracker } from './core/career.js';
 import { AudioEngine } from './core/audio.js';
 import { Input } from './core/input.js';
+import { RaceFeel } from './core/feel.js';
 import { mulberry32, randomId, $ } from './core/util.js';
 import { randomDesign, normalizeDesign } from './craft/parts.js';
-import { COURSES, getCourseDef } from './flight/courseDefs.js';
+import { COURSES, getCourseDef, isCourseId, resolveCourseId } from './flight/courseDefs.js';
 import { ARENAS, getArenaDef } from './flight/arenaDefs.js';
 import { FlightRace } from './flight/flightRace.js';
 import { HangarStage } from './world/hangarStage.js';
 import { Hud } from './ui/hud.js';
 import { Screens } from './ui/screens.js';
+import { parseInvite } from './net/online.js';
 
+const SKIP_PAD = ['confirm', 'back', 'pause', 'fire', 'missile', 'reset', 'camera', 'dodge'];
 const AI_NAMES = ['Vex', 'Nova', 'Kestrel', 'Rook', 'Aurora', 'Juno', 'Talon', 'Mira', 'Orrin', 'Pike', 'Sable', 'Quill'];
 const params = new URLSearchParams(location.search);
 
 class App {
   constructor() {
     this.settings = storage.loadSettings();
-    if (!COURSES.some((c) => c.id === this.settings.trackId)) this.settings.trackId = COURSES[0].id;
+    loadCareer(); // migrate old personal bests into medals before any new race is recorded
+    if (!isCourseId(this.settings.trackId)) this.settings.trackId = COURSES[0].id;
     if (!ARENAS.some((a) => a.id === this.settings.arenaId)) this.settings.arenaId = ARENAS[0].id;
     this.canvas = $('#scene');
     this.uiRoot = $('#ui');
@@ -39,7 +44,8 @@ class App {
     this._initRenderer();
     this.audio = new AudioEngine();
     this.input = new Input(window);
-    this.input.setOptions({ sensitivity: this.settings.mouseSens, invertY: this.settings.invertY });
+    this.input.setOptions({ sensitivity: this.settings.mouseSens, invertY: this.settings.invertY, rumble: this.settings.rumble !== false });
+    this.feel = new RaceFeel(this); // adaptive race music + rumble cues
     this.input.onAnyInput(() => { this.audio.unlock(); this.audio.music(this.race && this.race.mode !== 'attract' ? 'race' : 'menu'); });
     this.applyAudioSettings();
 
@@ -56,6 +62,10 @@ class App {
     window.addEventListener('error', (e) => this.toast(`Something went wrong: ${e.message}`, 'error'));
     window.addEventListener('unhandledrejection', (e) => this.toast(`Something went wrong: ${e.reason?.message || e.reason}`, 'error'));
     window.addEventListener('beforeunload', () => this.net?.leave());
+    // Replays skip on any fresh key press or click (gamepad buttons are read in frame()).
+    const skipReq = (e) => { if (!e.repeat) this._skipReq = true; };
+    window.addEventListener('keydown', skipReq);
+    window.addEventListener('pointerdown', skipReq);
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.race && !this.paused && this.race.mode === 'solo' && !this.race.results) this.pause(true);
     });
@@ -70,11 +80,20 @@ class App {
     this.autopilot = params.get('autopilot') === '1';
 
     const quick = params.get('quick');
+    const invite = parseInvite(location.search);
     this.ensureAttract().then(() => {
       $('#boot').classList.add('done');
       if (quick === 'race') this.startSoloRace({ trackId: params.get('track') || this.settings.trackId });
       else if (quick === 'battle') this.startSoloBattle({ arenaId: params.get('arena') || this.settings.arenaId });
-      else this.screens.show('title');
+      else if (invite) {
+        // ?join=CODE invite link: go straight to joining. Drop it from the address bar so a
+        // reload doesn't join again (a ?relay= param stays, it's still the relay to use).
+        const clean = new URL(location.href);
+        clean.searchParams.delete('join');
+        clean.searchParams.delete('net');
+        try { history.replaceState(null, '', clean); } catch { /* ignore */ }
+        this.screens.show('lobbyEntry', { invite });
+      } else this.screens.show('title');
     }).catch((err) => this.fatal(err));
   }
 
@@ -120,7 +139,7 @@ class App {
     storage.saveSettings(this.settings);
     this.applyAudioSettings();
     if (patch.quality && patch.quality !== prevQuality) this.applyQuality();
-    if ('mouseSens' in patch || 'invertY' in patch) this.input.setOptions({ sensitivity: this.settings.mouseSens, invertY: this.settings.invertY });
+    if ('mouseSens' in patch || 'invertY' in patch || 'rumble' in patch) this.input.setOptions({ sensitivity: this.settings.mouseSens, invertY: this.settings.invertY, rumble: this.settings.rumble !== false });
     this.fpsEl.hidden = !this.settings.showFps;
     if (this.race) Object.assign(this.race.settings, this.settings);
   }
@@ -170,7 +189,7 @@ class App {
 
   async startSoloRace(opts = {}) {
     const s = this.settings;
-    const trackId = opts.trackId || s.trackId;
+    const trackId = resolveCourseId(opts.trackId || s.trackId); // 'daily' -> today's daily id
     const aiCount = opts.aiCount ?? s.aiCount;
     const laps = opts.laps ?? s.laps;
     const seed = (Math.random() * 1e9) | 0;
@@ -225,11 +244,13 @@ class App {
     const battle = game === 'battle';
     this.screens.show('loading', { trackId, game });
     await nextFrame(); await nextFrame();
+    if (mode === 'multi' && !this.net) return; // the connection dropped while loading; 'closed' already went to the menu
     try {
       this.race = new FlightRace({
         renderer: this.renderer, game, teams, hazards, trackId: battle ? getArenaDef(trackId).id : getCourseDef(trackId).id, laps, target, timeLimit,
         roster, mode, seed, net: mode === 'multi' ? this.net : null,
         settings: { ...this.settings }, autopilot: this.autopilot, goAt,
+        ghost: mode === 'solo' && !battle && this.settings.ghost ? storage.loadGhost(getCourseDef(trackId).id, laps) : null,
         onEvent: (e) => this.onRaceEvent(e),
       });
     } catch (err) {
@@ -237,6 +258,7 @@ class App {
       this.screens.show('error', { message: `Couldn't load the ${battle ? 'arena' : 'course'}: ${err.message}` });
       return;
     }
+    this.run = new RunTracker(); // career: laps, clean laps, demolitions for the results
     this.hud = new Hud(this.hudRoot, this.race);
     this.hud.hint(this.input.activeDevice === 'gamepad'
       ? 'Left stick aim · RT thrust · RB fire · LB missile · A boost · Y reset'
@@ -282,6 +304,8 @@ class App {
   onRaceEvent(e) {
     const hud = this.hud;
     const a = this.audio;
+    this.run?.event(e);
+    this.feel.event(e);
     switch (e.type) {
       case 'countdown': a.play('countdown'); hud?.center(String(e.n), 'count'); break;
       case 'go': a.play('go'); hud?.center('Go', 'go'); hud?.hint(''); break;
@@ -347,12 +371,36 @@ class App {
     const rank = me ? results.indexOf(me) + 1 : null;
     let records = { raceBest: false, lapBest: false };
     if (me && !me.dnf && !this.race.battle) records = storage.submitRecord(this.race.def.id, this.race.laps, me.time, me.bestLap);
+    if (me && !me.dnf && this.race.ghostRun?.result) storage.saveGhost(this.race.ghostRun.result);
     this.audio.play(rank === 1 ? 'win' : 'lose');
     this.audio.duck(true);
     this.input.setRaceMode(false);
     this.input.exitPointerLock();
     this.canvas.classList.remove('in-race');
-    this.screens.overlay('results', { results, rank, records, mode: this.race.mode, trackName: this.race.def.name, game: this.race.game, teams: teams || (this.race.teams ? this.race.teamScores() : null) });
+    teams = teams || (this.race.teams ? this.race.teamScores() : null);
+    let career = null;
+    try {
+      // Local-only progression; never allowed to get in the way of the results.
+      const team = teams && me?.team != null ? (teams[0] === teams[1] ? 'draw' : (teams[0] > teams[1]) === (me.team === 0) ? 'win' : 'loss') : null;
+      career = recordRun({
+        game: this.race.game, mode: this.race.mode, def: this.race.battle ? null : this.race.def, laps: this.race.laps,
+        skill: this.settings.difficulty, finished: !!me && !me.dnf && me.time != null, time: me?.time ?? null,
+        rank, field: results.length, personalBest: records.raceBest, team,
+        ...(this.run?.summary() || {}),
+      });
+    } catch (err) { console.warn('Career update skipped:', err); }
+    this.run = null;
+    this.resultsProps = { results, rank, records, mode: this.race.mode, trackName: this.race.def.name, game: this.race.game, teams, career };
+    this.screens.overlay('results', this.resultsProps);
+  }
+
+  /** Results "Watch highlights": play the clips, then bring the results back. */
+  watchHighlights() {
+    const race = this.race, props = this.resultsProps;
+    if (!race?.replays || race.replays.playing || !props) return;
+    this.screens.closeOverlay();
+    const back = () => { if (this.race === race) this.screens.overlay('results', props); };
+    if (!race.replays.playHighlights(back)) back();
   }
 
   toast(text, tone = '') {
@@ -382,7 +430,7 @@ class App {
     // Global UI navigation (gamepad) and back.
     this.screens.handleInput(this.input);
 
-    if (this.race && this.stage === this.race && !this.race.results) {
+    if (this.race && this.stage === this.race && !this.race.results && !this.race.replays?.playing) {
       if (this.input.pressed('pause') || (this.input.pressed('lockLost') && !this.paused)) this.pause(!this.paused);
       // Capture the mouse on the first click into the race (where the browser allows it).
       if (!this.paused && this.settings.lockMouse && !this.input.pointerLocked && this.input.pressed('fire') && this.input.activeDevice !== 'gamepad') this.input.requestPointerLock(this.canvas);
@@ -394,6 +442,10 @@ class App {
         }
       }
     }
+
+    const replays = this.race?.replays;
+    if (replays?.playing && (this._skipReq || SKIP_PAD.some((a) => this.input.pressed(a)))) replays.skip();
+    this._skipReq = false;
 
     try {
       const live = this.race && this.stage === this.race;
@@ -414,6 +466,7 @@ class App {
       }
       if (live && this.hud) this.hud.update(rawDt, this.race.hud());
       this.audio.setEngine(live && !this.race.results ? this.race.audioState() : { active: false, speedN: 0, throttle: 0, boost: false });
+      this.feel.frame(rawDt);
       this.render();
     } catch (err) {
       console.error(err);

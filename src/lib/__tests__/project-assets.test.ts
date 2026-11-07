@@ -71,7 +71,7 @@ describe("portfolio artwork", () => {
       actionLabel: "Play Starwake",
     });
     expect(existsSync(path.join(process.cwd(), "public", "starwake", "index.html"))).toBe(true);
-    for (const shot of ["title", "battle", "hangar"]) {
+    for (const shot of ["title", "forks", "medals", "battle", "hangar"]) {
       expect(existsSync(path.join(process.cwd(), "public", "projects", `starwake-${shot}.jpg`))).toBe(true);
     }
 

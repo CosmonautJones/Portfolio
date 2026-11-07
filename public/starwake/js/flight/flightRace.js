@@ -14,6 +14,7 @@ import { HazardViews } from '../space/hazardViews.js';
 import { BoostPads, BoostPadViews } from './pads.js';
 import { Debris, tunnelBounds } from '../space/debris.js';
 import { SpeedFX } from '../space/speedfx.js';
+import { ScrapeSparks } from '../space/scrapeSparks.js';
 import { SpaceWorld } from './world.js';
 import { ShipSim } from './ship.js';
 import { FlightAI } from './ai.js';
@@ -22,11 +23,14 @@ import { PlayerAssist, leadPoint } from './assist.js';
 import { SpaceSky } from '../space/sky.js';
 import { RockBelt } from '../space/rocks.js';
 import { buildProp, disposeProp, updateProps } from '../space/props.js';
+import { buildDivider } from '../space/divider.js';
 import { Shatter, Explosions, SpaceDust } from '../space/fx.js';
 import { Trail, Sparks } from '../world/fx.js';
 import { buildCraft } from '../craft/craftMesh.js';
 import { computeStats } from '../craft/parts.js';
 import { clamp, damp, hashString, mulberry32 } from '../core/util.js';
+import { ReplayDirector } from './replay.js';
+import { GhostRun } from '../space/ghostView.js';
 
 const FIXED_DT = 1 / 120;
 const COUNTDOWN = 3;
@@ -34,10 +38,12 @@ const INTRO = 2.4;
 const NET_SEND_INTERVAL = 0.05;
 const INTERP_DELAY = 110;
 const LASER_DAMAGE = LASER.damage;
+const HIT_STOP = 0.35, HIT_STOP_SCALE = 0.35; // solo only: a beat of slow time when you demolish someone
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _x = new THREE.Vector3(), _q = new THREE.Quaternion();
 const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2();
 const FWD = new THREE.Vector3(0, 0, -1);
+const FX_FULL = { streaks: 1, blur: 1, shake: 1, fov: 1 };
 const PICKUP_COLORS = { boost: '#ffb547', missile: '#ff5a6a', shield: '#5ee7ff' };
 const GATE_COLOR = '#ffb547';
 /** Team identities for team play. */
@@ -96,7 +102,9 @@ export class FlightRace {
     });
     this._debrisBounds = this.battle ? null : tunnelBounds(this.course);
     // Speed sensation around the focus ship (streaks, wall sparks, supersonic shock cone).
-    this.speedFx = this.mode === 'attract' ? null : new SpeedFX(this.scene, this.camera, { quality: this.quality, reduceMotion: !!this.settings.reduceMotion });
+    this.speedFx = this.mode === 'attract' ? null : new SpeedFX(this.scene, this.camera, { quality: this.quality, reduceMotion: !!this.settings.reduceMotion, level: this.settings.speedEffects });
+    // Sparks pouring off any ship grinding the tunnel wall (race only).
+    this.scrapeFx = this.battle ? null : new ScrapeSparks(this.scene, { quality: this.quality });
     this.weapons = new WeaponSystem(this.world);
     this.weaponView = new WeaponView(this.scene, this.weapons, { quality: this.quality });
 
@@ -143,6 +151,12 @@ export class FlightRace {
     this.lastRingIdx = -1;
     this.standings = [...this.entities];
 
+    // Replays (finish replay, highlights) for real matches; a ghost of your best run in solo races.
+    this.replays = this.mode === 'attract' ? null : new ReplayDirector(this);
+    this.ghostRun = this.mode === 'solo' && !this.battle && this.player
+      ? new GhostRun(this.scene, { saved: o.ghost || null, courseId: this.def.id, laps: this.laps, design: this.player.design }) : null;
+    this.hitStop = 0;
+
     if (this.net) this._bindNet();
     this._updateRingStates(true);
     this._snapCamera();
@@ -171,7 +185,11 @@ export class FlightRace {
     for (const it of this.world.items) {
       let obj, tint = null;
       if (it.type === 'mine') obj = mineMesh();
-      else {
+      else if (it.type === 'divider') {
+        const d = buildDivider(it, this.course, { accent: this.def.theme.accent, quality: this.quality });
+        (this._dividers || (this._dividers = [])).push(d);
+        obj = d.object;
+      } else {
         const t = it.type === 'boulder' ? 'asteroid' : it.type === 'boulderIce' ? 'ice' : it.type;
         const prop = this._prop(t, it.seed);
         obj = prop.object;
@@ -270,7 +288,7 @@ export class FlightRace {
     if (r.kind === 'ai') e.ai = this._makeAI(e, this.settings.difficulty || 'normal', hashString(r.id) + this.seed);
     const noz = [...craft.nozzles].sort((a, b) => a.pos.x - b.pos.x);
     const pick = noz.length > 1 ? [noz[0], noz[noz.length - 1]] : noz;
-    for (const n of pick) e.trails.push({ nozzle: n, trail: new Trail(this.scene, craft.glowColor, { length: this.quality === 'low' ? 14 : 22, width: n.r * 0.4 }) });
+    for (const n of pick) e.trails.push({ nozzle: n, trail: new Trail(this.scene, craft.glowColor, { length: this.quality === 'low' ? 14 : 22, width: n.r * 0.4, style: craft.design.trail, color2: craft.design.colors.secondary }) });
     this.entities.push(e);
     this._placeMesh(e, 0);
   }
@@ -410,6 +428,7 @@ export class FlightRace {
   // ---------------------------------------------------------------- update
   /** @param {object} input poll() result from Input (null in attract mode) */
   update(dt, input, render = true) {
+    if (this.hitStop > 0 && !this.paused) { this.hitStop -= dt; dt *= HIT_STOP_SCALE; }
     this.time += dt;
     if (this.paused && this.mode !== 'multi') { if (render) this._render(dt); return; }
 
@@ -444,6 +463,8 @@ export class FlightRace {
     while (this.acc >= FIXED_DT) {
       this.acc -= FIXED_DT;
       this._step(FIXED_DT, racing, input);
+      this.replays?.step(FIXED_DT, racing);
+      if (racing) this.ghostRun?.step(FIXED_DT, this.player);
     }
 
     for (const e of this.entities) if (e.kind === 'remote') this._applyRemote(e);
@@ -451,6 +472,7 @@ export class FlightRace {
     this._rank();
     this._netTick(dt);
     this._checkFinish(dt);
+    this.replays?.update(dt);
     this._updateRingStates();
     if (this.hitMarker > 0) this.hitMarker -= dt;
     this.killFeed = this.killFeed.filter((k) => (k.t -= dt) > 0);
@@ -514,7 +536,11 @@ export class FlightRace {
       for (const e of ships) if (e.local && e.connected) local.push(e);
       this.pads.update(dt, local);
       for (const ev of this.pads.events) {
-        if (ev.shipId === this.player?.id) { this.padFlash = { big: ev.big, t: 0 }; this.onEvent({ type: 'boostPad', big: ev.big }); }
+        if (ev.shipId === this.player?.id) {
+          this.padFlash = { big: ev.big, t: 0 };
+          this.onEvent({ type: 'boostPad', big: ev.big });
+          if (this.player === this.focus) this.speedFx?.padHit(ev.big, this.player.sim.pos, this.player.sim.vel);
+        }
       }
       this.pads.events.length = 0;
     }
@@ -720,6 +746,7 @@ export class FlightRace {
     }
     if (!hit) return;
     this._nmLast = hit; this._nmCd = 0.9; this.nearMissT = 0;
+    if (sim.supersonic) this.replays?.mark('nearMiss');
     sim.boost = Math.min(1, sim.boost + 0.06);
     this.onEvent({ type: 'nearMiss' });
   }
@@ -841,7 +868,7 @@ export class FlightRace {
           this._killFeed(e, killer, ev.cause);
           this._send('die', { id: e.id, by: ev.by || null, c: ev.cause || null });
         }
-        if (ev.type === 'scrape' && this.tunnel && this._near(ev.point, 600)) this.tunnel.scrape(ev.point, ev.intensity);
+        if (ev.type === 'scrape' && this.tunnel && this._near(ev.point, 600)) { this.tunnel.scrape(ev.point, ev.intensity); this.scrapeFx?.hit(e, ev.point, ev.intensity); }
         if (ev.type === 'dodge') { e.dodgeAnim = { t: 0, dir: ev.dir }; if (isPlayer) this.onEvent({ type: 'dodge', dir: ev.dir }); }
         if (ev.type === 'supersonic' && (isPlayer || this._near(e.sim.pos, 300))) this.onEvent({ type: 'supersonic', player: isPlayer, distance: this._distN(e.sim.pos) });
         if (ev.type === 'deflect') {
@@ -881,6 +908,7 @@ export class FlightRace {
     this.onEvent({ type: 'explosion', size: 1, ship: true, distance: this._distN(e.sim.pos) });
     if (e === this.focus) this.shake = Math.max(this.shake, 0.9);
     e.trails.forEach((t) => t.trail.reset());
+    this.replays?.explosion(e);
   }
 
   _killFeed(victim, killer, cause = null) {
@@ -894,6 +922,10 @@ export class FlightRace {
     this.killFeed = this.killFeed.slice(0, 4);
     if (killer === this.player && victim !== this.player) this.onEvent({ type: 'kill', name: victim.name, demo: cause === 'demo' });
     if (cause === 'demo' && (killer === this.player || victim === this.player || this._near(victim.sim.pos, 300))) this.onEvent({ type: 'demolition', distance: this._distN(victim.sim.pos) });
+    if (cause === 'demo') {
+      this.replays?.demolition(killer, victim);
+      if (killer === this.player && victim !== this.player && this.mode === 'solo' && !this.settings.reduceMotion) this.hitStop = HIT_STOP;
+    }
   }
 
   _shotSound(e) {
@@ -1023,7 +1055,9 @@ export class FlightRace {
   _showResults(results) {
     if (this.results) return;
     this.results = results;
-    this.onEvent({ type: 'results', results, playerId: this.player?.id, game: this.game, teams: this.teams ? this.teamScores() : null });
+    const ev = { type: 'results', results, playerId: this.player?.id, game: this.game, teams: this.teams ? this.teamScores() : null };
+    // A finish replay still playing holds the results screen back until it ends (or is skipped).
+    if (this.replays) this.replays.afterPlay(() => this.onEvent(ev)); else this.onEvent(ev);
   }
 
   // ---------------------------------------------------------------- rendering
@@ -1042,6 +1076,7 @@ export class FlightRace {
       if (k >= 1) e.dodgeAnim = null;
     }
     root.quaternion.copy(sim.quat).multiply(_q.setFromAxisAngle(_v.set(0, 0, 1), roll));
+    e.visRoll = roll; // the replay buffer records it
     root.visible = e.connected && !sim.dead && !(e === this.player && this.cameraMode === 'hood' && this.state !== 'intro' && !this._cinematicNow());
     if (sim.ghost > 0 && Math.floor(this.time * 12) % 2 === 0) root.visible = false;
   }
@@ -1049,6 +1084,7 @@ export class FlightRace {
   _render(dt) {
     for (const e of this.entities) {
       this._placeMesh(e, dt);
+      if (this.replays?.place(e)) { for (const t of e.trails) t.trail.mesh.visible = false; continue; }
       const sim = e.sim;
       const speedN = clamp(Math.abs(sim.forwardSpeed) / sim.p.topSpeed, 0, 1.5);
       const thrust = this.state === 'intro' || this.state === 'countdown' ? 0.3 + (e.input.throttle || 0) * 0.4 : Math.max(e.input.throttle || 0, speedN * 0.7);
@@ -1067,6 +1103,7 @@ export class FlightRace {
         t.trail.push(_w, _x, 0.3 + speedN * 0.3 + (sim.boosting ? 0.4 : 0));
       }
     }
+    this.ghostRun?.render(dt, this.time, this.camera.position, !!this.replays?.playing);
     // Items: damage flash and respawn grow-in.
     for (const [id, v] of this.itemViews) {
       if (v.grow < 1) { v.grow = Math.min(1, v.grow + dt * 1.5); const it = this.world.byId.get(id); v.obj.scale.setScalar(it.scale * (0.2 + 0.8 * v.grow)); }
@@ -1086,7 +1123,9 @@ export class FlightRace {
     this.weaponView.update(dt);
     this.sparks.update(dt);
     this.shatter.update(dt);
+    this.speedFx?.setLevel(this.settings.speedEffects, !!this.settings.reduceMotion);
     this._updateCamera(dt);
+    this.scrapeFx?.update(dt, this);
     if (this.padViews) this.padViews.update(dt, this.time, this.focus?.id);
     if (this.padFlash) { this.padFlash.t += dt; if (this.padFlash.t > 0.8) this.padFlash = null; }
     if (this.state === 'racing') this._passBys(dt);
@@ -1110,7 +1149,7 @@ export class FlightRace {
       });
       this.shake = Math.max(this.shake, this.speedFx.shake);
     }
-    if (this.tunnel) this.tunnel.update(dt, this.camera, { shipPos: this.focus?.sim.pos || null, speed: Math.max(0, this.focus?.sim.forwardSpeed || 0) });
+    if (this.tunnel) this.tunnel.update(dt, this.camera, { shipPos: this.replays?.focusPos() || this.focus?.sim.pos || null, speed: Math.max(0, this.focus?.sim.forwardSpeed || 0) });
     this.explosions.update(dt, this.camera);
     this.hzViews?.update(dt, this.camera);
     if (this.dust) this.dust.update(dt, this.camera.position, this.focus?.sim.vel || _v.set(0, 0, 0));
@@ -1125,7 +1164,9 @@ export class FlightRace {
     const cam = this.camera, c = this.cam;
     const reduce = this.settings.reduceMotion;
     const baseFov = this.settings.fov || 70;
+    if (this.replays?.playing) { this.replays.camera(cam); return; }
     if (this._cinematicNow()) { this._cinematic(dt, snap); return; }
+    const fxl = this.speedFx?.levels || FX_FULL; // Settings -> Speed effects
     const e = this.focus, sim = e.sim;
     const speedN = clamp(Math.max(0, sim.forwardSpeed) / sim.p.topSpeed, 0, 1.6);
     const boost = sim.boosting ? 1 : 0;
@@ -1146,17 +1187,17 @@ export class FlightRace {
       cam.position.copy(sim.pos).add(_v.set(0, up, back).applyQuaternion(c.quat));
       if (!reduce && dt > 0 && speedN > 0.6) {
         // Engine rumble: a fine, fast shake that grows with speed (never touches the aim).
-        const r = (speedN - 0.6) * 0.06 + ss * 0.05 + (sim.scraping ? 0.08 : 0);
+        const r = ((speedN - 0.6) * 0.06 + ss * 0.05 + (sim.scraping ? 0.08 : 0)) * fxl.shake;
         cam.position.x += Math.sin(this.time * 61) * r; cam.position.y += Math.sin(this.time * 47 + 1) * r;
       }
     }
     cam.quaternion.copy(c.quat).multiply(_q.setFromAxisAngle(_v.set(1, 0, 0), this.cameraMode === 'hood' ? 0 : -0.07));
     if (this.shake > 0 && dt > 0) {
-      const amp = (reduce ? 0.1 : 0.5) * this.shake;
+      const amp = (reduce ? 0.1 : 0.5) * this.shake * fxl.shake;
       cam.position.x += (Math.random() - 0.5) * amp; cam.position.y += (Math.random() - 0.5) * amp; cam.position.z += (Math.random() - 0.5) * amp;
       this.shake = Math.max(0, this.shake - dt * 2.2);
     }
-    const targetFov = baseFov + (reduce ? 4 : 8) * Math.min(speedN, 1.3) + (reduce ? 2 : 6) * boost + (this.speedFx && e === this.focus ? this.speedFx.fovKick : 0);
+    const targetFov = baseFov + ((reduce ? 4 : 8) * Math.min(speedN, 1.3) + (reduce ? 2 : 6) * boost) * fxl.fov + (this.speedFx && e === this.focus ? this.speedFx.fovKick : 0);
     c.fov = snap ? targetFov : damp(c.fov, targetFov, 2.5, dt);
     cam.fov = c.fov;
     cam.updateProjectionMatrix();
@@ -1230,6 +1271,7 @@ export class FlightRace {
       supersonic: sim.supersonic, boostPad: this.padFlash, demos: this.demos, dodgeReady: sim.dodgeCd <= 0,
       nearMiss: this.nearMissT < 1.2 ? this.nearMissT : null,
       lock: this.lock, hitMarker: this.hitMarker > 0, killFeed: this.killFeed,
+      replay: this.replays?.hudState() ?? null,
       standings: this.standings.map((e) => ({ id: e.id, name: e.name, color: e.team != null ? TEAMS[e.team].color : e.design.colors.glow, team: e.team, isPlayer: e === p, finished: e.finishTime != null, connected: e.connected, dead: e.sim.dead, kills: e.kills, deaths: e.deaths })),
     };
     if (this.battle) {
@@ -1246,6 +1288,7 @@ export class FlightRace {
       lapTime: sim.started ? this.raceTime - sim.lapStart : 0, bestLap: p.bestLap, lastLap: sim.lapTimes[sim.lapTimes.length - 1] ?? null,
       lapFrac: sim.finished ? 1 : clamp(sim.dist / L - sim.lap, 0, 1),
       streak: sim.streak, wrongWay: sim.wrongWay > 0.8 && !sim.dead, wall: sim.wall, scraping: sim.scraping > 0,
+      ghostDelta: this.ghostRun?.delta(sim) ?? null,
     });
   }
 
@@ -1256,6 +1299,35 @@ export class FlightRace {
     return {
       active: (!this.paused || this.mode === 'multi') && !sim.dead, speedN: clamp(Math.max(0, sim.forwardSpeed) / sim.p.topSpeed, 0, 1.4),
       throttle: p.input.throttle || 0, boost: sim.boosting, supersonic: sim.supersonic, wall: this.battle ? 0 : sim.wall, scraping: sim.scraping,
+    };
+  }
+
+  /** Inputs for the adaptive race music (js/core/feel.js turns them into an intensity). */
+  musicState() {
+    const p = this.player;
+    if (!p) return null;
+    const sim = p.sim;
+    let gap = Infinity;
+    let lastLap = false;
+    if (this.battle) {
+      for (const e of this.entities) {
+        if (e === p || !e.connected || e.sim.dead || (this.teams && e.team === p.team)) continue;
+        gap = Math.min(gap, e.sim.pos.distanceTo(sim.pos));
+      }
+      const top = this.teams ? Math.max(...this.teamScores()) : Math.max(0, ...this.entities.map((e) => e.kills));
+      lastLap = this.state === 'racing' && (this.timeLimit - this.matchTime() < 60 || top >= this.target - 2);
+    } else {
+      const mine = this._progress(p);
+      for (const e of this.entities) {
+        if (e === p || !e.connected || e.sim.dead || e.finishTime != null) continue;
+        gap = Math.min(gap, Math.abs(this._progress(e) - mine) * this.course.length);
+      }
+      lastLap = this.laps > 1 ? sim.lap >= this.laps - 1 : sim.dist / this.course.length > 0.5;
+    }
+    return {
+      state: this.state, battle: this.battle, speedN: clamp(Math.max(0, sim.forwardSpeed) / sim.p.topSpeed, 0, 1.4),
+      boosting: sim.boosting, supersonic: sim.supersonic, rivalGap: gap, rank: p.rank, leading: p.rank === 1 && (!this.battle || p.kills > 0),
+      lastLap: lastLap && !sim.finished, dead: sim.dead, finished: sim.finished,
     };
   }
 
@@ -1290,6 +1362,7 @@ export class FlightRace {
     for (const e of this.entities) { this.scene.remove(e.craft.root); e.craft.dispose(); e.trails.forEach((t) => t.trail.dispose()); }
     for (const pv of this.pickupViews.values()) { this.scene.remove(pv.group); pv.dispose(); }
     for (const v of this.itemViews.values()) this.scene.remove(v.obj);
+    for (const d of this._dividers || []) d.dispose();
     for (const p of this.propCache.values()) disposeProp(p);
     for (const r of this.ringViews) { this.scene.remove(r.g); r.g.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); }); }
     this.tunnel?.dispose();
@@ -1297,7 +1370,10 @@ export class FlightRace {
     this.debris?.dispose();
     this.speedFx?.dispose();
     this.padViews?.dispose();
+    this.scrapeFx?.dispose();
     this.hz?.dispose();
+    this.replays?.dispose();
+    this.ghostRun?.dispose();
     this.belts.forEach((b) => b.dispose());
     this.weaponView.dispose();
     this.sparks.dispose(); this.shatter.dispose(); this.explosions.dispose(); this.dust?.dispose();

@@ -1,22 +1,26 @@
 // localStorage persistence with a safe in-memory fallback (private mode, quota, etc.).
 
 import { normalizeDesign, PRESETS } from '../craft/parts.js';
+import { ghostKey, pruneGhosts, GHOST_BUDGET } from '../flight/ghost.js';
 
 const KEYS = {
   designs: 'starwake.designs.v1',
   settings: 'starwake.settings.v1',
   selected: 'starwake.selected.v1',
   records: 'starwake.records.v1',
+  career: 'starwake.career.v1',
+  ghosts: 'starwake.ghosts.v1',
 };
 
 export const DEFAULT_SETTINGS = {
   playerName: 'Pilot',
   masterVol: 0.8, sfxVol: 0.9, musicVol: 0.5,
-  quality: 'high', fov: 72, reduceMotion: false, showFps: false,
+  quality: 'high', fov: 72, reduceMotion: false, showFps: false, speedEffects: 'full', rumble: true,
   cameraMode: 'chase', mouseSens: 1, invertY: false, lockMouse: true,
   laps: 2, aiCount: 5, difficulty: 'normal', trackId: 'corona', trackAssist: 0.7, aimAssist: 1, flightAssist: 0.7, hazards: 0.6,
   arenaId: 'driftyard', battleBots: 5, battleTeams: false, battleTarget: 10, battleTime: 300,
   netKind: 'tabs', relayUrl: '',
+  ghost: true,
 };
 
 const memory = new Map();
@@ -73,6 +77,10 @@ export const storage = {
   },
 
   records() { return read(KEYS.records, {}); },
+
+  /** Raw pilot career (XP, medals); js/core/career.js validates and migrates it. */
+  loadCareerRaw() { return read(KEYS.career, null); },
+  saveCareerRaw(c) { return write(KEYS.career, c); },
   /** Returns {raceBest:boolean, lapBest:boolean} for celebration. */
   submitRecord(trackId, laps, raceTime, bestLap) {
     const all = this.records();
@@ -84,5 +92,22 @@ export const storage = {
     all[trackId] = r;
     write(KEYS.records, all);
     return out;
+  },
+
+  /** Best solo run per course + lap count (see js/flight/ghost.js), or null. */
+  loadGhost(trackId, laps) {
+    const all = read(KEYS.ghosts, {});
+    return (all && all[ghostKey(trackId, laps)]) || null;
+  },
+  /** Keeps the faster run; total size stays under budget (oldest dropped). Returns true if saved. */
+  saveGhost(ghost) {
+    if (!ghost?.course || !Number.isFinite(ghost.time)) return false;
+    const all = read(KEYS.ghosts, {}) || {};
+    const key = ghostKey(ghost.course, ghost.laps);
+    if (all[key] && all[key].time <= ghost.time) return false;
+    all[key] = ghost;
+    pruneGhosts(all, GHOST_BUDGET, key);
+    if (!write(KEYS.ghosts, all)) write(KEYS.ghosts, { [key]: ghost }); // over quota: keep just this one
+    return true;
   },
 };

@@ -15,7 +15,8 @@ describe("Starwake case study", () => {
     expect(play.getAttribute("href")).toBe("/starwake/index.html");
     const code = screen.getByRole("link", { name: "Read code" });
     expect(code.getAttribute("href")).toBe("https://github.com/CosmonautJones/starwake");
-    expect(screen.getAllByRole("img")).toHaveLength(4);
+    expect(screen.getAllByRole("img")).toHaveLength(6);
+    expect(screen.getByText(/Rift Forks: rock spines/)).toBeDefined();
     expect(screen.getByText(/Supersonic in Corona Run/)).toBeDefined();
     expect(screen.getByText(/same browser/)).toBeDefined();
   });
@@ -35,6 +36,9 @@ describe("Starwake case study", () => {
     for (const file of [
       "js/main.js",
       "css/style.css",
+      "css/career.css",
+      "js/config.js",
+      "js/flight/daily.js",
       "vendor/three/three.module.js",
       "vendor/three/three.core.js",
       "vendor/three/addons/postprocessing/UnrealBloomPass.js",
