@@ -1,5 +1,9 @@
 # Cocktail Mixer Motion Design
 
+**Superseded by**
+`docs/superpowers/specs/2026-09-05-cocktail-mixer-pixi-pour-design.md`.
+This document shipped GSAP on the existing SVG. Do not implement from it.
+
 Raise The Cosmonaut’s Bar from a working SVG illustration to award-site 2D
 motion: one GSAP clock, Flip between grid and recipe, light physics on pour.
 Keep the current art, recipes, and unlock. Do not go 3D.

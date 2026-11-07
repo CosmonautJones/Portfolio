@@ -31,14 +31,3 @@ export interface Cocktail {
   instructions: string;
   isSecret?: boolean;
 }
-
-export interface GlassConfig {
-  outline: string;
-  clip: string;
-  rim: string;
-  base: string;
-  highlight: string;
-  liquidTop: number;
-  liquidBottom: number;
-  hasIce: boolean;
-}
