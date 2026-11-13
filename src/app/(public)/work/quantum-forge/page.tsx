@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CaseStudy } from "@/components/portfolio/case-study";
+import { PROJECTS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Quantum Forge",
@@ -78,6 +79,7 @@ export default function QuantumForgeCasePage() {
       tags={["WebGL 2", "GLSL", "Web Audio", "No dependencies"]}
       playUrl={QUANTUM_FORGE_PLAY_URL}
       playLabel="Play Quantum Forge"
+      version={PROJECTS.find((project) => project.title === "Quantum Forge")?.version}
       gallery={GALLERY}
       sections={SECTIONS}
     />

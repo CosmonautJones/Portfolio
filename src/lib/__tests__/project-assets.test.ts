@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
@@ -58,6 +58,17 @@ describe("portfolio artwork", () => {
     expect(existsSync(path.join(process.cwd(), "public", "quantum-forge", "index.html"))).toBe(true);
     for (const shot of ["foam", "confinement", "first-light", "star", "web"]) {
       expect(existsSync(path.join(process.cwd(), "public", "projects", `quantum-forge-${shot}.jpg`))).toBe(true);
+    }
+
+    // Every build the site hosts shows its version, and the card's version matches the copy actually shipped.
+    for (const project of PROJECTS.filter((item) => item.liveUrl?.startsWith("/"))) {
+      expect(project.version, `${project.title} needs a version`).toMatch(/^\d+\.\d+\.\d+$/);
+      const entry = path.join(process.cwd(), "public", project.liveUrl!);
+      const dir = path.dirname(entry);
+      const versionFile = path.join(dir, "js", "version.js");
+      const shipped = readFileSync(entry, "utf8") + (existsSync(versionFile) ? readFileSync(versionFile, "utf8") : "");
+      expect(shipped.includes(`v${project.version}`) || shipped.includes(`REV ${project.version}`) || shipped.includes(`VERSION = '${project.version}'`),
+        `${project.liveUrl} should show version ${project.version}`).toBe(true);
     }
 
     const starwake = PROJECTS.find((project) => project.title === "Starwake");

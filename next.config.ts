@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Netlify sets COMMIT_REF during builds; the footer shows it so a deploy can be identified.
+  env: { NEXT_PUBLIC_COMMIT_REF: process.env.COMMIT_REF ?? "" },
   experimental: {
     // Barrel-import optimization: pull only the used exports from these
     // packages instead of their full index, shrinking per-route bundles.

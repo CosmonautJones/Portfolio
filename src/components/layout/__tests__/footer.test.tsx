@@ -4,6 +4,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup, within } from "@testing-library/react";
 import { Footer } from "../footer";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import pkg from "../../../../package.json";
 
 describe("Footer", () => {
   afterEach(cleanup);
@@ -31,5 +32,10 @@ describe("Footer", () => {
     expect(screen.getByText(SITE_CONFIG.location)).toBeDefined();
     expect(screen.getByText(/open to roles/i)).toBeDefined();
     expect(screen.getByRole("link", { name: SITE_CONFIG.email }).getAttribute("href")).toBe(`mailto:${SITE_CONFIG.email}`);
+  });
+
+  it("shows the site version so a deploy can be identified", () => {
+    const { container } = render(<Footer />);
+    expect(container.querySelector("[data-site-version]")?.textContent).toMatch(new RegExp(`^Rev ${pkg.version.replace(/\./g, "\\.")}( · [0-9a-f]{7})?$`));
   });
 });

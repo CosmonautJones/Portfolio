@@ -146,6 +146,7 @@ export const PROJECTS: Project[] = [
     proof:
       "No bundler. Physics, the optical window, and the paper desk are separate scripts, and the flight math is tested on its own. RANGE flies the gravity turn. The room stays formica, brass, and mosaic lamps.",
     actionLabel: "Open the firing room",
+    version: "0.1.0",
   },
   {
     title: "Alcubemy: V2 Playground",
@@ -175,6 +176,7 @@ export const PROJECTS: Project[] = [
     proof:
       "One self-contained HTML file with no dependencies: a GLSL foam shader, glow points with half-resolution bloom, and a generative Web Audio score. Hydrogen's line wavelengths, the 2.22 MeV deuteron and the 7.65 MeV Hoyle state are measured values; reaction timescales are compressed for play.",
     actionLabel: "Play Quantum Forge",
+    version: "0.1.0",
   },
   {
     title: "Starwake",

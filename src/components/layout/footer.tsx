@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { BrandMark } from "@/components/layout/brand-mark";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { siteVersionLabel } from "@/lib/site-version";
 
 const socials = [
   { href: SITE_CONFIG.github, label: "GitHub" },
@@ -76,6 +77,9 @@ export function Footer() {
                 </a>
               </li>
             ))}
+            <li className="label-mono" data-site-version title="Site version">
+              {siteVersionLabel()}
+            </li>
             <li className="label-mono">&copy; {new Date().getFullYear()}</li>
           </ul>
         </div>
