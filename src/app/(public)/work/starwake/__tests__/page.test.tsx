@@ -1,14 +1,16 @@
 /** @vitest-environment jsdom */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import { PROJECTS } from "@/lib/constants";
 import StarwakePage from "../page";
 
 const GAME_DIR = path.join(process.cwd(), "public", "starwake");
 
 describe("Starwake case study", () => {
+  afterEach(cleanup);
+
   it("leads with the playable build and shows every capture", () => {
     render(<StarwakePage />);
     const play = screen.getByRole("link", { name: "Play Starwake" });
@@ -19,6 +21,16 @@ describe("Starwake case study", () => {
     expect(screen.getByText(/Rift Forks: rock spines/)).toBeDefined();
     expect(screen.getByText(/Supersonic in Corona Run/)).toBeDefined();
     expect(screen.getByText(/same browser/)).toBeDefined();
+  });
+
+  it("shows the version of the build that is actually shipped", () => {
+    const shipped = readFileSync(path.join(GAME_DIR, "js", "version.js"), "utf8").match(/VERSION = '([^']+)'/)?.[1];
+    const project = PROJECTS.find((item) => item.title === "Starwake");
+    expect(shipped).toBeTruthy();
+    // Bump PROJECTS' Starwake version whenever a new build is copied in.
+    expect(project?.version).toBe(shipped);
+    render(<StarwakePage />);
+    expect(screen.getByText(`Version ${shipped}`)).toBeDefined();
   });
 
   it("matches the project card and ships a complete, CSP-safe build", () => {

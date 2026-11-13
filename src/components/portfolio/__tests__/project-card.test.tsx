@@ -101,6 +101,13 @@ describe("ProjectCard", () => {
     expect(screen.getByText("A working proof point.")).toBeDefined();
   });
 
+  it("shows the live build's version next to the role when a project has one", () => {
+    const { container, rerender } = render(<ProjectCard project={baseProject} />);
+    expect(container.querySelector("[data-version]")).toBeNull();
+    rerender(<ProjectCard project={{ ...baseProject, version: "0.8.0" }} />);
+    expect(container.querySelector("[data-version]")?.textContent).toBe(" · v0.8.0");
+  });
+
   it("applies hover zoom class to the image", () => {
     const { container } = render(<ProjectCard project={baseProject} />);
     const img = container.querySelector("img");

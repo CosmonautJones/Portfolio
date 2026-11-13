@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CaseStudy } from "@/components/portfolio/case-study";
+import { PROJECTS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Starwake",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 };
 
 const STARWAKE_PLAY_URL = "/starwake/index.html";
+const STARWAKE_VERSION = PROJECTS.find((project) => project.title === "Starwake")?.version;
 
 const GALLERY = [
   {
@@ -94,6 +96,7 @@ export default function StarwakeCasePage() {
       githubUrl="https://github.com/CosmonautJones/starwake"
       playUrl={STARWAKE_PLAY_URL}
       playLabel="Play Starwake"
+      version={STARWAKE_VERSION}
       gallery={GALLERY}
       sections={SECTIONS}
     />

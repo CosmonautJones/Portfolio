@@ -38,6 +38,8 @@ export interface Project {
   preview?: { src: string; caption: string };
   proof?: string;
   actionLabel?: string;
+  /** Shown on the card and case study so visitors (and Travis) can tell which build is live. */
+  version?: string;
 }
 
 export interface TrackerProject {

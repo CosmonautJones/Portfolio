@@ -191,6 +191,7 @@ export const PROJECTS: Project[] = [
     proof:
       "Plain ES modules and Three.js with no build step. Ships, planets, adaptive music and a daily course are all generated in code. Physics run at a fixed 120 Hz, AI pilots fly with the same inputs a player has, and headless tests race every course, including 60 future daily runs, before a release.",
     actionLabel: "Play Starwake",
+    version: "0.8.0",
   },
   {
     title: "Lumen Garden",

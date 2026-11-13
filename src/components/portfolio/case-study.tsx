@@ -27,6 +27,8 @@ type CaseStudyProps = {
   downloadLabel?: string;
   installHint?: string;
   tags?: string[];
+  /** The live build's version, e.g. "0.8.0". */
+  version?: string;
 };
 
 export function CaseStudy({
@@ -41,6 +43,7 @@ export function CaseStudy({
   downloadLabel = "Download installer",
   installHint,
   tags,
+  version,
 }: CaseStudyProps) {
   return (
     <article className="container mx-auto max-w-3xl px-6 py-16 sm:py-24">
@@ -58,6 +61,11 @@ export function CaseStudy({
           {title}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{lede}</p>
+        {version ? (
+          <p className="mt-3 font-mono text-xs text-muted-foreground" data-version>
+            Version {version}
+          </p>
+        ) : null}
         {tags && tags.length > 0 ? (
           <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-1" aria-label="Stack">
             {tags.map((tag) => (

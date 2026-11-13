@@ -84,7 +84,10 @@ export function ProjectCard({ project, featured, priority }: ProjectCardProps) {
 
       <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
         <div>
-          <p className="label-mono">{project.role}</p>
+          <p className="label-mono">
+            {project.role}
+            {project.version ? <span data-version>{` · v${project.version}`}</span> : null}
+          </p>
           <h3 className="font-display mt-2 text-xl font-bold tracking-tight text-foreground">
             {project.title}
           </h3>
