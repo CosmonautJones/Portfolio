@@ -59,6 +59,7 @@ describe("Starwake case study", () => {
       "js/config.js",
       "js/flight/daily.js",
       "js/space/cockpit.js",
+      "js/ui/touch.js",
       "vendor/three/three.module.js",
       "vendor/three/three.core.js",
       "vendor/three/addons/postprocessing/UnrealBloomPass.js",
