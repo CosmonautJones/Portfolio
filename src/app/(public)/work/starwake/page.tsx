@@ -58,7 +58,7 @@ const SECTIONS = [
   {
     heading: "Rocket League physics, pod-racer speed",
     body:
-      "• Boost pads: small ones down the safe middle line, three big ones a lap out by the wall, so the risky line pays\n• Supersonic at full boosted speed, with a sonic trail and a louder engine\n• Demolitions: hit a rival head-on while supersonic and they respawn behind; slower hits are bumps\n• Dodge: a sideways barrel roll that also knocks away incoming lasers\n• Near misses with rocks and rivals top up your boost\n• Streaks, radial blur, FOV kick, engine shake and Doppler pass-bys sell the speed",
+      "• Boost pads: small ones down the safe middle line, three big ones a lap out by the wall, so the risky line pays\n• Supersonic at full boosted speed, with a sonic trail and a louder engine\n• Demolitions: hit a rival head-on while supersonic and they respawn behind; slower hits are bumps\n• Drift: hold brake in a hard turn to slide through it tighter, then let go for a three-tier kick of speed\n• Slipstream: tuck in behind a rival to ride their visible wake, then slingshot past\n• Dodge: a sideways barrel roll that also knocks away incoming lasers\n• Near misses with rocks and rivals top up your boost\n• Streaks, radial blur, FOV kick, engine shake and Doppler pass-bys sell the speed\n• A first-person cockpit with a live dash: speed, boost and drift-charge pips",
   },
   {
     heading: "Two modes and a hostile galaxy",

@@ -33,6 +33,13 @@ describe("Starwake case study", () => {
     expect(screen.getByText(`Version ${shipped}`)).toBeDefined();
   });
 
+  it("describes the drift, slipstream and cockpit features the build ships", () => {
+    render(<StarwakePage />);
+    expect(screen.getByText(/Drift: hold brake in a hard turn/)).toBeDefined();
+    expect(screen.getByText(/Slipstream: tuck in behind a rival/)).toBeDefined();
+    expect(screen.getByText(/first-person cockpit with a live dash/)).toBeDefined();
+  });
+
   it("matches the project card and ships a complete, CSP-safe build", () => {
     const project = PROJECTS.find((item) => item.title === "Starwake");
     expect(project?.liveUrl).toBe("/starwake/index.html");
@@ -51,6 +58,7 @@ describe("Starwake case study", () => {
       "css/career.css",
       "js/config.js",
       "js/flight/daily.js",
+      "js/space/cockpit.js",
       "vendor/three/three.module.js",
       "vendor/three/three.core.js",
       "vendor/three/addons/postprocessing/UnrealBloomPass.js",
