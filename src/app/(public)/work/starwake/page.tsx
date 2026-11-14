@@ -91,7 +91,7 @@ export default function StarwakeCasePage() {
   return (
     <CaseStudy
       title="Starwake"
-      lede="Wormhole racing with Rocket League feel: boost pads, supersonic, demolitions and team dogfights. Plays in the browser with a keyboard and mouse or a controller."
+      lede="Wormhole racing with Rocket League feel: boost pads, supersonic, demolitions and team dogfights. Plays in the browser with a keyboard and mouse or a controller, and races play on phones with touch."
       tags={["Three.js", "WebGL 2", "Web Audio", "ES modules", "WebSockets"]}
       githubUrl="https://github.com/CosmonautJones/starwake"
       playUrl={STARWAKE_PLAY_URL}
