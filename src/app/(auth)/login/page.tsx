@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Sign In" };
@@ -12,7 +13,11 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <LoginForm urlError={error} redirectTo={redirectTo} />
+      <LoginForm
+        urlError={error}
+        redirectTo={redirectTo}
+        authAvailable={hasSupabaseConfig()}
+      />
     </div>
   );
 }

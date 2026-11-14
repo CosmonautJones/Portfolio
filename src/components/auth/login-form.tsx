@@ -10,9 +10,11 @@ import { Github, Loader2 } from "lucide-react";
 export function LoginForm({
   urlError,
   redirectTo = "/adventure",
+  authAvailable = true,
 }: {
   urlError?: string;
   redirectTo?: string;
+  authAvailable?: boolean;
 }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(urlError ?? null);
@@ -48,6 +50,38 @@ export function LoginForm({
       );
       setPending(false);
     }
+  }
+
+  if (!authAvailable) {
+    return (
+      <Card className="w-full max-w-sm border-border/50 bg-card/80 shadow-2xl backdrop-blur-xl">
+        <CardHeader>
+          <CardTitle className="text-center text-lg font-semibold">
+            Sign-in isn&apos;t available here
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            This preview isn&apos;t connected to sign-in. Use the live site to
+            sign in, or keep browsing the work.
+          </p>
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <a
+              href="https://www.travisjohnjones.com/login"
+              className="text-foreground underline-offset-4 hover:underline"
+            >
+              Go to the live site
+            </a>
+            <Link
+              href="/work"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              See the work
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
