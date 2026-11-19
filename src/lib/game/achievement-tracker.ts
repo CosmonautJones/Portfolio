@@ -7,6 +7,7 @@ export interface AchievementUnlock {
 }
 
 const DEATH_HISTORY_KEY = "adventure_death_history";
+const UNLOCKED_KEY = "adventure_unlocked_achievements";
 
 export class AchievementTracker {
   private unlocked: Set<string>;
@@ -130,6 +131,29 @@ export class AchievementTracker {
   static saveDeathHistory(causes: string[]): void {
     try {
       localStorage.setItem(DEATH_HISTORY_KEY, JSON.stringify(causes));
+    } catch {
+      // localStorage unavailable
+    }
+  }
+
+  static loadUnlocked(): string[] {
+    try {
+      const raw = localStorage.getItem(UNLOCKED_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as unknown;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((id): id is string => typeof id === "string");
+        }
+      }
+    } catch {
+      // localStorage unavailable
+    }
+    return [];
+  }
+
+  static saveUnlocked(ids: string[]): void {
+    try {
+      localStorage.setItem(UNLOCKED_KEY, JSON.stringify(ids));
     } catch {
       // localStorage unavailable
     }

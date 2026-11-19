@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AdventureShell } from "@/components/adventure/AdventureShell";
 import { WelcomeBanner } from "@/components/adventure/welcome-banner";
+import { ProjectViewTracker } from "@/components/portfolio/project-view-tracker";
 
 export const metadata: Metadata = { title: "Adventure" };
 
@@ -16,6 +17,7 @@ export default function AdventurePage() {
         <ArrowLeft className="h-3 w-3" />
         Back to Projects
       </Link>
+      <ProjectViewTracker projectKey="adventure" />
       <WelcomeBanner />
       <AdventureShell />
     </div>

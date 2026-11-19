@@ -133,6 +133,9 @@ export default function GameCanvas({
     onCoinUpdate: onCoinUpdateExternal,
     onChallengeProgress: onChallengeProgressExternal,
     onChallengeComplete: handleChallengeComplete,
+    onAchievementUnlock: (ids) => {
+      for (const id of ids) unlockAchievementRef.current(id);
+    },
   });
 
   // Award XP when game starts
@@ -167,9 +170,15 @@ export default function GameCanvas({
   // Award XP for score milestones on death
   useEffect(() => {
     if (engineState.phase === "game_over" && engineState.score > 0) {
-      if (engineState.score >= 50) awardXPRef.current("score_50");
+      if (engineState.score >= 50) {
+        awardXPRef.current("score_50");
+        unlockAchievementRef.current("hop_skip");
+      }
       if (engineState.score >= 100) awardXPRef.current("score_100");
-      if (engineState.score >= 200) awardXPRef.current("score_200");
+      if (engineState.score >= 200) {
+        awardXPRef.current("score_200");
+        unlockAchievementRef.current("road_warrior");
+      }
     }
   }, [engineState.phase, engineState.score]);
 

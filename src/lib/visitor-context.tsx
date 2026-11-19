@@ -17,10 +17,30 @@ import {
   unlockAchievement as serverUnlockAchievement,
   trackEvent as serverTrackEvent,
   updateStreak,
+  addDiscovery,
 } from "@/actions/profiles";
 import { XP_AWARDS, getLevelForXP, type XPAction } from "@/lib/xp";
 import { getAchievement } from "@/lib/achievements";
+import { shouldUnlockCartographer } from "@/lib/easter-eggs/triggers";
 import type { Profile } from "@/lib/types";
+import {
+  GUEST_ID,
+  awardGuestXP,
+  emptyGuestState,
+  loadGuestState,
+  recordGuestDiscovery,
+  refreshGuestVisit,
+  saveGuestState,
+  streakAchievementsFor,
+  unlockGuestAchievement,
+  type GuestState,
+} from "@/lib/guest-profile";
+import { AchievementTracker } from "@/lib/game/achievement-tracker";
+
+function loadGuestStateSafe(): GuestState {
+  if (typeof window === "undefined") return emptyGuestState();
+  return loadGuestState();
+}
 
 interface VisitorContextValue {
   profile: Profile | null;
@@ -32,6 +52,8 @@ interface VisitorContextValue {
   unlockAchievement: (id: string) => void;
   /** Track a raw event (fire-and-forget). */
   trackEvent: (type: string, payload?: Record<string, unknown>) => void;
+  /** Record an easter-egg discovery on the local or server profile. */
+  recordDiscovery: (eggId: string) => void;
   /** Refresh profile from the server. */
   refreshProfile: () => Promise<void>;
 }
@@ -43,6 +65,7 @@ export const VisitorContext = createContext<VisitorContextValue>({
   awardXP: () => {},
   unlockAchievement: () => {},
   trackEvent: () => {},
+  recordDiscovery: () => {},
   refreshProfile: async () => {},
 });
 
@@ -56,6 +79,50 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const profileRef = useRef<Profile | null>(null);
   profileRef.current = profile;
+  const guestStateRef = useRef<GuestState | null>(null);
+
+  function persistGuest(state: GuestState) {
+    guestStateRef.current = state;
+    saveGuestState(state);
+    setProfile(state.profile);
+  }
+
+  function bootGuestProfile() {
+    let state = refreshGuestVisit(loadGuestStateSafe());
+    const visit = awardGuestXP(state, "first_visit", undefined, sessionAwarded);
+    state = visit.state;
+    if (visit.awarded) {
+      toast.success(`+${visit.xp} XP`, {
+        description: "first visit",
+        duration: 3000,
+      });
+      const unlocked = unlockGuestAchievement(state, "first_steps");
+      state = unlocked.state;
+      if (unlocked.unlocked) {
+        const achievement = getAchievement("first_steps");
+        if (achievement) {
+          toast.success(`Achievement Unlocked: ${achievement.name}`, {
+            description: `${achievement.description} (+${achievement.xpReward} XP)`,
+            duration: 5000,
+          });
+        }
+      }
+    }
+    for (const id of streakAchievementsFor(state.profile.streak_days)) {
+      state = unlockGuestAchievement(state, id).state;
+    }
+    if (typeof window !== "undefined") {
+      for (const id of AchievementTracker.loadUnlocked()) {
+        state = unlockGuestAchievement(state, id).state;
+      }
+    }
+    if (shouldUnlockCartographer(state.profile.discoveries)) {
+      state = unlockGuestAchievement(state, "cartographer").state;
+    }
+    persistGuest(state);
+    setIsAuthenticated(false);
+    setLoading(false);
+  }
 
   // Load profile on mount + listen to auth changes
   useEffect(() => {
@@ -67,9 +134,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     // off the page entirely for the common unauthenticated case. A sign-in is a
     // full-page OAuth redirect, so a fresh page load picks the session up.
     if (!hasAuthCookies()) {
-      setProfile(null);
-      setIsAuthenticated(false);
-      setLoading(false);
+      bootGuestProfile();
       return () => {
         mounted = false;
       };
@@ -79,11 +144,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        if (mounted) {
-          setProfile(null);
-          setIsAuthenticated(false);
-          setLoading(false);
-        }
+        if (mounted) bootGuestProfile();
         return;
       }
 
@@ -135,8 +196,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
             setIsAuthenticated(true);
             loadProfile(supabase);
           } else {
-            setProfile(null);
-            setIsAuthenticated(false);
+            bootGuestProfile();
           }
         }
       );
@@ -236,24 +296,89 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
 
   const awardXP = useCallback(
     (action: XPAction, meta?: Record<string, unknown>) => {
-      if (!isAuthenticated) return;
-      awardXPForProfile(action, profileRef.current, meta);
+      const signedIn = isAuthenticated && profileRef.current?.id !== GUEST_ID;
+      if (signedIn) {
+        awardXPForProfile(action, profileRef.current, meta);
+        return;
+      }
+      const current = guestStateRef.current ?? loadGuestStateSafe();
+      const result = awardGuestXP(current, action, meta, sessionAwarded);
+      if (!result.awarded) return;
+      persistGuest(result.state);
+      toast.success(`+${result.xp} XP`, {
+        description: action.replace(/_/g, " "),
+        duration: 3000,
+      });
+      if (result.leveledUp) {
+        toast.success(`Level Up! Level ${result.state.profile.level}`, {
+          description: `New title: ${result.state.profile.title}`,
+          duration: 5000,
+        });
+      }
     },
     [isAuthenticated]
   );
 
   const unlockAchievement = useCallback(
     (id: string) => {
-      if (!isAuthenticated || !profileRef.current) return;
-      checkAndUnlockAchievement(id, profileRef.current);
+      const signedIn = isAuthenticated && profileRef.current?.id !== GUEST_ID;
+      if (signedIn) {
+        if (!profileRef.current) return;
+        checkAndUnlockAchievement(id, profileRef.current);
+        return;
+      }
+      const current = guestStateRef.current ?? loadGuestStateSafe();
+      const result = unlockGuestAchievement(current, id);
+      if (!result.unlocked) return;
+      persistGuest(result.state);
+      const achievement = getAchievement(id);
+      if (achievement) {
+        toast.success(`Achievement Unlocked: ${achievement.name}`, {
+          description: `${achievement.description} (+${achievement.xpReward} XP)`,
+          duration: 5000,
+        });
+      }
     },
     [isAuthenticated]
   );
 
   const trackEvent = useCallback(
     (type: string, payload?: Record<string, unknown>) => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || profileRef.current?.id === GUEST_ID) return;
       serverTrackEvent(type, payload ?? {});
+    },
+    [isAuthenticated]
+  );
+
+  const recordDiscovery = useCallback(
+    (eggId: string) => {
+      const signedIn = isAuthenticated && profileRef.current?.id !== GUEST_ID;
+      if (signedIn) {
+        addDiscovery(eggId);
+        setProfile((prev) => {
+          if (!prev || prev.discoveries.includes(eggId)) return prev;
+          return { ...prev, discoveries: [...prev.discoveries, eggId] };
+        });
+        return;
+      }
+      const current = guestStateRef.current ?? loadGuestStateSafe();
+      const result = recordGuestDiscovery(current, eggId);
+      if (!result.added) return;
+      let next = result.state;
+      if (shouldUnlockCartographer(next.profile.discoveries)) {
+        const unlocked = unlockGuestAchievement(next, "cartographer");
+        next = unlocked.state;
+        if (unlocked.unlocked) {
+          const achievement = getAchievement("cartographer");
+          if (achievement) {
+            toast.success(`Achievement Unlocked: ${achievement.name}`, {
+              description: `${achievement.description} (+${achievement.xpReward} XP)`,
+              duration: 5000,
+            });
+          }
+        }
+      }
+      persistGuest(next);
     },
     [isAuthenticated]
   );
@@ -271,6 +396,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       awardXP,
       unlockAchievement,
       trackEvent,
+      recordDiscovery,
       refreshProfile,
     }}>
       {children}

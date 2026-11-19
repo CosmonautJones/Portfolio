@@ -1,5 +1,17 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { AchievementTracker } from "../achievement-tracker";
+
+const memory = new Map<string, string>();
+const storage = {
+  getItem: (key: string) => memory.get(key) ?? null,
+  setItem: (key: string, value: string) => {
+    memory.set(key, value);
+  },
+  removeItem: (key: string) => {
+    memory.delete(key);
+  },
+  clear: () => memory.clear(),
+};
 
 describe("AchievementTracker", () => {
   let tracker: AchievementTracker;
@@ -199,6 +211,26 @@ describe("AchievementTracker", () => {
       tracker.onDeath("vehicle", 10);
       const seen = tracker.getDeathCausesSeen();
       expect(seen.sort()).toEqual(["vehicle", "water"]);
+    });
+  });
+
+  describe("unlocked persistence", () => {
+    beforeEach(() => {
+      memory.clear();
+      Object.defineProperty(globalThis, "localStorage", {
+        value: storage,
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      memory.clear();
+    });
+
+    it("round-trips unlocked achievement ids", () => {
+      tracker.onScoreChange(1);
+      AchievementTracker.saveUnlocked(tracker.getUnlockedIds());
+      expect(AchievementTracker.loadUnlocked()).toEqual(["first_hop"]);
     });
   });
 });
