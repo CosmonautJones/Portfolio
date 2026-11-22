@@ -196,6 +196,21 @@ export const PROJECTS: Project[] = [
     version: "0.10.0",
   },
   {
+    title: "Voxel Demolition",
+    playground: true,
+    description:
+      "Walk around a brick-and-concrete building with a sledgehammer and take it apart. Knock out columns, plant charges, or cut one side of a tower so it tips into its neighbour.",
+    image: "/projects/voxel-demolition.jpg",
+    tags: ["Three.js", "Voxel physics", "Web Audio"],
+    liveUrl: "https://cosmonautjones.github.io/voxel-demolition/",
+    githubUrl: "https://github.com/CosmonautJones/voxel-demolition",
+    role: "Physics sandbox",
+    featured: false,
+    proof:
+      "One HTML file with Three.js as its only dependency. No collapse is scripted: a support solver and an overturning check decide what falls, and falling sections are rigid bodies that crush, fracture, and settle back into the grid as rubble. A building that gets hit is damaged but not pushed over, so chain reactions are not modelled yet.",
+    actionLabel: "Play Voxel Demolition",
+  },
+  {
     title: "Lumen Garden",
     description:
       "A private idea workspace for choosing a next step, recording progress, and preparing context for an assistant. Built with React and TypeScript; data stays in your browser.",

@@ -86,8 +86,19 @@ describe("portfolio artwork", () => {
       expect(existsSync(path.join(process.cwd(), "public", "projects", `starwake-${shot}.jpg`))).toBe(true);
     }
 
+    const voxelDemolition = PROJECTS.find((project) => project.title === "Voxel Demolition");
+    expect(voxelDemolition).toMatchObject({
+      image: "/projects/voxel-demolition.jpg",
+      liveUrl: "https://cosmonautjones.github.io/voxel-demolition/",
+      githubUrl: "https://github.com/CosmonautJones/voxel-demolition",
+      playground: true,
+      featured: false,
+      actionLabel: "Play Voxel Demolition",
+    });
+    expect(voxelDemolition?.proof).toContain("not pushed over");
+
     const imagePaths = PROJECTS.map((project) => project.image);
-    expect(imagePaths).toHaveLength(21);
+    expect(imagePaths).toHaveLength(22);
 
     const presentPaths = imagePaths.filter((imagePath) => imagePath !== "");
     expect(new Set(presentPaths).size).toBe(presentPaths.length);
